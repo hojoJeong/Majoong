@@ -1,0 +1,13 @@
+server:
+  port: 8090
+
+spring:
+  datasource:
+    url: ${MAJOONG_MYSQL_URL}
+    username: ${MAJOONG_MYSQL_USERNAME}
+    password: ${MAJOONG_MYSQL_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+      show-sql: true
+    generate-ddl: true
