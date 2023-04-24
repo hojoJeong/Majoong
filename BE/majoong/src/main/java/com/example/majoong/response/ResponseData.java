@@ -8,11 +8,14 @@ import org.springframework.http.ResponseEntity;
 public class ResponseData {
 
     private int status;
+
+    private String flag;
     private String message;
     private Object data;
 
     public ResponseData() {
-        this.status = 400;
+        this.flag = "success";
+        this.status = 200;
         this.data = null;
         this.message =null;
     }
@@ -21,7 +24,8 @@ public class ResponseData {
         OK(200, "OK"),
         BAD_REQUEST(400, "BAD_REQUEST"),
         NOT_FOUND(404, "NOT_FOUND"),
-        INTERNAL_SERVER_ERROR(500, "INTERNAL_SERVER_ERROR");
+        INTERNAL_SERVER_ERROR(500, "INTERNAL_SERVER_ERROR"),
+        DUPLICATE_DATA_ERROR(600,"DUPLICATE_DATA_ERROR");
 
         int statusCode;
         String code;
