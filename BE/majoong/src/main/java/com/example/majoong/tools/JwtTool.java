@@ -1,4 +1,10 @@
 package com.example.majoong.tools;
 
-public class JwtTool {
+public interface JwtTool {
+
+    String createAccessToken(int id);
+    String createRefreshToken(int id);
+    boolean validateToken(String token);
+    byte[] generateKey();
+
 }

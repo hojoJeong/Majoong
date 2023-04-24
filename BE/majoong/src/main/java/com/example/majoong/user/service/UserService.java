@@ -13,7 +13,6 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-
     public User createUser(CreateUserDto createUserDto) {
 
         String phoneNumber = createUserDto.getPhoneNumber();
@@ -26,9 +25,6 @@ public class UserService {
         user.setNickname(nickname);
         user.setProfileImage(profileImage);
         user.setPinNumber(pinNumber);
-
-        // token
-
 
         // User 저장
         User savedUser = userRepository.save(user);
