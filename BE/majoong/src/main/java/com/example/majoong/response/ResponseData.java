@@ -3,13 +3,13 @@ package com.example.majoong.response;
 import lombok.Data;
 
 @Data
-public class Message {
+public class ResponseData {
 
     private int status;
     private String message;
     private Object data;
 
-    public Message() {
+    public ResponseData() {
         this.status = 400;
         this.data = null;
         this.message =null;
