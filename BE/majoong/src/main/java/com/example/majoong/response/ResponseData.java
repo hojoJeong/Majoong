@@ -9,20 +9,16 @@ import org.springframework.http.ResponseEntity;
 public class ResponseData {
 
     private int status;
-
-    private String flag;
     private String message;
     private Object data;
 
     public ResponseData() {
-        this.flag = "success";
         this.status = 200;
         this.data = null;
         this.message =null;
     }
 
     public ResponseData(ErrorEnum error) {
-        this.flag = error.flag;
         this.status = error.status;
         this.message = error.message;
     }
