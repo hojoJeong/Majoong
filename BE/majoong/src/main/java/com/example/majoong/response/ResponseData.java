@@ -1,6 +1,8 @@
 package com.example.majoong.response;
 
 import lombok.Data;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 @Data
 public class ResponseData {
@@ -29,4 +31,9 @@ public class ResponseData {
             this.code = code;
         }
     }
+
+    public ResponseEntity<?> builder(){
+        return new ResponseEntity<ResponseData>(this, HttpStatus.OK);
+    }
+
 }
