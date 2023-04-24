@@ -1,5 +1,6 @@
 package com.example.majoong.response;
 
+import com.example.majoong.exception.ErrorEnum;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,12 @@ public class ResponseData {
         this.message =null;
     }
 
+    public ResponseData(ErrorEnum error) {
+        this.flag = error.flag;
+        this.status = error.status;
+        this.message = error.message;
+    }
+
     public enum StatusEnum {
         OK(200, "OK"),
         BAD_REQUEST(400, "BAD_REQUEST"),
@@ -35,6 +42,8 @@ public class ResponseData {
             this.code = code;
         }
     }
+
+
 
     public ResponseEntity<?> builder(){
         return new ResponseEntity<ResponseData>(this, HttpStatus.OK);
