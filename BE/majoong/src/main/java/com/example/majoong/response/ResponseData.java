@@ -39,8 +39,6 @@ public class ResponseData {
         }
     }
 
-
-
     public ResponseEntity<?> builder(){
         return new ResponseEntity<ResponseData>(this, HttpStatus.OK);
     }
