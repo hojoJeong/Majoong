@@ -26,9 +26,14 @@ public class User {
     private String fcmToken;
     private String refreshToken;
     private long date;
-    private int state;
+    private int state=1;
     private String pinNumber;
-    private boolean pushAlarm;
-    private int alarmCount;
+    private boolean pushAlarm=true;
+    private int alarmCount=0;
+
+    @PrePersist
+    public void prePersist() {
+        this.date = System.currentTimeMillis(); // 현재 시스템 시간으로 초기화
+    }
 
 }
