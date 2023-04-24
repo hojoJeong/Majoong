@@ -10,7 +10,6 @@ public class ErrorHandler {
     @ExceptionHandler(DuplicateUserException.class)
     public ResponseEntity<?> DuplicateUserException() {
         ResponseData data = new ResponseData(ErrorEnum.DUPLICATE_USER);
-        data.setData(null);
         return data.builder();
     }
 }
