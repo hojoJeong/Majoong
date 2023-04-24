@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:toonflix/pomodoro.dart';
+import 'package:toonflix/toonflix.dart';
 import 'package:toonflix/widgets/button.dart';
 import 'package:toonflix/widgets/currency_card.dart';
 
 void main() {
-  runApp(const Pomodoro());
+  runApp(const Toonflix());
 }
 
 class App extends StatelessWidget {
