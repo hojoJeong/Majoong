@@ -7,6 +7,7 @@ import com.example.majoong.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,21 +21,12 @@ public class UserController {
     private final UserService userService;
     private final JwtTool jwtTool;
 
-//    @Operation(summary = "회원 가입")
-//    @PostMapping("/join")
-//    public ResponseEntity<?> joinUser(@RequestPart(value = "user") JoinUserDto user,
-//                                      @RequestPart(value = "profile_img" , required = false) MultipartFile profile) {
-//        RespData<Void> data = new RespData<>();
-//        userService.joinUser(user, profile);
-//
-//        return data.builder();
-//    }
-
+    @PostMapping("/signup")
     public ResponseEntity<?> joinUser(@RequestBody CreateUserDto user){
         ResponseData data = new ResponseData();
         userService.createUser(user);
         data.setStatus(200);
         data.setMessage("회원가입 성공");
-
+        return data.builder();
     }
 }
