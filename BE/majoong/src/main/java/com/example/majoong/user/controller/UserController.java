@@ -35,18 +35,5 @@ public class UserController {
         ResponseUserDto user = userService.KakaoLogin(info);
         return user;
     }
-    @PostMapping("/refresh")
-    public ResponseEntity<?> reToken(@RequestBody ReTokenDto token) {
-        if(token.getRefreshToken() == null
-                || token.getRefreshToken().split(" ").length != 2
-                || !jwtTool.validateToken(token.getRefreshToken().split(" ")[1])) {
-            throw new CustomJwtException();
-        }
-
-        LoginUserDto user = userService.generateUser(token.getId());
-        RespData<LoginUserDto> data = new RespData<>();
-        data.setData(user);
-        return data.builder();
-    }
 
 }

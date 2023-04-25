@@ -6,7 +6,6 @@ import com.example.majoong.tools.JwtTool;
 import com.example.majoong.user.domain.User;
 import com.example.majoong.user.dto.CreateUserDto;
 import com.example.majoong.user.dto.KakaoLoginDto;
-import com.example.majoong.user.dto.LoginUserDto;
 import com.example.majoong.user.dto.ResponseUserDto;
 import com.example.majoong.user.dto.TokenDto;
 import com.example.majoong.user.repository.UserRepository;
@@ -28,6 +27,8 @@ public class UserService {
         String nickname = createUserDto.getNickname();
         String profileImage = createUserDto.getProfileImage();
         String pinNumber = createUserDto.getPinNumber();
+        String oauth = createUserDto.getOauth();
+
 
         User existingUser = userRepository.findByPhoneNumber(phoneNumber);
         if (existingUser != null) {
@@ -39,6 +40,7 @@ public class UserService {
         user.setNickname(nickname);
         user.setProfileImage(profileImage);
         user.setPinNumber(pinNumber);
+        user.setOauth(oauth);
 
         userRepository.save(user);
     }

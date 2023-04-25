@@ -10,4 +10,6 @@ public class CreateUserDto {
     private String profileImage;
     private String pinNumber;
 
+    private String oauth;
+
 }
