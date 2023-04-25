@@ -15,7 +15,7 @@ public class ResponseData {
     public ResponseData() {
         this.status = 200;
         this.data = null;
-        this.message =null;
+        this.message = "성공";
     }
 
     public ResponseData(ErrorEnum error) {

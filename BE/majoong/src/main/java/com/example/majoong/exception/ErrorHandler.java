@@ -12,4 +12,9 @@ public class ErrorHandler {
         ResponseData data = new ResponseData(ErrorEnum.DUPLICATE_USER);
         return data.builder();
     }
+    @ExceptionHandler(NoUserException.class)
+    public ResponseEntity<?> NoUserException() {
+        ResponseData data = new ResponseData(ErrorEnum.NO_USER);
+        return data.builder();
+    }
 }

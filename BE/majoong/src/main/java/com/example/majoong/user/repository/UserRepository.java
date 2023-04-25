@@ -9,5 +9,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     User findByRefreshToken(String token);
 
+    User findByOauth(String oauth);
+
 
 }

@@ -27,6 +27,19 @@ public class JwtToolImpl implements JwtTool {
                 .signWith(SignatureAlgorithm.HS256, this.generateKey())
                 .compact();
     }
+
+    @Override
+    public boolean checkExpire(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(this.generateKey())
+                .parseClaimsJws(token)
+                .getBody();
+        long expTimestamp = Long.parseLong(String.valueOf(claims.get("exp")));
+
+        if(System.currentTimeMillis() < expTimestamp * 1000) return true;
+
+        return false;
+    }
     @Override
     public String createRefreshToken(int id) {
         Claims claims = Jwts.claims();

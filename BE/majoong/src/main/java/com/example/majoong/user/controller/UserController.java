@@ -2,9 +2,9 @@ package com.example.majoong.user.controller;
 
 import com.example.majoong.response.ResponseData;
 import com.example.majoong.tools.JwtTool;
-import com.example.majoong.user.domain.User;
 import com.example.majoong.user.dto.CreateUserDto;
-import com.example.majoong.user.dto.KakaoUserDto;
+import com.example.majoong.user.dto.KakaoLoginDto;
+import com.example.majoong.user.dto.ResponseUserDto;
 import com.example.majoong.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,12 +29,24 @@ public class UserController {
         return data.builder();
     }
 
-    @GetMapping("/login/kakao")
-    public ResponseEntity<?> kakaoOauth(@RequestParam String code) {
-        KakaoUserDto kakaoUser = userService.kakaoOauth(code);
-        User user = userService.getUserByToken(kakaoUser.getId());
-        ResponseData data = new ResponseData();
-        data.setData(kakaoUser);
+
+    @PostMapping("/login/kakao")
+    public ResponseUserDto KakaoLogin(@RequestBody KakaoLoginDto info) {
+        ResponseUserDto user = userService.KakaoLogin(info);
+        return user;
+    }
+    @PostMapping("/refresh")
+    public ResponseEntity<?> reToken(@RequestBody ReTokenDto token) {
+        if(token.getRefreshToken() == null
+                || token.getRefreshToken().split(" ").length != 2
+                || !jwtTool.validateToken(token.getRefreshToken().split(" ")[1])) {
+            throw new CustomJwtException();
+        }
+
+        LoginUserDto user = userService.generateUser(token.getId());
+        RespData<LoginUserDto> data = new RespData<>();
+        data.setData(user);
         return data.builder();
     }
+
 }
