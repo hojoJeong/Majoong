@@ -8,6 +8,9 @@ build/
 ### api-key 분리 ###
 application.properties
 
+### 시설 데이터 csv 파일 ###
+/src/main/resources/static/facility
+
 ### STS ###
 .apt_generated
 .classpath
