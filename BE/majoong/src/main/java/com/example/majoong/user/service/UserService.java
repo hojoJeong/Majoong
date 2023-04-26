@@ -1,7 +1,7 @@
 package com.example.majoong.user.service;
 
+import com.example.majoong.exception.DuplicatePhoneNumberException;
 import com.example.majoong.exception.DeletedUserException;
-import com.example.majoong.exception.DuplicateUserException;
 import com.example.majoong.exception.NoUserException;
 import com.example.majoong.exception.RefreshTokenException;
 import com.example.majoong.tools.JwtTool;
@@ -39,7 +39,7 @@ public class UserService {
 
         User existingUser = userRepository.findByPhoneNumber(phoneNumber);
         if (existingUser != null) {
-            throw new DuplicateUserException();
+            throw new DuplicatePhoneNumberException();
         }
 
         User user = new User();
@@ -90,15 +90,18 @@ public class UserService {
     public String withdrawal(HttpServletRequest request) {
         String token = request.getHeader("Authorization").split(" ")[1];
         int userId = jwtTool.getUserIdFromToken(token);
-        
+
         Optional<User> user = userRepository.findById(userId);
         if (user == null){
             throw new NoUserException();
         }
-        
+
         user.get().setState(0);
         userRepository.save(user.get());
 
         return "회원탈퇴 성공";
     }
+
+
+
 }
