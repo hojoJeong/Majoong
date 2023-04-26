@@ -50,7 +50,7 @@ public class UserService {
         return user;
     }
 
-    public ResponseUserDto kakaoLogin(LoginDto info){
+    public ResponseUserDto Login(LoginDto info){
         User findUser = userRepository.findByOauth(info.getOauth());
         if (findUser == null){
             throw new NoUserException();

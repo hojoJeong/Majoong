@@ -31,7 +31,7 @@ public class UserController {
 
     @PostMapping("/login/kakao")
     public ResponseUserDto KakaoLogin(@RequestBody LoginDto info) {
-        ResponseUserDto user = userService.kakaoLogin(info);
+        ResponseUserDto user = userService.Login(info);
         return user;
     }
 
