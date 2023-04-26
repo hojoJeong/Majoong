@@ -3,7 +3,8 @@ package com.example.majoong.exception;
 public enum ErrorEnum {
     INVALID_REFRESHTOKEN("refreshToken 만료", 401),
     DUPLICATE_USER("중복된 회원입니다.", 600),
-    NO_USER("가입된 회원이 아닙니다.", 600);
+    NO_USER("가입된 회원이 아닙니다.", 601),
+    DELETED_USER("탈퇴한 계정입니다.", 602);
 
     public String message;
     public int status;
