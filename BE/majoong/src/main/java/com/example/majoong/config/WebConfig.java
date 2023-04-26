@@ -11,15 +11,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @RequiredArgsConstructor
 @Configuration
-@PropertySource("classpath:/interceptorUrl.properties")
 public class WebConfig implements WebMvcConfigurer {
 
     private final UserInterceptor userInterceptor;
 
-    @Value("${exclude.path.patterns}")
+    @Value("${jwt.exclude-path}")
     private String[] excludePathPatterns;
 
-    @Value("${add.path.patterns}")
+    @Value("${jwt.add-path}")
     private String[] addPathPatterns;
 
     @Override

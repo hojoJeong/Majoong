@@ -11,3 +11,10 @@ spring:
       ddl-auto: update
       show-sql: true
     generate-ddl: true
+
+jwt:
+  token:
+    secret: ${JWT_SECRET_KEY}
+  exclude-path: /user/login/kakao, /user/signup, /user/retoken
+  add-path: /user/**
+
