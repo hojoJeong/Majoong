@@ -24,6 +24,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -47,15 +48,28 @@ public class MessageService {
         headers.set("x-ncp-iam-access-key", accessKey);
         headers.set("x-ncp-apigw-signature-v2", makeSignature(time));
 
+
+
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 4; i++) {
+            sb.append(random.nextInt(10));
+        }
+        String randomNumber = sb.toString();
+        String content = "[majoong] 모바일 인증번호는 ["+randomNumber+"]입니다.";
+
+        MessageDto message = new MessageDto();
+        message.setTo(messageDto.getTo());
+        message.setContent(content);
         List<MessageDto> messages = new ArrayList<>();
-        messages.add(messageDto);
+        messages.add(message);
 
         MessageRequestDto request = MessageRequestDto.builder()
                 .type("SMS")
                 .contentType("COMM")
                 .countryCode("82")
                 .from(senderPhone)
-                .content(messageDto.getContent())
+                .content(content)
                 .messages(messages)
                 .build();
 
