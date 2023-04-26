@@ -1,9 +1,11 @@
 package com.example.majoong.user.service;
 
-import com.example.majoong.user.dto.AuthNumberDto;
-import com.example.majoong.user.dto.MessageDto;
-import com.example.majoong.user.dto.MessageRequestDto;
-import com.example.majoong.user.dto.MessageResponseDto;
+import com.example.majoong.exception.DuplicatePhoneNumberException;
+import com.example.majoong.exception.ExpiredNumberException;
+import com.example.majoong.exception.WrongNumberException;
+import com.example.majoong.user.domain.User;
+import com.example.majoong.user.dto.*;
+import com.example.majoong.user.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +38,9 @@ import java.util.Random;
 public class MessageService {
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private RedisTemplate redisTemplate;
 
     @Value("${naver.sms.service-id}")
@@ -48,6 +53,10 @@ public class MessageService {
     private String accessKey;
     private String senderPhone="01075774492";
     public MessageResponseDto sendMessage(String phoneNumber) throws NoSuchAlgorithmException, InvalidKeyException, URISyntaxException, JsonProcessingException, UnsupportedEncodingException {
+        User existingUser = userRepository.findByPhoneNumber(phoneNumber);
+        if (existingUser != null) {
+            throw new DuplicatePhoneNumberException();
+        }
         Long time = System.currentTimeMillis();
 
         HttpHeaders headers = new HttpHeaders();
@@ -93,7 +102,21 @@ public class MessageService {
         return response;
     }
 
-    public boolean verifyNumber()
+    public boolean verifyNumber(VerificationNumberDto checkData){
+        String verificationNumber = (String) redisTemplate.opsForValue().get(checkData.getPhoneNumber());
+        if (verificationNumber==null){
+            throw new ExpiredNumberException();
+        }
+
+        if (verificationNumber.equals(checkData.getVerificationNumber())){
+            return true;
+        }
+        else {
+            throw new WrongNumberException();
+        }
+
+
+    }
     public String makeSignature(Long time) throws NoSuchAlgorithmException, UnsupportedEncodingException, InvalidKeyException {
 
         String message = new StringBuilder()

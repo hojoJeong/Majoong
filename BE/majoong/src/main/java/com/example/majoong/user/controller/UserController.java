@@ -57,10 +57,19 @@ public class UserController {
         return data.builder();
     }
 
-    @GetMapping("/auth")
-    public ResponseEntity<?> test(@RequestBody PhoneNumberDto info) throws NoSuchAlgorithmException, URISyntaxException, InvalidKeyException, JsonProcessingException, UnsupportedEncodingException {
+    @PostMapping("/auth")
+    public ResponseEntity<?> sendAuthNumber(@RequestBody PhoneNumberDto info) throws NoSuchAlgorithmException, URISyntaxException, InvalidKeyException, JsonProcessingException, UnsupportedEncodingException {
         ResponseData data = new ResponseData();
         data.setData(messageService.sendMessage(info.getPhoneNumber()));
+        return data.builder();
+    }
+
+    @PostMapping("/auth/verify")
+    public ResponseEntity<?> verifyAuthNumber(@RequestBody VerificationNumberDto info) {
+        ResponseData data = new ResponseData();
+        if (messageService.verifyNumber(info)){
+            data.setMessage("인증 완료");
+        }
         return data.builder();
     }
 
