@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+
 
 @RequestMapping("/user")
 @RequiredArgsConstructor
@@ -46,6 +48,13 @@ public class UserController {
     public ResponseEntity<?> test() {
         ResponseData data = new ResponseData();
         data.setData("하잉~");
+        return data.builder();
+    }
+
+    @PostMapping("withdrawal")
+    public ResponseEntity<?> withdrawal(HttpServletRequest request) {
+        ResponseData data = new ResponseData();
+        data.setMessage(userService.withdrawal(request));
         return data.builder();
     }
 

@@ -1,5 +1,6 @@
 package com.example.majoong.user.service;
 
+import com.example.majoong.exception.DeletedUserException;
 import com.example.majoong.exception.DuplicateUserException;
 import com.example.majoong.exception.NoUserException;
 import com.example.majoong.exception.RefreshTokenException;
@@ -10,6 +11,9 @@ import com.example.majoong.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Optional;
 
 
 @Service
@@ -55,6 +59,9 @@ public class UserService {
         if (findUser == null){
             throw new NoUserException();
         }
+        if (findUser.getState() == 0) {
+            throw new DeletedUserException();
+        }
         TokenDto token = generateUser(findUser.getId());
         ResponseUserDto user = new ResponseUserDto();
         user.setUserId(findUser.getId());
@@ -75,4 +82,18 @@ public class UserService {
         return newToken;
     }
 
+    public String withdrawal(HttpServletRequest request) {
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+        
+        Optional<User> user = userRepository.findById(userId);
+        if (user == null){
+            throw new NoUserException();
+        }
+        
+        user.get().setState(0);
+        userRepository.save(user.get());
+
+        return "회원탈퇴 성공";
+    }
 }

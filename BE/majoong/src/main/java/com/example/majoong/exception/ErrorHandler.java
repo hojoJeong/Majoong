@@ -23,4 +23,10 @@ public class ErrorHandler {
         ResponseData data = new ResponseData(ErrorEnum.INVALID_REFRESHTOKEN);
         return data.builder();
     }
+
+    @ExceptionHandler(DeletedUserException.class)
+    public ResponseEntity<?> DeletedUserException() {
+        ResponseData data = new ResponseData(ErrorEnum.DELETED_USER);
+        return data.builder();
+    }
 }
