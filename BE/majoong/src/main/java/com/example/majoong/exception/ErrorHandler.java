@@ -35,4 +35,10 @@ public class ErrorHandler {
         ResponseData data = new ResponseData(ErrorEnum.EXPIRED_NUMBER);
         return data.builder();
     }
+
+    @ExceptionHandler(DeletedUserException.class)
+    public ResponseEntity<?> DeletedUserException() {
+        ResponseData data = new ResponseData(ErrorEnum.DELETED_USER);
+        return data.builder();
+    }
 }
