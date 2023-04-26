@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -23,6 +24,10 @@ public class UserService {
     private UserRepository userRepository;
     private final JwtTool jwtTool;
 
+    public List<User> getUserList() {
+        List<User> userList = userRepository.findAll();
+        return userList;
+    }
     public void createUser(CreateUserDto createUserDto) {
 
         String phoneNumber = createUserDto.getPhoneNumber();
