@@ -1,0 +1,13 @@
+import 'package:flutter/material.dart';
+
+const PRIMARY_COLOR = Color(0xFF1A2978);
+const SECOND_PRIMARY_COLOR = Color(0xFF77469C);
+const TEXT_HINT_COLOR = Color(0xFF8F8686);
+const STAR_COLOR = Color(0xFFFFD600);
+const FINE_MARKER_COLOR = Color(0xFF53DB79);
+const SOSO_MARKER_COLOR = Color(0xFFF4AD1A);
+const SCARE_MARKER_COLOR = Color(0xFF000000);
+const WOMAN_SAFETY_ROAD_COLOR = Color(0xFFFF1266);
+const STORE_MARKER_COLOR = Color(0xFF469C5E);
+const POLICE_MARKER_COLOR = Color(0xFF1A2978);
+const DANGEROUS_ZONE_COLOR = Color(0x4DFF0000);
