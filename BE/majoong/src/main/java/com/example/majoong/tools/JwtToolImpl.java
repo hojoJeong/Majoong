@@ -80,4 +80,12 @@ public class JwtToolImpl implements JwtTool {
         return key;
     }
 
+    public int getUserIdFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(this.generateKey())
+                .parseClaimsJws(token)
+                .getBody();
+        return (int) claims.get("id");
+    }
+
 }
