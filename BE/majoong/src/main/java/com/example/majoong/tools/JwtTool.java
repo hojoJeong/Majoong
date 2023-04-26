@@ -9,4 +9,6 @@ public interface JwtTool {
 
     byte[] generateKey();
 
+    int getUserIdFromToken(String token);
+
 }
