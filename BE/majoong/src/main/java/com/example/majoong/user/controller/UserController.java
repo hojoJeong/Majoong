@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class UserController {
     private final UserService userService;
-    private final JwtTool jwtTool;
 
     @PostMapping("/signup")
     public ResponseEntity<?> joinUser(@RequestBody CreateUserDto user){
@@ -29,8 +28,8 @@ public class UserController {
     }
 
 
-    @PostMapping("/login/kakao")
-    public ResponseUserDto KakaoLogin(@RequestBody LoginDto info) {
+    @PostMapping("/login")
+    public ResponseUserDto Login(@RequestBody LoginDto info) {
         ResponseUserDto user = userService.Login(info);
         return user;
     }
