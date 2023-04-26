@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class TokenDto {
 
-    int id;
+    int userId;
     String accessToken;
     String refreshToken;
 

@@ -2,12 +2,10 @@ package com.example.majoong.user.service;
 
 import com.example.majoong.exception.DuplicateUserException;
 import com.example.majoong.exception.NoUserException;
+import com.example.majoong.exception.RefreshTokenException;
 import com.example.majoong.tools.JwtTool;
 import com.example.majoong.user.domain.User;
-import com.example.majoong.user.dto.CreateUserDto;
-import com.example.majoong.user.dto.KakaoLoginDto;
-import com.example.majoong.user.dto.ResponseUserDto;
-import com.example.majoong.user.dto.TokenDto;
+import com.example.majoong.user.dto.*;
 import com.example.majoong.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,13 +49,13 @@ public class UserService {
     }
 
     public TokenDto generateUser(int id) {
-        String accessToken = "Bearer " + jwtTool.createAccessToken(id);
-        String refreshToken = "Bearer " + jwtTool.createRefreshToken(id);
+        String accessToken = jwtTool.createAccessToken(id);
+        String refreshToken = jwtTool.createRefreshToken(id);
         TokenDto user = new TokenDto(id,accessToken,refreshToken);
         return user;
     }
 
-    public ResponseUserDto KakaoLogin(KakaoLoginDto info){
+    public ResponseUserDto kakaoLogin(KakaoLoginDto info){
         User findUser = userRepository.findByOauth(info.getKakaoId());
         if (findUser == null){
             throw new NoUserException();
@@ -66,9 +64,20 @@ public class UserService {
         ResponseUserDto user = new ResponseUserDto();
         user.setUserId(findUser.getId());
         user.setAccessToken(token.getAccessToken());
+        user.setRefreshToken(token.getRefreshToken());
         user.setPhoneNumber(findUser.getPhoneNumber());
         user.setPinNumber(findUser.getPinNumber());
         return user;
+    }
+
+    public TokenDto reToken(ReTokenDto token){
+        if(token.getRefreshToken() == null
+                || !jwtTool.validateToken(token.getRefreshToken())) {
+            throw new RefreshTokenException();
+        }
+        String newAccessToken = "Bearer " + jwtTool.createAccessToken(token.getUserId());
+        TokenDto newToken = new TokenDto(token.getUserId(), newAccessToken, token.getRefreshToken());
+        return newToken;
     }
 
 }

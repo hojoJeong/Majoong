@@ -18,9 +18,9 @@ public class ErrorHandler {
         return data.builder();
     }
 
-    @ExceptionHandler(JwtException.class)
-    public ResponseEntity<?> JwtException() {
-        ResponseData data = new ResponseData(ErrorEnum.JWT_ERROR);
+    @ExceptionHandler(RefreshTokenException.class)
+    public ResponseEntity<?> RefreshTokenException() {
+        ResponseData data = new ResponseData(ErrorEnum.INVALID_REFRESHTOKEN);
         return data.builder();
     }
 }

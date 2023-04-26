@@ -1,6 +1,6 @@
 package com.example.majoong.user.controller;
 
-import com.example.majoong.exception.JwtException;
+import com.example.majoong.exception.RefreshTokenException;
 import com.example.majoong.response.ResponseData;
 import com.example.majoong.tools.JwtTool;
 import com.example.majoong.user.dto.*;
@@ -31,21 +31,22 @@ public class UserController {
 
     @PostMapping("/login/kakao")
     public ResponseUserDto KakaoLogin(@RequestBody KakaoLoginDto info) {
-        ResponseUserDto user = userService.KakaoLogin(info);
+        ResponseUserDto user = userService.kakaoLogin(info);
         return user;
     }
 
     @PostMapping("/retoken")
     public ResponseEntity<?> reToken(@RequestBody ReTokenDto token) {
-        if(token.getRefreshToken() == null
-                || token.getRefreshToken().split(" ").length != 2
-                || !jwtTool.validateToken(token.getRefreshToken())) {
-            throw new JwtException();
-        }
-
-        TokenDto user = userService.generateUser(token.getId());
+        TokenDto newToken = userService.reToken(token);
         ResponseData data = new ResponseData();
-        data.setData(user);
+        data.setData(newToken);
+        return data.builder();
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<?> test() {
+        ResponseData data = new ResponseData();
+        data.setData("하잉~");
         return data.builder();
     }
 
