@@ -4,11 +4,18 @@ import com.example.majoong.exception.RefreshTokenException;
 import com.example.majoong.response.ResponseData;
 import com.example.majoong.tools.JwtTool;
 import com.example.majoong.user.dto.*;
+import com.example.majoong.user.service.MessageService;
 import com.example.majoong.user.service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
 
 @RequestMapping("/user")
@@ -17,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class UserController {
     private final UserService userService;
+    private final MessageService messageService;
 
     @PostMapping("/signup")
     public ResponseEntity<?> joinUser(@RequestBody CreateUserDto user){
@@ -46,6 +54,13 @@ public class UserController {
     public ResponseEntity<?> test() {
         ResponseData data = new ResponseData();
         data.setData("하잉~");
+        return data.builder();
+    }
+
+    @GetMapping("/auth")
+    public ResponseEntity<?> test(@RequestBody MessageDto message) throws NoSuchAlgorithmException, URISyntaxException, InvalidKeyException, JsonProcessingException, UnsupportedEncodingException {
+        ResponseData data = new ResponseData();
+        data.setData(messageService.sendMessage(message));
         return data.builder();
     }
 
