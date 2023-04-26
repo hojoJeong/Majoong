@@ -15,6 +15,6 @@ spring:
 jwt:
   token:
     secret: ${JWT_SECRET_KEY}
-  exclude-path: /user/login/kakao, /user/signup, /user/retoken
+  exclude-path: /user/login, /user/signup, /user/retoken
   add-path: /user/**
 
