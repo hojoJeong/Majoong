@@ -64,6 +64,7 @@ public class JwtToolImpl implements JwtTool {
                     .parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
+            log.error("invalid jwt", e.getMessage());
         }
         return false;
     }
@@ -74,7 +75,7 @@ public class JwtToolImpl implements JwtTool {
             // charset 설정 안하면 사용자 플랫폼의 기본 인코딩 설정으로 인코딩 됨.
             key = secretKey.getBytes("UTF-8");
         } catch (UnsupportedEncodingException e) {
-
+            log.error("jwt생성 실패", e.getMessage());
         }
         return key;
     }

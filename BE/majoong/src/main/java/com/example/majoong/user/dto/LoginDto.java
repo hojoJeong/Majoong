@@ -3,7 +3,7 @@ package com.example.majoong.user.dto;
 import lombok.Data;
 
 @Data
-public class KakaoLoginDto {
+public class LoginDto {
 
-    private String kakaoId;
+    private String oauth;
 }

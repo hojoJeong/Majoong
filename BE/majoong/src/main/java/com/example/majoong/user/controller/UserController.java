@@ -30,7 +30,7 @@ public class UserController {
 
 
     @PostMapping("/login/kakao")
-    public ResponseUserDto KakaoLogin(@RequestBody KakaoLoginDto info) {
+    public ResponseUserDto KakaoLogin(@RequestBody LoginDto info) {
         ResponseUserDto user = userService.kakaoLogin(info);
         return user;
     }
