@@ -1,10 +1,9 @@
 package com.example.majoong.user.controller;
 
+import com.example.majoong.exception.JwtException;
 import com.example.majoong.response.ResponseData;
 import com.example.majoong.tools.JwtTool;
-import com.example.majoong.user.dto.CreateUserDto;
-import com.example.majoong.user.dto.KakaoLoginDto;
-import com.example.majoong.user.dto.ResponseUserDto;
+import com.example.majoong.user.dto.*;
 import com.example.majoong.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +33,20 @@ public class UserController {
     public ResponseUserDto KakaoLogin(@RequestBody KakaoLoginDto info) {
         ResponseUserDto user = userService.KakaoLogin(info);
         return user;
+    }
+
+    @PostMapping("/retoken")
+    public ResponseEntity<?> reToken(@RequestBody ReTokenDto token) {
+        if(token.getRefreshToken() == null
+                || token.getRefreshToken().split(" ").length != 2
+                || !jwtTool.validateToken(token.getRefreshToken())) {
+            throw new JwtException();
+        }
+
+        TokenDto user = userService.generateUser(token.getId());
+        ResponseData data = new ResponseData();
+        data.setData(user);
+        return data.builder();
     }
 
 }

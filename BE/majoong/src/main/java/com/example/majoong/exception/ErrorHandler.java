@@ -17,4 +17,10 @@ public class ErrorHandler {
         ResponseData data = new ResponseData(ErrorEnum.NO_USER);
         return data.builder();
     }
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<?> JwtException() {
+        ResponseData data = new ResponseData(ErrorEnum.JWT_ERROR);
+        return data.builder();
+    }
 }
