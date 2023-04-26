@@ -1,5 +1,6 @@
 package com.example.majoong.user.service;
 
+import com.example.majoong.user.dto.AuthNumberDto;
 import com.example.majoong.user.dto.MessageDto;
 import com.example.majoong.user.dto.MessageRequestDto;
 import com.example.majoong.user.dto.MessageResponseDto;
@@ -7,7 +8,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.util.codec.binary.Base64;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -22,6 +26,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -29,6 +34,9 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 public class MessageService {
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Value("${naver.sms.service-id}")
     private String serviceId;
@@ -39,7 +47,7 @@ public class MessageService {
     @Value("${naver.access-key}")
     private String accessKey;
     private String senderPhone="01075774492";
-    public MessageResponseDto sendMessage(MessageDto messageDto) throws NoSuchAlgorithmException, InvalidKeyException, URISyntaxException, JsonProcessingException, UnsupportedEncodingException {
+    public MessageResponseDto sendMessage(String phoneNumber) throws NoSuchAlgorithmException, InvalidKeyException, URISyntaxException, JsonProcessingException, UnsupportedEncodingException {
         Long time = System.currentTimeMillis();
 
         HttpHeaders headers = new HttpHeaders();
@@ -47,8 +55,6 @@ public class MessageService {
         headers.set("x-ncp-apigw-timestamp", time.toString());
         headers.set("x-ncp-iam-access-key", accessKey);
         headers.set("x-ncp-apigw-signature-v2", makeSignature(time));
-
-
 
         Random random = new Random();
         StringBuilder sb = new StringBuilder();
@@ -59,7 +65,7 @@ public class MessageService {
         String content = "[majoong] 모바일 인증번호는 ["+randomNumber+"]입니다.";
 
         MessageDto message = new MessageDto();
-        message.setTo(messageDto.getTo());
+        message.setTo(phoneNumber);
         message.setContent(content);
         List<MessageDto> messages = new ArrayList<>();
         messages.add(message);
@@ -81,10 +87,13 @@ public class MessageService {
         restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
         MessageResponseDto response =  restTemplate.postForObject(new URI("https://sens.apigw.ntruss.com/sms/v2/services/"+ serviceId +"/messages"), httpBody, MessageResponseDto.class);
 
+        //인증번호 저장 (만료시간 5분)
+        redisTemplate.opsForValue().set(phoneNumber,randomNumber,Duration.ofMinutes(5));
+
         return response;
     }
 
-
+    public boolean verifyNumber()
     public String makeSignature(Long time) throws NoSuchAlgorithmException, UnsupportedEncodingException, InvalidKeyException {
 
         String message = new StringBuilder()
@@ -106,4 +115,9 @@ public class MessageService {
 
         return encodeBase64String;
     }
+
+    public void sendDataToRedis(AuthNumberDto info){
+    }
+
+
 }

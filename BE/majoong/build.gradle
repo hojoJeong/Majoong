@@ -32,7 +32,9 @@ dependencies {
 	implementation 'javax.xml.bind:jaxb-api:2.3.1'
 	//http
 	implementation("org.apache.httpcomponents:httpclient:4.5")
-
+	//redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'com.opencsv:opencsv:5.5.2'
 }
 
 tasks.named('test') {

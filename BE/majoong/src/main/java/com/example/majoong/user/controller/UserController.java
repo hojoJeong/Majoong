@@ -58,9 +58,9 @@ public class UserController {
     }
 
     @GetMapping("/auth")
-    public ResponseEntity<?> test(@RequestBody MessageDto message) throws NoSuchAlgorithmException, URISyntaxException, InvalidKeyException, JsonProcessingException, UnsupportedEncodingException {
+    public ResponseEntity<?> test(@RequestBody PhoneNumberDto info) throws NoSuchAlgorithmException, URISyntaxException, InvalidKeyException, JsonProcessingException, UnsupportedEncodingException {
         ResponseData data = new ResponseData();
-        data.setData(messageService.sendMessage(message));
+        data.setData(messageService.sendMessage(info.getPhoneNumber()));
         return data.builder();
     }
 
