@@ -23,7 +23,6 @@ public class ResponseData {
         this.message = error.message;
     }
 
-
     public ResponseEntity<?> builder(){
         return new ResponseEntity<ResponseData>(this, HttpStatus.OK);
     }
