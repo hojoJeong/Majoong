@@ -43,11 +43,6 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public User getUserByToken(String token){
-        User user = userRepository.findByRefreshToken(token);
-        return user;
-    }
-
     public TokenDto generateUser(int id) {
         String accessToken = jwtTool.createAccessToken(id);
         String refreshToken = jwtTool.createRefreshToken(id);

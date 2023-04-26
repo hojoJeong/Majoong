@@ -7,8 +7,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     User findByPhoneNumber(String phoneNumber);
 
-    User findByRefreshToken(String token);
-
     User findByOauth(String oauth);
 
 

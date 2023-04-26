@@ -24,7 +24,6 @@ public class User {
     private String profileImage;
     private String fcmToken;
     private String oauth;
-    private String refreshToken;
     private long date;
     private int state=1;
     private String pinNumber;
