@@ -96,14 +96,17 @@ public class MessageService {
         restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
         MessageResponseDto response =  restTemplate.postForObject(new URI("https://sens.apigw.ntruss.com/sms/v2/services/"+ serviceId +"/messages"), httpBody, MessageResponseDto.class);
 
+        //기존 인증번호 있으면 삭제
+        redisTemplate.delete("phone:"+phoneNumber);
+
         //인증번호 저장 (만료시간 5분)
-        redisTemplate.opsForValue().set(phoneNumber,randomNumber,Duration.ofMinutes(5));
+        redisTemplate.opsForValue().set("phone:"+phoneNumber,randomNumber,Duration.ofMinutes(5));
 
         return response;
     }
 
     public boolean verifyNumber(VerificationNumberDto checkData){
-        String verificationNumber = (String) redisTemplate.opsForValue().get(checkData.getPhoneNumber());
+        String verificationNumber = (String) redisTemplate.opsForValue().get("phone:"+checkData.getPhoneNumber());
         if (verificationNumber==null){
             throw new ExpiredNumberException();
         }
