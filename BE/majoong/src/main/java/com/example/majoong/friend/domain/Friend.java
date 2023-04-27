@@ -23,6 +23,7 @@ public class Friend {
     private User friend;
     private String friendName;
     private int state;
+    private boolean isGuardian = false;
 
     public Friend(User user, User friend, int state) {
         this.user = user;

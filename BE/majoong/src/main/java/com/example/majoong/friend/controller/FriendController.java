@@ -64,6 +64,17 @@ public class FriendController {
         ResponseData data = new ResponseData();
         data.setMessage("친구 수락");
         return data.builder();
+    }
 
+    @PostMapping("/friend/deny")
+    public ResponseEntity denyFriendRequest(@RequestBody FriendRequestDto friendRequest){
+        User friend = userRepository.findById(friendRequest.getUserId()).orElseThrow(() -> new NoUserException());
+        User user = userRepository.findById(friendRequest.getFriendId()).orElseThrow(() -> new NoUserException());
+
+        friendService.denyFriendRequest(user, friend);
+
+        ResponseData data = new ResponseData();
+        data.setMessage("친구요청 삭제");
+        return data.builder();
     }
 }

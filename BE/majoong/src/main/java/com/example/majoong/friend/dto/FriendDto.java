@@ -10,4 +10,5 @@ public class FriendDto {
     String nickname;
     String profileImage;
 
+    boolean isGuardian=false;
 }

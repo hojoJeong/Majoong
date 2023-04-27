@@ -64,6 +64,23 @@ public class FriendService {
             throw new NotExistFriendRequestException();
         }
         friendInfo.setState(1);
+        Friend newFriend = new Friend(friend, user, 1);
         friendRepository.save(friendInfo);
+        friendRepository.save(newFriend);
+
     }
+
+    public void denyFriendRequest(User user, User friend){
+        Friend friendInfo = friendRepository.findByUserAndFriendAndState(user, friend, 0);
+
+        if (friendRepository.existsByUserAndFriendAndState(user, friend,1)) { //이미 친구
+            throw new ExistFriendException();
+        }
+        if (friendInfo == null){
+            throw new NotExistFriendRequestException();
+        }
+        friendRepository.delete(friendInfo);
+    }
+
+
 }

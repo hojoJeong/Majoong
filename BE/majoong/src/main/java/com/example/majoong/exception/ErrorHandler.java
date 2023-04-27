@@ -59,4 +59,11 @@ public class ErrorHandler {
         ResponseData data = new ResponseData(ErrorEnum.NOT_EXIST_FRIEND_REQUEST);
         return data.builder();
     }
+
+    @ExceptionHandler(NotFriendException.class)
+    public ResponseEntity<?> NotFriendException() {
+        ResponseData data = new ResponseData(ErrorEnum.NOT_FRIEND);
+        return data.builder();
+    }
+
 }
