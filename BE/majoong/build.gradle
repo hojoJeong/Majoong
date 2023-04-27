@@ -35,6 +35,9 @@ dependencies {
 	//redis
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'com.opencsv:opencsv:5.5.2'
+	//swagger
+	implementation 'org.springdoc:springdoc-openapi-ui:1.6.12'
+
 }
 
 tasks.named('test') {
