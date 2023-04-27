@@ -7,8 +7,8 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PoliceDto {
-    private Long policeId;
+public class BellDto {
+    private Long bellId;
     private double longitude;
     private double latitude;
     private String address;

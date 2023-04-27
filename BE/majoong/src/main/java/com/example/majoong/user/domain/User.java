@@ -23,7 +23,7 @@ public class User {
     private String nickname;
     private String profileImage;
     private String fcmToken;
-    private String refreshToken;
+    private String oauth;
     private long date;
     private int state=1;
     private String pinNumber;

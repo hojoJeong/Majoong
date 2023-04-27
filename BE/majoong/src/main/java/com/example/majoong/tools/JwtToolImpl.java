@@ -5,6 +5,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
@@ -13,7 +14,8 @@ import java.util.Date;
 @Slf4j
 @Service
 public class JwtToolImpl implements JwtTool {
-    private final String SECRET_KEY = "akwnd";
+    @Value("${jwt.token.secret}")
+    private String secretKey;
 
     @Override
     public String createAccessToken(int id) {
@@ -26,6 +28,19 @@ public class JwtToolImpl implements JwtTool {
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 2)) //2시간
                 .signWith(SignatureAlgorithm.HS256, this.generateKey())
                 .compact();
+    }
+
+    @Override
+    public boolean checkExpire(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(this.generateKey())
+                .parseClaimsJws(token)
+                .getBody();
+        long expTimestamp = Long.parseLong(String.valueOf(claims.get("exp")));
+
+        if(System.currentTimeMillis() < expTimestamp * 1000) return true;
+
+        return false;
     }
     @Override
     public String createRefreshToken(int id) {
@@ -49,6 +64,7 @@ public class JwtToolImpl implements JwtTool {
                     .parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
+            log.error("invalid jwt", e.getMessage());
         }
         return false;
     }
@@ -57,11 +73,19 @@ public class JwtToolImpl implements JwtTool {
         byte[] key = null;
         try {
             // charset 설정 안하면 사용자 플랫폼의 기본 인코딩 설정으로 인코딩 됨.
-            key = SECRET_KEY.getBytes("UTF-8");
+            key = secretKey.getBytes("UTF-8");
         } catch (UnsupportedEncodingException e) {
-
+            log.error("jwt생성 실패", e.getMessage());
         }
         return key;
+    }
+
+    public int getUserIdFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(this.generateKey())
+                .parseClaimsJws(token)
+                .getBody();
+        return (int) claims.get("id");
     }
 
 }

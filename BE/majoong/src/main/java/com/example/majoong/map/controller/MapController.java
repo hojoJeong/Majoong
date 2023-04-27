@@ -1,6 +1,15 @@
 package com.example.majoong.map.controller;
 
+import com.example.majoong.map.domain.Bell;
+import com.example.majoong.map.domain.Cctv;
 import com.example.majoong.map.domain.Police;
+import com.example.majoong.map.domain.Store;
+import com.example.majoong.map.dto.PoliceDto;
+import com.example.majoong.map.dto.StoreDto;
+import com.example.majoong.map.repository.BellRepository;
+import com.example.majoong.map.repository.CctvRepository;
+import com.example.majoong.map.repository.PoliceRepository;
+import com.example.majoong.map.repository.StoreRepository;
 import com.example.majoong.map.service.MapRedisService;
 import com.example.majoong.map.service.MapRepositoryService;
 import com.example.majoong.map.util.CsvUtils;
@@ -20,30 +29,22 @@ import java.util.stream.Collectors;
 public class MapController {
     private final MapRepositoryService mapRepositoryService;
     private final MapRedisService mapRedisService;
+    private final PoliceRepository policeRepository;
+    private final StoreRepository storeRepository;
+    private final CctvRepository cctvRepository;
+    private final BellRepository bellRepository;
 
-    @GetMapping("/csv/save")
+    @GetMapping("/save/csv")
     public String saveCsv() {
-        saveCsvToMysql();
+        mapRepositoryService.saveCsvToMysql();                      // csv파일을 MySQL에 저장
 
-        return "저장 성공";
+        return "MySQL에 저장 성공";
     }
 
-    public void saveCsvToMysql() {
+    @GetMapping("/save/redis")
+    public String saveRedis() {
+        mapRedisService.saveMysqlToRedisGeospatial();               // DB의 데이터 Redis로 동기화
 
-        List<Police> policeList = loadPoliceList();
-        mapRepositoryService.saveAll(policeList);
-    }
-
-    private List<Police> loadPoliceList() {
-        return CsvUtils.convertToPoliceDtoList()
-                .stream().map(policeDto ->
-                        Police.builder()
-                                .policeId(policeDto.getPoliceId())
-                                .longitude(policeDto.getLongitude())
-                                .latitude(policeDto.getLatitude())
-                                .address(policeDto.getAddress())
-                                .build())
-                .collect(Collectors.toList());
+        return "Reids에 저장 성공";
     }
 }
-
