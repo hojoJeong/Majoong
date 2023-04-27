@@ -56,8 +56,8 @@ public class FriendController {
 
     @PostMapping("/friend/accept")
     public ResponseEntity acceptFriendRequest(@RequestBody FriendRequestDto friendRequest){
-        User user = userRepository.findById(friendRequest.getUserId()).orElseThrow(() -> new NoUserException());
-        User friend = userRepository.findById(friendRequest.getFriendId()).orElseThrow(() -> new NoUserException());
+        User friend = userRepository.findById(friendRequest.getUserId()).orElseThrow(() -> new NoUserException());
+        User user = userRepository.findById(friendRequest.getFriendId()).orElseThrow(() -> new NoUserException());
 
         friendService.acceptFriendRequest(user, friend);
 

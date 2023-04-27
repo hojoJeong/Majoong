@@ -56,7 +56,10 @@ public class FriendService {
     }
 
     public void acceptFriendRequest(User user, User friend){
-        Friend friendInfo = friendRepository.FindByUserAndFriendAndState(user, friend, 0);
+        Friend friendInfo = friendRepository.findByUserAndFriendAndState(user, friend, 0);
+        if (friendRepository.existsByUserAndFriendAndState(user, friend,1)) { //이미 친구
+            throw new ExistFriendException();
+        }
         if (friendInfo == null){
             throw new NotExistFriendRequestException();
         }
