@@ -41,4 +41,22 @@ public class ErrorHandler {
         ResponseData data = new ResponseData(ErrorEnum.DELETED_USER);
         return data.builder();
     }
+
+    @ExceptionHandler(ExistFriendException.class)
+    public ResponseEntity<?> ExistFriendException() {
+        ResponseData data = new ResponseData(ErrorEnum.EXIST_FRIEND);
+        return data.builder();
+    }
+
+    @ExceptionHandler(ExistFriendRequestException.class)
+    public ResponseEntity<?> ExistFriendRequestException() {
+        ResponseData data = new ResponseData(ErrorEnum.EXIST_FRIEND_REQUEST);
+        return data.builder();
+    }
+
+    @ExceptionHandler(NotExistFriendRequestException.class)
+    public ResponseEntity<?> NotExistFriendRequestException() {
+        ResponseData data = new ResponseData(ErrorEnum.NOT_EXIST_FRIEND_REQUEST);
+        return data.builder();
+    }
 }
