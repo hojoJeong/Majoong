@@ -97,6 +97,22 @@ public class FriendService {
         }
         friendRepository.delete(friendInfo1);
         friendRepository.delete(friendInfo2);
+    }
 
+    public List<FriendDto> getFriendsList(int userId){ //보호자 아닌 친구 리스트
+        User user = userRepository.findById(userId).get();
+        List<Friend> friends = friendRepository.findAllByUserAndStateAndIsGuardian(user,1,false);
+        List<FriendDto> friendsInfo = new ArrayList<>();
+
+        for (Friend friend : friends){
+            User friendInfo = friend.getFriend();
+            FriendDto newFriendInfo = new FriendDto();
+            newFriendInfo.setUserId(friendInfo.getId());
+            newFriendInfo.setNickname(friendInfo.getNickname());
+            newFriendInfo.setPhoneNumber(friendInfo.getPhoneNumber());
+            newFriendInfo.setProfileImage(friendInfo.getProfileImage());
+            friendsInfo.add(newFriendInfo);
+        }
+        return friendsInfo;
     }
 }

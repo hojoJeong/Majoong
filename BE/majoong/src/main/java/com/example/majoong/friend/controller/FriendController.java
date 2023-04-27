@@ -80,4 +80,14 @@ public class FriendController {
         data.setMessage("친구 삭제");
         return data.builder();
     }
+    @GetMapping("/friends")
+    public ResponseEntity getFriendsList(HttpServletRequest request) {
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+        List<FriendDto> friends = friendService.getFriendsList(userId);
+        ResponseData data = new ResponseData();
+        data.setData(friends);
+        return data.builder();
+    }
+
 }
