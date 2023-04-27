@@ -115,4 +115,14 @@ public class FriendService {
         }
         return friendsInfo;
     }
+
+    public void changeIsGuardian(User user, User friend){
+        Friend friendInfo = friendRepository.findByUserAndFriendAndState(user, friend, 1);
+
+        if (friendInfo == null){
+            throw new NotFriendException();
+        }
+        friendInfo.setGuardian(!friendInfo.isGuardian());
+        friendRepository.save(friendInfo);
+    }
 }

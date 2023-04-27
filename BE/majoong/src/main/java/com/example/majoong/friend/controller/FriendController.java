@@ -15,7 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RequestMapping("/user")
@@ -87,6 +89,21 @@ public class FriendController {
         List<FriendDto> friends = friendService.getFriendsList(userId, isGuardian);
         ResponseData data = new ResponseData();
         data.setData(friends);
+        return data.builder();
+    }
+
+    @PutMapping("/guardian")
+    public ResponseEntity changeIsGuardian(@RequestBody FriendRequestDto friendInfo){
+        User user = userRepository.findById(friendInfo.getUserId()).orElseThrow(() -> new NoUserException());
+        User friend = userRepository.findById(friendInfo.getFriendId()).orElseThrow(() -> new NoUserException());
+        friendService.changeIsGuardian(user,friend);
+        ResponseData data = new ResponseData();
+        Map<String, Object> allFriendsList = new HashMap<>();
+        List<FriendDto> friendsNotGuardian = friendService.getFriendsList(user.getId(), false);
+        List<FriendDto> guardians = friendService.getFriendsList(user.getId(), true);
+        allFriendsList.put("friends",friendsNotGuardian);
+        allFriendsList.put("guardians", guardians);
+        data.setData(allFriendsList);
         return data.builder();
     }
 
