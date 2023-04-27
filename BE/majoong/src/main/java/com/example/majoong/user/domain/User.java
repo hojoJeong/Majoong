@@ -1,10 +1,12 @@
 package com.example.majoong.user.domain;
 
+import com.example.majoong.friend.domain.Friend;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,6 +32,11 @@ public class User {
     private boolean pushAlarm=true;
     private int alarmCount=0;
 
+    @OneToMany(mappedBy = "user")
+    private List<Friend> friends;
+
+    @OneToMany(mappedBy = "friend")
+    private List<Friend> friendOf;
     @PrePersist
     public void prePersist() {
         this.date = System.currentTimeMillis(); // 현재 시스템 시간으로 초기화
