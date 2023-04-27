@@ -99,9 +99,9 @@ public class FriendService {
         friendRepository.delete(friendInfo2);
     }
 
-    public List<FriendDto> getFriendsList(int userId){ //보호자 아닌 친구 리스트
+    public List<FriendDto> getFriendsList(int userId, boolean isGuardian){ //보호자 아닌 친구 리스트
         User user = userRepository.findById(userId).get();
-        List<Friend> friends = friendRepository.findAllByUserAndStateAndIsGuardian(user,1,false);
+        List<Friend> friends = friendRepository.findAllByUserAndStateAndIsGuardian(user,1,isGuardian);
         List<FriendDto> friendsInfo = new ArrayList<>();
 
         for (Friend friend : friends){

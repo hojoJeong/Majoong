@@ -80,11 +80,11 @@ public class FriendController {
         data.setMessage("친구 삭제");
         return data.builder();
     }
-    @GetMapping("/friends")
-    public ResponseEntity getFriendsList(HttpServletRequest request) {
+    @GetMapping("/friends/{isGuardian}")
+    public ResponseEntity getFriendsList(HttpServletRequest request, @PathVariable("isGuardian") boolean isGuardian) {
         String token = request.getHeader("Authorization").split(" ")[1];
         int userId = jwtTool.getUserIdFromToken(token);
-        List<FriendDto> friends = friendService.getFriendsList(userId);
+        List<FriendDto> friends = friendService.getFriendsList(userId, isGuardian);
         ResponseData data = new ResponseData();
         data.setData(friends);
         return data.builder();
