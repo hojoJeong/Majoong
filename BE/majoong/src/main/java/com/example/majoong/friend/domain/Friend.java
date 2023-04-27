@@ -23,12 +23,13 @@ public class Friend {
     private User friend;
     private String friendName;
     private int state;
-    private boolean isGuardian = false;
+    private boolean isGuardian;
 
     public Friend(User user, User friend, int state) {
         this.user = user;
         this.friend = friend;
         this.state = state;
+        this.isGuardian = false;
     }
 
     @PrePersist

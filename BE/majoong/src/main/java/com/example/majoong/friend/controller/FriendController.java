@@ -33,12 +33,9 @@ public class FriendController {
 
     @PostMapping("/friend")
     public ResponseEntity sendFriendRequest(@RequestBody FriendRequestDto friendRequest) {
-
         User user = userRepository.findById(friendRequest.getUserId()).orElseThrow(() -> new NoUserException());
         User friend = userRepository.findById(friendRequest.getFriendId()).orElseThrow(() -> new NoUserException());
-
         friendService.sendFriendRequest(user, friend);
-
         ResponseData data = new ResponseData();
         data.setMessage("친구요청 완료");
         return data.builder();
@@ -58,9 +55,7 @@ public class FriendController {
     public ResponseEntity acceptFriendRequest(@RequestBody FriendRequestDto friendRequest){
         User friend = userRepository.findById(friendRequest.getUserId()).orElseThrow(() -> new NoUserException());
         User user = userRepository.findById(friendRequest.getFriendId()).orElseThrow(() -> new NoUserException());
-
         friendService.acceptFriendRequest(user, friend);
-
         ResponseData data = new ResponseData();
         data.setMessage("친구 수락");
         return data.builder();
@@ -70,11 +65,19 @@ public class FriendController {
     public ResponseEntity denyFriendRequest(@RequestBody FriendRequestDto friendRequest){
         User friend = userRepository.findById(friendRequest.getUserId()).orElseThrow(() -> new NoUserException());
         User user = userRepository.findById(friendRequest.getFriendId()).orElseThrow(() -> new NoUserException());
-
         friendService.denyFriendRequest(user, friend);
-
         ResponseData data = new ResponseData();
         data.setMessage("친구요청 삭제");
+        return data.builder();
+    }
+
+    @DeleteMapping("/friend")
+    public ResponseEntity deleteFriend(@RequestBody FriendRequestDto friendRequest){
+        User user = userRepository.findById(friendRequest.getUserId()).orElseThrow(() -> new NoUserException());
+        User friend = userRepository.findById(friendRequest.getFriendId()).orElseThrow(() -> new NoUserException());
+        friendService.deleteFriend(user, friend);
+        ResponseData data = new ResponseData();
+        data.setMessage("친구 삭제");
         return data.builder();
     }
 }

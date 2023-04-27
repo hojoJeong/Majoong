@@ -2,6 +2,7 @@ package com.example.majoong.friend.service;
 
 import com.example.majoong.exception.ExistFriendException;
 import com.example.majoong.exception.NotExistFriendRequestException;
+import com.example.majoong.exception.NotFriendException;
 import com.example.majoong.friend.domain.Friend;
 import com.example.majoong.friend.dto.FriendDto;
 import com.example.majoong.friend.dto.FriendRequestDto;
@@ -63,7 +64,7 @@ public class FriendService {
         if (friendInfo1 == null){
             throw new NotExistFriendRequestException();
         }
-        Friend friendInfo2 = friendRepository.findByUserAndFriendAndState(user, friend, 0);
+        Friend friendInfo2 = friendRepository.findByUserAndFriendAndState(friend, user, 0);
         if (friendInfo2 == null){
             Friend newFriend = new Friend(friend, user, 1);
             friendRepository.save(newFriend);
@@ -87,5 +88,15 @@ public class FriendService {
         friendRepository.delete(friendInfo);
     }
 
+    public void deleteFriend(User user, User friend){
+        Friend friendInfo1 = friendRepository.findByUserAndFriendAndState(user, friend, 1);
+        Friend friendInfo2 = friendRepository.findByUserAndFriendAndState(friend, user, 1);
 
+        if (friendInfo1 == null||friendInfo2==null){
+            throw new NotFriendException();
+        }
+        friendRepository.delete(friendInfo1);
+        friendRepository.delete(friendInfo2);
+
+    }
 }
