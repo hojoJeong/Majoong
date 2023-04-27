@@ -56,18 +56,23 @@ public class FriendService {
     }
 
     public void acceptFriendRequest(User user, User friend){
-        Friend friendInfo = friendRepository.findByUserAndFriendAndState(user, friend, 0);
-        if (friendRepository.existsByUserAndFriendAndState(user, friend,1)) { //이미 친구
+        Friend friendInfo1 = friendRepository.findByUserAndFriendAndState(user, friend, 0);
+        if (friendRepository.existsByUserAndFriendAndState(user, friend,1)&&friendRepository.existsByUserAndFriendAndState(friend, user,1)) { //이미 친구
             throw new ExistFriendException();
         }
-        if (friendInfo == null){
+        if (friendInfo1 == null){
             throw new NotExistFriendRequestException();
         }
-        friendInfo.setState(1);
-        Friend newFriend = new Friend(friend, user, 1);
-        friendRepository.save(friendInfo);
-        friendRepository.save(newFriend);
-
+        Friend friendInfo2 = friendRepository.findByUserAndFriendAndState(user, friend, 0);
+        if (friendInfo2 == null){
+            Friend newFriend = new Friend(friend, user, 1);
+            friendRepository.save(newFriend);
+        } else {
+            friendInfo2.setState(1);
+            friendRepository.save(friendInfo2);
+        }
+        friendInfo1.setState(1);
+        friendRepository.save(friendInfo1);
     }
 
     public void denyFriendRequest(User user, User friend){
