@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.majoong">
+    package="com.ssafy.majoong">
    <application
         android:label="majoong"
         android:name="${applicationName}"
