@@ -66,11 +66,11 @@ public class UserController {
     }
 
     @PostMapping("/retoken")
-    public ResponseEntity reToken(@RequestBody ReTokenDto token) {
-        TokenDto newToken = userService.reToken(token);
+    public ResponseEntity reToken(HttpServletRequest request) {
+        TokenDto newToken = userService.reToken(request);
         ResponseData data = new ResponseData();
         data.setData(newToken);
-        data.setMessage("토큰 재발행 성공");
+        data.setMessage("AccessToken 재발행 성공");
         return data.builder();
     }
 

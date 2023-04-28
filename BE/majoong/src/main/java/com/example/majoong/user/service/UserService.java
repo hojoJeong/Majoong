@@ -106,13 +106,16 @@ public class UserService {
         return login(user.getSocialPK());
     }
 
-    public TokenDto reToken(ReTokenDto token){
-        if(token.getRefreshToken() == null
-                || !jwtTool.validateToken(token.getRefreshToken())) {
+    public TokenDto reToken(HttpServletRequest request){
+        String token = request.getHeader("Authorization").split(" ")[1];
+        if(token == null
+                || !jwtTool.validateToken(token)) {
             throw new RefreshTokenException();
         }
-        String newAccessToken = "Bearer " + jwtTool.createAccessToken(token.getUserId());
-        TokenDto newToken = new TokenDto(token.getUserId(), newAccessToken, token.getRefreshToken());
+        int userId = jwtTool.getUserIdFromToken(token);
+
+        String newAccessToken = "Bearer " + jwtTool.createAccessToken(userId);
+        TokenDto newToken = new TokenDto(userId, newAccessToken,token);
         return newToken;
     }
 
