@@ -28,7 +28,7 @@ public class UserService {
         List<User> userList = userRepository.findAll();
         return userList;
     }
-    public void createUser(CreateUserDto createUserDto) {
+    public void signupUser(CreateUserDto createUserDto) {
 
         String phoneNumber = createUserDto.getPhoneNumber();
         String nickname = createUserDto.getNickname();
@@ -39,6 +39,11 @@ public class UserService {
 
         User existingUser = userRepository.findByPhoneNumber(phoneNumber);
         if (existingUser != null) {
+            throw new DuplicatePhoneNumberException();
+        }
+
+        User existingUser2 = userRepository.findByOauth(oauth);
+        if (existingUser2 != null) {
             throw new DuplicatePhoneNumberException();
         }
 
