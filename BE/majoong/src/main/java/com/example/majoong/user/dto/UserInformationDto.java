@@ -9,7 +9,7 @@ public class UserInformationDto {
     private String phoneNumber;
     private String nickname;
     private String profileImage;
-    private int alarmCount;
+    private long alarmCount;
 
 
 }
