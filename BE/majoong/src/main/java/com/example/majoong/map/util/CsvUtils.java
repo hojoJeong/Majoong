@@ -125,7 +125,7 @@ public class CsvUtils {
     public enum EntityCategory {
         POLICE("경찰서.csv"),
         STORE("편의점.csv"),
-        CCTV("CCTV.csv");
+        CCTV("CCTV.txt");
 
         private final String fileName;
 

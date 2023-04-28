@@ -4,23 +4,21 @@ import com.example.majoong.map.domain.Bell;
 import com.example.majoong.map.domain.Cctv;
 import com.example.majoong.map.domain.Police;
 import com.example.majoong.map.domain.Store;
-import com.example.majoong.map.dto.PoliceDto;
 import com.example.majoong.map.repository.BellRepository;
 import com.example.majoong.map.repository.CctvRepository;
 import com.example.majoong.map.repository.PoliceRepository;
 import com.example.majoong.map.repository.StoreRepository;
 import com.example.majoong.map.util.CsvUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.data.geo.Point;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.redis.core.GeoOperations;
-import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -29,10 +27,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class MapDataService {
-    private static final String CACHE_KEY = "POLICE";
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ObjectMapper objectMapper;
-    private HashOperations<String, String, String> hashOperations;
     private final PoliceRepository policeRepository;
     private final StoreRepository storeRepository;
     private final CctvRepository cctvRepository;
@@ -42,22 +37,21 @@ public class MapDataService {
 //        savePoliceToRedis();
 //        saveStoreToRedis();
 //        saveCctvToRedis();
-//        saveBellToRedis();
+        saveBellToRedis();
         log.info("save success");
     }
 
     public void saveCsvToMysql() {
-//        List<Police> policeList = mapRepositoryService.loadPoliceList();
-//        List<Store> storeList = mapRepositoryService.loadStoreList();
-//        List<Cctv> cctvList = mapRepositoryService.loadCctvList();
-//        List<Bell> bellList = mapRepositoryService.loadBellList();
+//        List<Police> policeList = loadPoliceList();
+//        List<Store> storeList = loadStoreList();
+//        List<Cctv> cctvList = loadCctvList();
+        List<Bell> bellList = loadBellList();
         log.info("load success");
 
-
-//        mapRepositoryService.saveEntity(policeList, policeRepository);
-//        mapRepositoryService.saveEntity(storeList, storeRepository);
-//        mapRepositoryService.saveEntity(cctvList, cctvRepository);
-//        mapRepositoryService.saveEntity(bellList, bellRepository);
+//        saveEntity(policeList, policeRepository);
+//        saveEntity(storeList, storeRepository);
+//        saveEntity(cctvList, cctvRepository);
+        saveEntity(bellList, bellRepository);
         log.info("save success");
     }
 
@@ -105,6 +99,13 @@ public class MapDataService {
                 .collect(Collectors.toList());
     }
 
+    public <T> List<T> saveEntity(List<T> entityList, JpaRepository<T, Long> repository) {
+        if (CollectionUtils.isEmpty(entityList)) {
+            return Collections.emptyList();
+        }
+        return repository.saveAll(entityList);
+    }
+
     private void savePoliceToRedis() {
         String key = "police";
         List<Police> policeList = policeRepository.findAll();
@@ -113,7 +114,7 @@ public class MapDataService {
             String address = police.getAddress();
             Double longitude = police.getLongitude();
             Double latitude = police.getLatitude();
-            String member = id + " : " + address;
+            String member = id + "_" + address;
             if (Objects.isNull(police)) {
                 log.error("value가 비었습니다.");
                 return;
@@ -137,7 +138,7 @@ public class MapDataService {
             String address = store.getAddress();
             Double longitude = store.getLongitude();
             Double latitude = store.getLatitude();
-            String member = id + " : " + address;
+            String member = id + "_" + address;
             if (Objects.isNull(store)) {
                 log.error("value가 비었습니다.");
                 return;
@@ -161,7 +162,7 @@ public class MapDataService {
             String address = cctv.getAddress();
             Double longitude = cctv.getLongitude();
             Double latitude = cctv.getLatitude();
-            String member = id + " : " + address;
+            String member = id + "_" + address;
             if (Objects.isNull(cctv)) {
                 log.error("value가 비었습니다.");
                 return;
@@ -185,7 +186,7 @@ public class MapDataService {
             String address = bell.getAddress();
             Double longitude = bell.getLongitude();
             Double latitude = bell.getLatitude();
-            String member = id + " : " + address;
+            String member = id + "_" + address;
             if (Objects.isNull(bell)) {
                 log.error("value가 비었습니다.");
                 return;
@@ -199,14 +200,5 @@ public class MapDataService {
                 log.error("저장실패", e.getMessage());
             }
         }
-    }
-
-    // Reids에 hash로 넣을 때 사용
-    private String serializePoliceDto(PoliceDto policeDto) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(policeDto);
-    }
-
-    private PoliceDto deserializePoliceDto(String value) throws JsonProcessingException {
-        return objectMapper.readValue(value, PoliceDto.class);
     }
 }

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(value = "/map")
+@RequestMapping(value = "/api/map")
 public class MapController {
     @Autowired
     private final MapFacilityService mapFacilityService;
@@ -25,7 +25,6 @@ public class MapController {
 
     @GetMapping("/facility")
     public ResponseEntity getFacility(@RequestBody MapFacilityRequestDto position) {
-        System.out.println(position);
         MapFacilityResponseDto facilities = mapFacilityService.getMapFacilities(position);
 
         ResponseData data = new ResponseData();
