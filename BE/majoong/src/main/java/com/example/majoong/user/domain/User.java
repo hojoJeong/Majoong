@@ -25,6 +25,7 @@ public class User {
     private String nickname;
     private String profileImage;
     private String fcmToken;
+    @Column(unique = true)
     private String oauth;
     private long date;
     private int state=1;
