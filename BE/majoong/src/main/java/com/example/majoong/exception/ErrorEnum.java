@@ -3,7 +3,7 @@ package com.example.majoong.exception;
 public enum ErrorEnum {
     INVALID_REFRESHTOKEN("refreshToken 만료", 401),
     DUPLICATE_PHONENUMBER("이미 가입된 휴대폰번호입니다.", 600),
-    DUPLICATE_OAUTH("이미 가입된 OAUTH입니다.",600),
+    DUPLICATE_SOCIAL_PK("중복된 social PK 입니다.",600),
     NO_USER("가입된 회원이 아닙니다.", 601),
     DELETED_USER("탈퇴한 계정입니다.", 602),
     EXIST_FRIEND("이미 친구입니다.", 603),

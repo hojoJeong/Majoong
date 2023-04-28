@@ -51,7 +51,7 @@ public class UserService {
         String nickname = createUserDto.getNickname();
         String profileImage = createUserDto.getProfileImage();
         String pinNumber = createUserDto.getPinNumber();
-        String oauth = createUserDto.getOauth();
+        String socialPK = createUserDto.getSocialPK();
 
 
         User existingUser = userRepository.findByPhoneNumber(phoneNumber);
@@ -59,9 +59,9 @@ public class UserService {
             throw new DuplicatePhoneNumberException();
         }
 
-        User existingUser2 = userRepository.findByOauth(oauth);
+        User existingUser2 = userRepository.findBySocialPK(socialPK);
         if (existingUser2 != null) {
-            throw new DuplicateOauthException();
+            throw new DuplicateSocialPKException();
         }
 
         User user = new User();
@@ -69,7 +69,7 @@ public class UserService {
         user.setNickname(nickname);
         user.setProfileImage(profileImage);
         user.setPinNumber(pinNumber);
-        user.setOauth(oauth);
+        user.setSocialPK(socialPK);
 
         userRepository.save(user);
     }
@@ -82,7 +82,7 @@ public class UserService {
     }
 
     public ResponseUserDto Login(LoginDto info){
-        User findUser = userRepository.findByOauth(info.getOauth());
+        User findUser = userRepository.findBySocialPK(info.getSocialPK());
         if (findUser == null){
             throw new NoUserException();
         }

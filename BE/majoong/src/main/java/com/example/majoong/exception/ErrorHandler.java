@@ -13,9 +13,9 @@ public class ErrorHandler {
         return data.builder();
     }
 
-    @ExceptionHandler(DuplicateOauthException.class)
-    public ResponseEntity<?> DuplicateOauthException() {
-        ResponseData data = new ResponseData(ErrorEnum.DUPLICATE_OAUTH);
+    @ExceptionHandler(DuplicateSocialPKException.class)
+    public ResponseEntity<?> DuplicateSocialPKException() {
+        ResponseData data = new ResponseData(ErrorEnum.DUPLICATE_SOCIAL_PK);
         return data.builder();
     }
     @ExceptionHandler(NoUserException.class)
