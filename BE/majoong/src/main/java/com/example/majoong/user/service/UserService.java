@@ -8,6 +8,7 @@ import com.example.majoong.user.dto.*;
 import com.example.majoong.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +21,8 @@ import java.util.Optional;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
+
+    private final RedisTemplate redisTemplate;
 
     private final JwtTool jwtTool;
 
@@ -36,7 +39,9 @@ public class UserService {
         userInfo.setPhoneNumber(user.getPhoneNumber());
         userInfo.setNickname(user.getNickname());
         userInfo.setProfileImage(user.getProfileImage());
-        userInfo.setAlarmCount(user.getAlarmCount());
+
+        int count = redisTemplate.keys("notification:" + user.getId() + "_" + "*").size();
+        userInfo.setAlarmCount(count);
 
         return userInfo;
     }

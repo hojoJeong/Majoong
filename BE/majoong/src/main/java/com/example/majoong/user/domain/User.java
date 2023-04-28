@@ -31,7 +31,6 @@ public class User {
     private int state=1;
     private String pinNumber;
     private boolean pushAlarm=true;
-    private int alarmCount=0;
 
     @PrePersist
     public void prePersist() {
