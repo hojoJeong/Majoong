@@ -7,6 +7,8 @@ import com.example.majoong.friend.domain.Friend;
 import com.example.majoong.friend.dto.FriendDto;
 import com.example.majoong.friend.dto.FriendRequestDto;
 import com.example.majoong.friend.repository.FriendRepository;
+import com.example.majoong.notification.domain.Notification;
+import com.example.majoong.notification.service.NotificationService;
 import com.example.majoong.user.domain.User;
 import com.example.majoong.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,9 @@ public class FriendService {
 
     @Autowired
     private UserRepository userRepository;
+
+    private final NotificationService notificationService;
+
     public void sendFriendRequest(User user, User friend) {
 
         if (friendRepository.existsByUserAndFriendAndState(user, friend,0)) { //이미 친구요청 보낸 상태
@@ -38,6 +43,9 @@ public class FriendService {
 
         Friend newFriend = new Friend(user, friend,0);
         friendRepository.save(newFriend);
+
+        Notification notification = new Notification(friend.getId(),user.getId(),1);
+        notificationService.saveNotification(notification);
     }
 
     public List<FriendDto> searchFriendRequests(int userId){

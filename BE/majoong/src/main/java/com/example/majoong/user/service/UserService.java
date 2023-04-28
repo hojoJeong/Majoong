@@ -4,6 +4,7 @@ import com.example.majoong.exception.DuplicatePhoneNumberException;
 import com.example.majoong.exception.DeletedUserException;
 import com.example.majoong.exception.NoUserException;
 import com.example.majoong.exception.RefreshTokenException;
+import com.example.majoong.notification.service.NotificationService;
 import com.example.majoong.tools.JwtTool;
 import com.example.majoong.user.domain.User;
 import com.example.majoong.user.dto.*;
@@ -22,6 +23,7 @@ import java.util.Optional;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
+
     private final JwtTool jwtTool;
 
     public List<User> getUserList() {
