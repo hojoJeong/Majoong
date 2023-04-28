@@ -35,7 +35,7 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity joinUser(@RequestBody CreateUserDto user){
         ResponseData data = new ResponseData();
-        userService.createUser(user);
+        userService.signupUser(user);
         data.setStatus(200);
         data.setMessage("회원가입 성공");
         return data.builder();

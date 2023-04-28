@@ -12,6 +12,12 @@ public class ErrorHandler {
         ResponseData data = new ResponseData(ErrorEnum.DUPLICATE_PHONENUMBER);
         return data.builder();
     }
+
+    @ExceptionHandler(DuplicateOauthException.class)
+    public ResponseEntity<?> DuplicateOauthException() {
+        ResponseData data = new ResponseData(ErrorEnum.DUPLICATE_OAUTH);
+        return data.builder();
+    }
     @ExceptionHandler(NoUserException.class)
     public ResponseEntity<?> NoUserException() {
         ResponseData data = new ResponseData(ErrorEnum.NO_USER);
