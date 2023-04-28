@@ -26,6 +26,7 @@ public class UserInterceptor implements HandlerInterceptor {
         String token = request.getHeader("Authorization").split(" ")[1];
         //accessToken 만료
         if( token == null || !jwtTool.validateToken(token)){
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return false;
         }
 
