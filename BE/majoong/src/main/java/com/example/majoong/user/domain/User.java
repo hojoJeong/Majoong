@@ -26,7 +26,7 @@ public class User {
     private String profileImage;
     private String fcmToken;
     @Column(unique = true)
-    private String oauth;
+    private String socialPK;
     private long date;
     private int state=1;
     private String pinNumber;
