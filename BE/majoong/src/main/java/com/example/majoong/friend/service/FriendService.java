@@ -41,7 +41,6 @@ public class FriendService {
         if (friendRepository.existsByUserAndFriendAndState(user, friend,1)) { //이미 친구
             throw new ExistFriendException();
         }
-
         Friend newFriend = new Friend(user, friend,0);
         friendRepository.save(newFriend);
 
@@ -109,7 +108,7 @@ public class FriendService {
         friendRepository.delete(friendInfo2);
     }
 
-    public List<FriendDto> getFriendsList(int userId, boolean isGuardian){ //보호자 아닌 친구 리스트
+    public List<FriendDto> getFriendsList(int userId, boolean isGuardian){
         User user = userRepository.findById(userId).get();
         List<Friend> friends = friendRepository.findAllByUserAndStateAndIsGuardian(user,1,isGuardian);
         List<FriendDto> friendsInfo = new ArrayList<>();
@@ -134,5 +133,21 @@ public class FriendService {
         }
         friendInfo.setGuardian(!friendInfo.isGuardian());
         friendRepository.save(friendInfo);
+    }
+
+    public FriendDto changeFriendName(User user, User friend, String friendName){
+        Friend friendInfo = friendRepository.findByUserAndFriendAndState(user, friend, 1);
+
+        if (friendInfo == null){
+            throw new NotFriendException();
+        }
+        friendInfo.setFriendName(friendName);
+        friendRepository.save(friendInfo);
+        FriendDto newFriendInfo = new FriendDto();
+        newFriendInfo.setUserId(friend.getId());
+        newFriendInfo.setNickname(friendInfo.getFriendName());
+        newFriendInfo.setPhoneNumber(friend.getPhoneNumber());
+        newFriendInfo.setProfileImage(friend.getProfileImage());
+        return newFriendInfo;
     }
 }
