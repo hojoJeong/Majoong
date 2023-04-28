@@ -1,0 +1,1 @@
+final KAKAO_NATIVE_KEY = 'f2554a6cc9cda4163e26915d2213a0a2';
