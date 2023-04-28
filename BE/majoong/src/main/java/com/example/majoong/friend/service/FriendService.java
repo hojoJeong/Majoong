@@ -46,6 +46,7 @@ public class FriendService {
 
         Notification notification = new Notification(friend.getId(),user.getId(),1);
         notificationService.saveNotification(notification);
+
     }
 
     public List<FriendDto> searchFriendRequests(int userId){
