@@ -36,13 +36,14 @@ dependencies:
   cupertino_icons: ^1.0.2
 
   kakao_flutter_sdk_user: ^1.4.1
-
   flutter_riverpod: ^2.3.6
-
   flutter_secure_storage: ^8.0.0
 
   retrofit: ^3.3.1
   dio: ^4.0.6
+
+  smooth_page_indicator: ^1.1.0
+  checkbox_formfield: ^0.2.0
 
 dev_dependencies:
   flutter_test:
@@ -65,6 +66,11 @@ dev_dependencies:
 flutter:
   assets:
     - res/majoong_logo.jpg
+    - res/logo_kakao.png
+    - res/kakao_login_large_wide.png
+    - res/onboarding1.png
+    - res/onboarding2.png
+    - res/onboarding3.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

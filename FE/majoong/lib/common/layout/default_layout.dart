@@ -20,7 +20,11 @@ class DefaultLayout extends StatelessWidget {
     return Scaffold(
       backgroundColor: backgroundColor ?? Colors.white,
       appBar: AppBar(
-        title: Text(title),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+        title: Text(title,),
         actions: actions,
       ),
       body:
