@@ -25,9 +25,9 @@ public class UserController {
     private final MessageService messageService;
 
     @GetMapping
-    public ResponseEntity userList() {
+    public ResponseEntity getUser(HttpServletRequest request) {
         ResponseData data = new ResponseData();
-        data.setData(userService.getUserList());
+        data.setData(userService.getUser(request));
         data.setMessage("회원정보 조회 성공");
         return data.builder();
     }
