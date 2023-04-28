@@ -9,6 +9,7 @@ import com.example.majoong.map.repository.BellRepository;
 import com.example.majoong.map.repository.CctvRepository;
 import com.example.majoong.map.repository.PoliceRepository;
 import com.example.majoong.map.repository.StoreRepository;
+import com.example.majoong.map.util.CsvUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +23,12 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MapRedisService {
+public class MapDataService {
     private static final String CACHE_KEY = "POLICE";
     private final RedisTemplate<String, Object> redisTemplate;
     private final ObjectMapper objectMapper;
@@ -36,17 +38,71 @@ public class MapRedisService {
     private final CctvRepository cctvRepository;
     private final BellRepository bellRepository;
 
-    @PostConstruct
-    public void init() {
-        this.hashOperations = redisTemplate.opsForHash();
-    }
-
     public void saveMysqlToRedisGeospatial() {
 //        savePoliceToRedis();
 //        saveStoreToRedis();
 //        saveCctvToRedis();
-        saveBellToRedis();
+//        saveBellToRedis();
         log.info("save success");
+    }
+
+    public void saveCsvToMysql() {
+//        List<Police> policeList = mapRepositoryService.loadPoliceList();
+//        List<Store> storeList = mapRepositoryService.loadStoreList();
+//        List<Cctv> cctvList = mapRepositoryService.loadCctvList();
+//        List<Bell> bellList = mapRepositoryService.loadBellList();
+        log.info("load success");
+
+
+//        mapRepositoryService.saveEntity(policeList, policeRepository);
+//        mapRepositoryService.saveEntity(storeList, storeRepository);
+//        mapRepositoryService.saveEntity(cctvList, cctvRepository);
+//        mapRepositoryService.saveEntity(bellList, bellRepository);
+        log.info("save success");
+    }
+
+    public List<Police> loadPoliceList() {
+        return CsvUtils.convertToPoliceDtoList("police")
+                .stream().map(policeDto -> Police.builder()
+                        .policeId(policeDto.getPoliceId())
+                        .longitude(policeDto.getLongitude())
+                        .latitude(policeDto.getLatitude())
+                        .address(policeDto.getAddress())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    public List<Store> loadStoreList() {
+        return CsvUtils.convertToStoreDtoList("store")
+                .stream().map(storeDto -> Store.builder()
+                        .storeId(storeDto.getStoreId())
+                        .longitude(storeDto.getLongitude())
+                        .latitude(storeDto.getLatitude())
+                        .address(storeDto.getAddress())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    public List<Cctv> loadCctvList() {
+        return CsvUtils.convertToCctvDtoList("cctv")
+                .stream().map(cctvDto -> Cctv.builder()
+                        .cctvId(cctvDto.getCctvId())
+                        .longitude(cctvDto.getLongitude())
+                        .latitude(cctvDto.getLatitude())
+                        .address(cctvDto.getAddress())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    public List<Bell> loadBellList() {
+        return CsvUtils.convertToBellDtoList("bell")
+                .stream().map(bellDto -> Bell.builder()
+                        .bellId(bellDto.getBellId())
+                        .longitude(bellDto.getLongitude())
+                        .latitude(bellDto.getLatitude())
+                        .address(bellDto.getAddress())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     private void savePoliceToRedis() {
@@ -145,6 +201,7 @@ public class MapRedisService {
         }
     }
 
+    // Reids에 hash로 넣을 때 사용
     private String serializePoliceDto(PoliceDto policeDto) throws JsonProcessingException {
         return objectMapper.writeValueAsString(policeDto);
     }

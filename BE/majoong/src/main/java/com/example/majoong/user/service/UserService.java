@@ -1,6 +1,7 @@
 package com.example.majoong.user.service;
 
-import com.example.majoong.exception.DuplicateUserException;
+import com.example.majoong.exception.DuplicatePhoneNumberException;
+import com.example.majoong.exception.DeletedUserException;
 import com.example.majoong.exception.NoUserException;
 import com.example.majoong.exception.RefreshTokenException;
 import com.example.majoong.tools.JwtTool;
@@ -11,6 +12,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +24,10 @@ public class UserService {
     private UserRepository userRepository;
     private final JwtTool jwtTool;
 
+    public List<User> getUserList() {
+        List<User> userList = userRepository.findAll();
+        return userList;
+    }
     public void createUser(CreateUserDto createUserDto) {
 
         String phoneNumber = createUserDto.getPhoneNumber();
@@ -30,7 +39,7 @@ public class UserService {
 
         User existingUser = userRepository.findByPhoneNumber(phoneNumber);
         if (existingUser != null) {
-            throw new DuplicateUserException();
+            throw new DuplicatePhoneNumberException();
         }
 
         User user = new User();
@@ -55,6 +64,9 @@ public class UserService {
         if (findUser == null){
             throw new NoUserException();
         }
+        if (findUser.getState() == 0) {
+            throw new DeletedUserException();
+        }
         TokenDto token = generateUser(findUser.getId());
         ResponseUserDto user = new ResponseUserDto();
         user.setUserId(findUser.getId());
@@ -74,5 +86,22 @@ public class UserService {
         TokenDto newToken = new TokenDto(token.getUserId(), newAccessToken, token.getRefreshToken());
         return newToken;
     }
+
+    public String withdrawal(HttpServletRequest request) {
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+
+        Optional<User> user = userRepository.findById(userId);
+        if (user == null){
+            throw new NoUserException();
+        }
+
+        user.get().setState(0);
+        userRepository.save(user.get());
+
+        return "회원탈퇴 성공";
+    }
+
+
 
 }

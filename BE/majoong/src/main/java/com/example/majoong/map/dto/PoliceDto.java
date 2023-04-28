@@ -1,15 +1,13 @@
 package com.example.majoong.map.dto;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PoliceDto {
+public class PoliceDto extends FacilityDto {
     private Long policeId;
-    private double longitude;
-    private double latitude;
-    private String address;
 }

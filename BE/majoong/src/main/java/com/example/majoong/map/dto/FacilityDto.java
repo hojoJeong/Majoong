@@ -8,6 +8,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StoreDto extends FacilityDto{
-    private Long storeId;
+public class FacilityDto {
+    private double longitude;
+    private double latitude;
+    private String address;
 }

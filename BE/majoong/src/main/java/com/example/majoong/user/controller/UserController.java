@@ -1,14 +1,19 @@
 package com.example.majoong.user.controller;
 
-import com.example.majoong.exception.RefreshTokenException;
 import com.example.majoong.response.ResponseData;
-import com.example.majoong.tools.JwtTool;
 import com.example.majoong.user.dto.*;
+import com.example.majoong.user.service.MessageService;
 import com.example.majoong.user.service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import javax.servlet.http.HttpServletRequest;
 
 
 @RequestMapping("/user")
@@ -17,9 +22,18 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class UserController {
     private final UserService userService;
+    private final MessageService messageService;
+
+    @GetMapping
+    public ResponseEntity userList() {
+        ResponseData data = new ResponseData();
+        data.setData(userService.getUserList());
+        data.setMessage("회원정보 조회 성공");
+        return data.builder();
+    }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> joinUser(@RequestBody CreateUserDto user){
+    public ResponseEntity joinUser(@RequestBody CreateUserDto user){
         ResponseData data = new ResponseData();
         userService.createUser(user);
         data.setStatus(200);
@@ -27,26 +41,53 @@ public class UserController {
         return data.builder();
     }
 
-
     @PostMapping("/login")
-    public ResponseUserDto Login(@RequestBody LoginDto info) {
+    public ResponseEntity login(@RequestBody LoginDto info) {
         ResponseUserDto user = userService.Login(info);
-        return user;
+        ResponseData data = new ResponseData();
+        data.setData(user);
+        data.setMessage("로그인 성공");
+        return data.builder();
+    }
+
+    @PostMapping("/withdrawal")
+    public ResponseEntity withdrawal(HttpServletRequest request) {
+        ResponseData data = new ResponseData();
+        data.setMessage(userService.withdrawal(request));
+        return data.builder();
     }
 
     @PostMapping("/retoken")
-    public ResponseEntity<?> reToken(@RequestBody ReTokenDto token) {
+    public ResponseEntity reToken(@RequestBody ReTokenDto token) {
         TokenDto newToken = userService.reToken(token);
         ResponseData data = new ResponseData();
         data.setData(newToken);
+        data.setMessage("토큰 재발행 성공");
         return data.builder();
     }
 
     @GetMapping("/test")
-    public ResponseEntity<?> test() {
+    public ResponseEntity test() {
         ResponseData data = new ResponseData();
         data.setData("하잉~");
         return data.builder();
     }
+
+    @PostMapping("/auth")
+    public ResponseEntity<?> sendAuthNumber(@RequestBody PhoneNumberDto info) throws NoSuchAlgorithmException, URISyntaxException, InvalidKeyException, JsonProcessingException, UnsupportedEncodingException {
+        ResponseData data = new ResponseData();
+        data.setData(messageService.sendMessage(info.getPhoneNumber()));
+        return data.builder();
+    }
+
+    @PostMapping("/auth/verify")
+    public ResponseEntity<?> verifyAuthNumber(@RequestBody VerificationNumberDto info) {
+        ResponseData data = new ResponseData();
+        if (messageService.verifyNumber(info)){
+            data.setMessage("인증 완료");
+        }
+        return data.builder();
+    }
+
 
 }

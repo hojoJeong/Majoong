@@ -20,5 +20,11 @@ spring:
 jwt:
   token:
     secret: ${JWT_SECRET_KEY}
-  exclude-path: /user/login, /user/signup, /user/retoken
+  exclude-path: /user/login, /user/signup, /user/retoken, /user/auth, /user/auth/verify
   add-path: /user/**
+
+naver:
+  access-key : ${NAVER_ACCESS_KEY}
+  secret-key : ${NAVER_SERVICE_KEY}
+  sms :
+    service-id : ${SMS_SERVICE_ID}
