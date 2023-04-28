@@ -81,8 +81,8 @@ public class UserService {
         return user;
     }
 
-    public ResponseUserDto Login(LoginDto info){
-        User findUser = userRepository.findBySocialPK(info.getSocialPK());
+    public ResponseUserDto login(String socialPK){
+        User findUser = userRepository.findBySocialPK(socialPK);
         if (findUser == null){
             throw new NoUserException();
         }
@@ -97,6 +97,13 @@ public class UserService {
         user.setPhoneNumber(findUser.getPhoneNumber());
         user.setPinNumber(findUser.getPinNumber());
         return user;
+    }
+
+    public ResponseUserDto autoLogin(HttpServletRequest request){
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+        User user = userRepository.findById(userId).get();
+        return login(user.getSocialPK());
     }
 
     public TokenDto reToken(ReTokenDto token){
