@@ -51,7 +51,7 @@ public class UserService {
         String nickname = createUserDto.getNickname();
         String profileImage = createUserDto.getProfileImage();
         String pinNumber = createUserDto.getPinNumber();
-        String oauth = createUserDto.getOauth();
+        String socialPK = createUserDto.getSocialPK();
 
 
         User existingUser = userRepository.findByPhoneNumber(phoneNumber);
@@ -59,9 +59,9 @@ public class UserService {
             throw new DuplicatePhoneNumberException();
         }
 
-        User existingUser2 = userRepository.findByOauth(oauth);
+        User existingUser2 = userRepository.findBySocialPK(socialPK);
         if (existingUser2 != null) {
-            throw new DuplicateOauthException();
+            throw new DuplicateSocialPKException();
         }
 
         User user = new User();
@@ -69,7 +69,7 @@ public class UserService {
         user.setNickname(nickname);
         user.setProfileImage(profileImage);
         user.setPinNumber(pinNumber);
-        user.setOauth(oauth);
+        user.setSocialPK(socialPK);
 
         userRepository.save(user);
     }
@@ -81,8 +81,8 @@ public class UserService {
         return user;
     }
 
-    public ResponseUserDto Login(LoginDto info){
-        User findUser = userRepository.findByOauth(info.getOauth());
+    public ResponseUserDto login(String socialPK){
+        User findUser = userRepository.findBySocialPK(socialPK);
         if (findUser == null){
             throw new NoUserException();
         }
@@ -97,6 +97,13 @@ public class UserService {
         user.setPhoneNumber(findUser.getPhoneNumber());
         user.setPinNumber(findUser.getPinNumber());
         return user;
+    }
+
+    public ResponseUserDto autoLogin(HttpServletRequest request){
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+        User user = userRepository.findById(userId).get();
+        return login(user.getSocialPK());
     }
 
     public TokenDto reToken(ReTokenDto token){

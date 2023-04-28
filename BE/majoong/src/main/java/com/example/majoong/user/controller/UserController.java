@@ -43,13 +43,21 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody LoginDto info) {
-        ResponseUserDto user = userService.Login(info);
+        ResponseUserDto user = userService.login(info.getSocialPK());
         ResponseData data = new ResponseData();
         data.setData(user);
         data.setMessage("로그인 성공");
         return data.builder();
     }
 
+    @PostMapping("/auto-login")
+    public ResponseEntity autoLogin(HttpServletRequest request) {
+        ResponseUserDto user = userService.autoLogin(request);
+        ResponseData data = new ResponseData();
+        data.setData(user);
+        data.setMessage("자동 로그인");
+        return data.builder();
+    }
     @PostMapping("/withdrawal")
     public ResponseEntity withdrawal(HttpServletRequest request) {
         ResponseData data = new ResponseData();
