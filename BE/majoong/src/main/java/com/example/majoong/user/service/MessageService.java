@@ -142,8 +142,6 @@ public class MessageService {
         return encodeBase64String;
     }
 
-    public void sendDataToRedis(AuthNumberDto info){
-    }
 
 
 }

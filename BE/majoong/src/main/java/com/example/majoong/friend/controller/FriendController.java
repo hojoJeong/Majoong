@@ -2,6 +2,7 @@ package com.example.majoong.friend.controller;
 import com.example.majoong.exception.NoUserException;
 import com.example.majoong.friend.domain.Friend;
 import com.example.majoong.friend.dto.FriendDto;
+import com.example.majoong.friend.dto.FriendNameDto;
 import com.example.majoong.friend.dto.FriendRequestDto;
 import com.example.majoong.friend.service.FriendService;
 import com.example.majoong.response.ResponseData;
@@ -108,4 +109,14 @@ public class FriendController {
         return data.builder();
     }
 
+    @PutMapping("/friend")
+    public ResponseEntity changeFriendName(@RequestBody FriendNameDto friendNameDto){
+        User user = userRepository.findById(friendNameDto.getUserId()).orElseThrow(() -> new NoUserException());
+        User friend = userRepository.findById(friendNameDto.getFriendId()).orElseThrow(() -> new NoUserException());
+        FriendDto newFriendInfo = friendService.changeFriendName(user,friend, friendNameDto.getFriendName());
+        ResponseData data = new ResponseData();
+        data.setMessage("친구 이름 변경");
+        data.setData(newFriendInfo);
+        return data.builder();
+    }
 }

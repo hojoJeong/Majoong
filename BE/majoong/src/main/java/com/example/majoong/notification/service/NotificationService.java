@@ -37,7 +37,6 @@ public class NotificationService {
 
     public void deleteNotification(String notificationId) {
         String key = "notification:" + notificationId;
-        System.out.println(key);
         redisTemplate.delete(key);
     }
 

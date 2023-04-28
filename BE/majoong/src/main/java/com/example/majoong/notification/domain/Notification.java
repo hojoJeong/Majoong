@@ -10,10 +10,10 @@ import lombok.NoArgsConstructor;
 @Data
 public class Notification {
 
-    String id;
-    String toId;
-    String fromId;
-    String type;
+    String id; //notificationId
+    String toId; //알림받은사람
+    String fromId; //알림보낸사람
+    String type; //1:친구요청, 2:마중요청
     String date=Long.toString(System.currentTimeMillis());
 
     public Notification(int toId, int fromId, int type) {

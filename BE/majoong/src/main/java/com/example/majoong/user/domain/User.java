@@ -33,11 +33,6 @@ public class User {
     private boolean pushAlarm=true;
     private int alarmCount=0;
 
-    @OneToMany(mappedBy = "user")
-    private List<Friend> friends;
-
-    @OneToMany(mappedBy = "friend")
-    private List<Friend> friendOf;
     @PrePersist
     public void prePersist() {
         this.date = System.currentTimeMillis(); // 현재 시스템 시간으로 초기화
