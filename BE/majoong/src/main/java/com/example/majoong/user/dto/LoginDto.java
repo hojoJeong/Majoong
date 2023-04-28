@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class LoginDto {
 
-    private String oauth;
+    private String socialPK;
 }

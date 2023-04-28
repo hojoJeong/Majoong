@@ -25,9 +25,9 @@ public class UserController {
     private final MessageService messageService;
 
     @GetMapping
-    public ResponseEntity userList() {
+    public ResponseEntity getUser(HttpServletRequest request) {
         ResponseData data = new ResponseData();
-        data.setData(userService.getUserList());
+        data.setData(userService.getUser(request));
         data.setMessage("회원정보 조회 성공");
         return data.builder();
     }
@@ -35,7 +35,7 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity joinUser(@RequestBody CreateUserDto user){
         ResponseData data = new ResponseData();
-        userService.createUser(user);
+        userService.signupUser(user);
         data.setStatus(200);
         data.setMessage("회원가입 성공");
         return data.builder();
@@ -43,13 +43,21 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody LoginDto info) {
-        ResponseUserDto user = userService.Login(info);
+        ResponseUserDto user = userService.login(info.getSocialPK());
         ResponseData data = new ResponseData();
         data.setData(user);
         data.setMessage("로그인 성공");
         return data.builder();
     }
 
+    @PostMapping("/auto-login")
+    public ResponseEntity autoLogin(HttpServletRequest request) {
+        ResponseUserDto user = userService.autoLogin(request);
+        ResponseData data = new ResponseData();
+        data.setData(user);
+        data.setMessage("자동 로그인");
+        return data.builder();
+    }
     @PostMapping("/withdrawal")
     public ResponseEntity withdrawal(HttpServletRequest request) {
         ResponseData data = new ResponseData();
@@ -58,29 +66,23 @@ public class UserController {
     }
 
     @PostMapping("/retoken")
-    public ResponseEntity reToken(@RequestBody ReTokenDto token) {
-        TokenDto newToken = userService.reToken(token);
+    public ResponseEntity reToken(HttpServletRequest request) {
+        TokenDto newToken = userService.reToken(request);
         ResponseData data = new ResponseData();
         data.setData(newToken);
-        data.setMessage("토큰 재발행 성공");
+        data.setMessage("AccessToken 재발행 성공");
         return data.builder();
     }
 
-    @GetMapping("/test")
-    public ResponseEntity test() {
-        ResponseData data = new ResponseData();
-        data.setData("하잉~");
-        return data.builder();
-    }
 
-    @PostMapping("/auth")
+    @PostMapping("/phone")
     public ResponseEntity<?> sendAuthNumber(@RequestBody PhoneNumberDto info) throws NoSuchAlgorithmException, URISyntaxException, InvalidKeyException, JsonProcessingException, UnsupportedEncodingException {
         ResponseData data = new ResponseData();
         data.setData(messageService.sendMessage(info.getPhoneNumber()));
         return data.builder();
     }
 
-    @PostMapping("/auth/verify")
+    @PostMapping("/phone/verify")
     public ResponseEntity<?> verifyAuthNumber(@RequestBody VerificationNumberDto info) {
         ResponseData data = new ResponseData();
         if (messageService.verifyNumber(info)){

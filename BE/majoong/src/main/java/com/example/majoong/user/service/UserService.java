@@ -1,15 +1,14 @@
 package com.example.majoong.user.service;
 
-import com.example.majoong.exception.DuplicatePhoneNumberException;
-import com.example.majoong.exception.DeletedUserException;
-import com.example.majoong.exception.NoUserException;
-import com.example.majoong.exception.RefreshTokenException;
+import com.example.majoong.exception.*;
+import com.example.majoong.notification.service.NotificationService;
 import com.example.majoong.tools.JwtTool;
 import com.example.majoong.user.domain.User;
 import com.example.majoong.user.dto.*;
 import com.example.majoong.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,19 +21,37 @@ import java.util.Optional;
 public class UserService {
     @Autowired
     private UserRepository userRepository;
+
+    private final RedisTemplate redisTemplate;
+
     private final JwtTool jwtTool;
 
-    public List<User> getUserList() {
-        List<User> userList = userRepository.findAll();
-        return userList;
+    public UserInformationDto getUser(HttpServletRequest request) {
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+
+        User user = userRepository.findById(userId).get();
+        if (user == null){
+            throw new NoUserException();
+        }
+        UserInformationDto userInfo = new UserInformationDto();
+        userInfo.setUserId(user.getId());
+        userInfo.setPhoneNumber(user.getPhoneNumber());
+        userInfo.setNickname(user.getNickname());
+        userInfo.setProfileImage(user.getProfileImage());
+
+        int count = redisTemplate.keys("notification:" + user.getId() + "_" + "*").size();
+        userInfo.setAlarmCount(count);
+
+        return userInfo;
     }
-    public void createUser(CreateUserDto createUserDto) {
+    public void signupUser(CreateUserDto createUserDto) {
 
         String phoneNumber = createUserDto.getPhoneNumber();
         String nickname = createUserDto.getNickname();
         String profileImage = createUserDto.getProfileImage();
         String pinNumber = createUserDto.getPinNumber();
-        String oauth = createUserDto.getOauth();
+        String socialPK = createUserDto.getSocialPK();
 
 
         User existingUser = userRepository.findByPhoneNumber(phoneNumber);
@@ -42,12 +59,17 @@ public class UserService {
             throw new DuplicatePhoneNumberException();
         }
 
+        User existingUser2 = userRepository.findBySocialPK(socialPK);
+        if (existingUser2 != null) {
+            throw new DuplicateSocialPKException();
+        }
+
         User user = new User();
         user.setPhoneNumber(phoneNumber);
         user.setNickname(nickname);
         user.setProfileImage(profileImage);
         user.setPinNumber(pinNumber);
-        user.setOauth(oauth);
+        user.setSocialPK(socialPK);
 
         userRepository.save(user);
     }
@@ -59,8 +81,8 @@ public class UserService {
         return user;
     }
 
-    public ResponseUserDto Login(LoginDto info){
-        User findUser = userRepository.findByOauth(info.getOauth());
+    public ResponseUserDto login(String socialPK){
+        User findUser = userRepository.findBySocialPK(socialPK);
         if (findUser == null){
             throw new NoUserException();
         }
@@ -77,13 +99,23 @@ public class UserService {
         return user;
     }
 
-    public TokenDto reToken(ReTokenDto token){
-        if(token.getRefreshToken() == null
-                || !jwtTool.validateToken(token.getRefreshToken())) {
+    public ResponseUserDto autoLogin(HttpServletRequest request){
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+        User user = userRepository.findById(userId).get();
+        return login(user.getSocialPK());
+    }
+
+    public TokenDto reToken(HttpServletRequest request){
+        String token = request.getHeader("Authorization").split(" ")[1];
+        if(token == null
+                || !jwtTool.validateToken(token)) {
             throw new RefreshTokenException();
         }
-        String newAccessToken = "Bearer " + jwtTool.createAccessToken(token.getUserId());
-        TokenDto newToken = new TokenDto(token.getUserId(), newAccessToken, token.getRefreshToken());
+        int userId = jwtTool.getUserIdFromToken(token);
+
+        String newAccessToken = "Bearer " + jwtTool.createAccessToken(userId);
+        TokenDto newToken = new TokenDto(userId, newAccessToken,token);
         return newToken;
     }
 
@@ -92,7 +124,7 @@ public class UserService {
         int userId = jwtTool.getUserIdFromToken(token);
 
         Optional<User> user = userRepository.findById(userId);
-        if (user == null){
+        if (user == null) {
             throw new NoUserException();
         }
 

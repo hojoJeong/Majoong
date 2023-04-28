@@ -1,10 +1,12 @@
 package com.example.majoong.user.domain;
 
+import com.example.majoong.friend.domain.Friend;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,12 +25,12 @@ public class User {
     private String nickname;
     private String profileImage;
     private String fcmToken;
-    private String oauth;
+    @Column(unique = true)
+    private String socialPK;
     private long date;
     private int state=1;
     private String pinNumber;
     private boolean pushAlarm=true;
-    private int alarmCount=0;
 
     @PrePersist
     public void prePersist() {

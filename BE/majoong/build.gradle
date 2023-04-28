@@ -37,8 +37,10 @@ dependencies {
 	implementation("org.apache.httpcomponents:httpclient:4.5")
 	// redis
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-	// csv reader
-	implementation 'com.opencsv:opencsv:5.7.1'
+	implementation 'com.opencsv:opencsv:5.5.2'
+	//swagger
+	implementation 'org.springdoc:springdoc-openapi-ui:1.6.12'
+
 }
 
 tasks.named('test') {

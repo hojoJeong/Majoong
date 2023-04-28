@@ -12,6 +12,12 @@ public class ErrorHandler {
         ResponseData data = new ResponseData(ErrorEnum.DUPLICATE_PHONENUMBER);
         return data.builder();
     }
+
+    @ExceptionHandler(DuplicateSocialPKException.class)
+    public ResponseEntity<?> DuplicateSocialPKException() {
+        ResponseData data = new ResponseData(ErrorEnum.DUPLICATE_SOCIAL_PK);
+        return data.builder();
+    }
     @ExceptionHandler(NoUserException.class)
     public ResponseEntity<?> NoUserException() {
         ResponseData data = new ResponseData(ErrorEnum.NO_USER);
@@ -41,4 +47,29 @@ public class ErrorHandler {
         ResponseData data = new ResponseData(ErrorEnum.DELETED_USER);
         return data.builder();
     }
+
+    @ExceptionHandler(ExistFriendException.class)
+    public ResponseEntity<?> ExistFriendException() {
+        ResponseData data = new ResponseData(ErrorEnum.EXIST_FRIEND);
+        return data.builder();
+    }
+
+    @ExceptionHandler(ExistFriendRequestException.class)
+    public ResponseEntity<?> ExistFriendRequestException() {
+        ResponseData data = new ResponseData(ErrorEnum.EXIST_FRIEND_REQUEST);
+        return data.builder();
+    }
+
+    @ExceptionHandler(NotExistFriendRequestException.class)
+    public ResponseEntity<?> NotExistFriendRequestException() {
+        ResponseData data = new ResponseData(ErrorEnum.NOT_EXIST_FRIEND_REQUEST);
+        return data.builder();
+    }
+
+    @ExceptionHandler(NotFriendException.class)
+    public ResponseEntity<?> NotFriendException() {
+        ResponseData data = new ResponseData(ErrorEnum.NOT_FRIEND);
+        return data.builder();
+    }
+
 }
