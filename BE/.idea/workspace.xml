@@ -5,7 +5,39 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="01656f1a-c3db-4b15-a8f1-a5fb66033d41" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/S08P31D105.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/config/WebConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/exception/NoUserException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/exception/RefreshTokenException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/interceptor/UserInterceptor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/user/dto/LoginDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/user/dto/ReTokenDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/user/dto/ResponseUserDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/user/dto/TokenDto.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/config/RedisConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/config/RedisConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/exception/ErrorEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/exception/ErrorEnum.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/exception/ErrorHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/exception/ErrorHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/map/controller/MapController.java" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/map/controller/MapController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/map/domain/Police.java" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/map/domain/Police.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/map/dto/PoliceDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/map/dto/PoliceDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/map/service/MapRedisService.java" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/map/service/MapRedisService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/map/service/MapRepositoryService.java" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/map/service/MapRepositoryService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/map/util/CsvUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/map/util/CsvUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/response/ResponseData.java" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/response/ResponseData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/tools/JwtTool.java" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/tools/JwtTool.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/tools/JwtToolImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/tools/JwtToolImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/user/controller/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/user/controller/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/user/domain/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/user/domain/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/user/dto/CreateUserDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/user/dto/CreateUserDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/user/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/user/repository/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/user/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/src/main/java/com/example/majoong/user/service/UserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/majoong/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/majoong/src/main/resources/application.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,23 +52,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "C:/Users/SSAFY/Documents/SSAFY8/S08P31D105/BE/majoong/build.gradle",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/SSAFY/Documents/SSAFY8/S08P31D105/BE/majoong/build.gradle&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
