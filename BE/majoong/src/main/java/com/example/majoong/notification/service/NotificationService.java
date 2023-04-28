@@ -37,14 +37,15 @@ public class NotificationService {
 
     public void deleteNotification(String notificationId) {
         String key = "notification:" + notificationId;
-        redisTemplate.opsForHash().delete(key);
+        System.out.println(key);
+        redisTemplate.delete(key);
     }
 
     public List<NotificationUserDto> getNotificationsByToId(int toId) {
 
         List<NotificationUserDto> notifications = new ArrayList<>();
 
-        Set<String> keys = redisTemplate.keys("notification:" + toId + "." + "*");
+        Set<String> keys = redisTemplate.keys("notification:" + toId + "_" + "*");
 
         for (String key : keys) {
             HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();

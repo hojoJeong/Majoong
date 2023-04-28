@@ -21,7 +21,6 @@ public class Notification {
         this.toId = Integer.toString(toId);
         this.fromId = Integer.toString(fromId);
         this.type = Integer.toString(type);
-        this.id = this.toId + "." + this.fromId +"."+ this.type +"."+ date;
+        this.id = this.toId + "_" + this.fromId +"_"+ this.type +"_"+ date;
     }
-
 }

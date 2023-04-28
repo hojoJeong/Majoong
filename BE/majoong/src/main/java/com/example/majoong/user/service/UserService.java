@@ -1,9 +1,6 @@
 package com.example.majoong.user.service;
 
-import com.example.majoong.exception.DuplicatePhoneNumberException;
-import com.example.majoong.exception.DeletedUserException;
-import com.example.majoong.exception.NoUserException;
-import com.example.majoong.exception.RefreshTokenException;
+import com.example.majoong.exception.*;
 import com.example.majoong.notification.service.NotificationService;
 import com.example.majoong.tools.JwtTool;
 import com.example.majoong.user.domain.User;
@@ -46,7 +43,7 @@ public class UserService {
 
         User existingUser2 = userRepository.findByOauth(oauth);
         if (existingUser2 != null) {
-            throw new DuplicatePhoneNumberException();
+            throw new DuplicateOauthException();
         }
 
         User user = new User();
