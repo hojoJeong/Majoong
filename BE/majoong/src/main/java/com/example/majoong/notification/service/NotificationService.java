@@ -1,6 +1,11 @@
 package com.example.majoong.notification.service;
 
+import com.example.majoong.exception.NoUserException;
 import com.example.majoong.notification.domain.Notification;
+import com.example.majoong.notification.dto.NotificationUserDto;
+import com.example.majoong.user.domain.User;
+import com.example.majoong.user.dto.ResponseUserDto;
+import com.example.majoong.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -16,6 +21,8 @@ import java.util.Set;
 public class NotificationService {
 
     private final RedisTemplate redisTemplate;
+
+    private final UserRepository userRepository;
     public void saveNotification(Notification notification) {
 
         String key = "notification:" + notification.getId();
@@ -28,30 +35,32 @@ public class NotificationService {
 
     }
 
-    public void deleteNotification(int toId, String notificationId) {
-        String key = "notification:" + toId;
-
-        redisTemplate.opsForHash().delete(key, "fromId", "type", "id", "date");
+    public void deleteNotification(String notificationId) {
+        String key = "notification:" + notificationId;
+        redisTemplate.opsForHash().delete(key);
     }
 
-    public List<Notification> getNotificationsByToId(int toId) {
+    public List<NotificationUserDto> getNotificationsByToId(int toId) {
 
-        List<Notification> notifications = new ArrayList<>();
+        List<NotificationUserDto> notifications = new ArrayList<>();
 
         Set<String> keys = redisTemplate.keys("notification:" + toId + "." + "*");
 
         for (String key : keys) {
             HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
             Map<String, String> map = hashOperations.entries(key);
-
-            Notification notification = new Notification();
-            notification.setId(key.substring(key.indexOf(":")+1));
-            notification.setFromId(map.get("fromId"));
-            notification.setToId(map.get("toId"));
-            notification.setType(map.get("type"));
-            notification.setDate(map.get("date"));
-
-            notifications.add(notification);
+            User user = userRepository.findById(Integer.parseInt(map.get("fromId"))).orElse(null);
+            if (user == null){
+                continue;
+            }
+            NotificationUserDto notificationUser = new NotificationUserDto();
+            notificationUser.setNotificationId(key.substring(key.indexOf(":")+1));
+            notificationUser.setUserId(user.getId());
+            notificationUser.setNickname(user.getNickname());
+            notificationUser.setProfileImage(user.getProfileImage());
+            notificationUser.setPhoneNumber(user.getPhoneNumber());
+            notificationUser.setType(Integer.parseInt(map.get("type")));
+            notifications.add(notificationUser);
         }
 
         return notifications;
