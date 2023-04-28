@@ -23,7 +23,7 @@ public class UserService {
 
     private final JwtTool jwtTool;
 
-    public User getUser(HttpServletRequest request) {
+    public UserInformationDto getUser(HttpServletRequest request) {
         String token = request.getHeader("Authorization").split(" ")[1];
         int userId = jwtTool.getUserIdFromToken(token);
 
@@ -31,8 +31,14 @@ public class UserService {
         if (user == null){
             throw new NoUserException();
         }
+        UserInformationDto userInfo = new UserInformationDto();
+        userInfo.setUserId(user.getId());
+        userInfo.setPhoneNumber(user.getPhoneNumber());
+        userInfo.setNickname(user.getNickname());
+        userInfo.setProfileImage(user.getProfileImage());
+        userInfo.setAlarmCount(user.getAlarmCount());
 
-        return user;
+        return userInfo;
     }
     public void signupUser(CreateUserDto createUserDto) {
 
@@ -103,7 +109,7 @@ public class UserService {
         int userId = jwtTool.getUserIdFromToken(token);
 
         Optional<User> user = userRepository.findById(userId);
-        if (user == null){
+        if (user == null) {
             throw new NoUserException();
         }
 
