@@ -23,9 +23,16 @@ public class UserService {
 
     private final JwtTool jwtTool;
 
-    public List<User> getUserList() {
-        List<User> userList = userRepository.findAll();
-        return userList;
+    public User getUser(HttpServletRequest request) {
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+
+        User user = userRepository.findById(userId).get();
+        if (user == null){
+            throw new NoUserException();
+        }
+
+        return user;
     }
     public void signupUser(CreateUserDto createUserDto) {
 
