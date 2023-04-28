@@ -11,6 +11,8 @@ class SplashScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final autoLoginState = ref.watch(checkAutoLoginProvider);
+    final loginState = ref.watch(loginProvider);
+
     return Scaffold(
       backgroundColor: PRIMARY_COLOR,
       body: Container(
@@ -24,6 +26,17 @@ class SplashScreen extends ConsumerWidget {
         child: autoLoginState.when(
             data: (data) {
               if (data) {
+                loginState.when(
+                    data: (data) {
+                      Future.delayed(Duration(seconds: 2), () {
+                        //TODO 로그인 성공 시 메인화면으로 이동
+
+                      });
+                    },
+                    error: (e, stack) {
+                      print(e);
+                    },
+                    loading: () {});
               } else {
                 Future.delayed(Duration(seconds: 2), () {
                   Navigator.pushReplacement(context,

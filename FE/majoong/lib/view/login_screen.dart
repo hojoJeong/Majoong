@@ -4,14 +4,18 @@ import 'package:flutter/services.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/common/layout/default_layout.dart';
+import 'package:majoong/viewmodel/login_viewmodel.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class LoginScreen extends StatelessWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  LoginScreen({Key? key}) : super(key: key);
+
+  late User userInfo ;
 
   @override
   Widget build(BuildContext context) {
     final PageController onBoardingController = PageController();
+    late User userInfo;
 
     return Scaffold(
       body: Column(
@@ -19,7 +23,7 @@ class LoginScreen extends StatelessWidget {
         children: [
           Container(
             decoration: const BoxDecoration(color: POLICE_MARKER_COLOR),
-            height: MediaQuery.of(context).size.height * 0.7, // 필요한 높이를 지정
+            height: MediaQuery.of(context).size.height * 0.8, // 필요한 높이를 지정
             child: PageView(
               controller: onBoardingController,
               children: [
@@ -57,24 +61,9 @@ class LoginScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: GestureDetector(
               onTap: () {
-                /** 카카오 로그인 API 호출 */
-                loginKakao();
+
               },
-              child: Column(
-                children: [
-                  Image.asset('res/kakao_login_large_wide.png'),
-                  CheckboxListTileFormField(
-                    title: const Text(
-                      '자동 로그인',
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
-                    ),
-                    onChanged: (bool? value) {},
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                ],
-              ),
+              child: Image.asset('res/kakao_login_large_wide.png'),
             ),
           ),
         ],
@@ -82,7 +71,8 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  void loginKakao() async {
+  loginKakao() async {
+    User user;
     if (await isKakaoTalkInstalled()) {
       print('카카오톡 설치 됨');
       try {
@@ -114,10 +104,10 @@ class LoginScreen extends StatelessWidget {
       }
     }
 
-    User user;
     try {
       user = await UserApi.instance.me();
       print(user);
+      userInfo = user;
     } catch (error) {
       print('사용자 정보 요청 실패 $error');
       return;
