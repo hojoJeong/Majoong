@@ -1,6 +1,7 @@
 package com.example.majoong.friend.service;
 
 import com.example.majoong.exception.ExistFriendException;
+import com.example.majoong.exception.ExistFriendRequestException;
 import com.example.majoong.exception.NotExistFriendRequestException;
 import com.example.majoong.exception.NotFriendException;
 import com.example.majoong.friend.domain.Friend;
@@ -34,7 +35,7 @@ public class FriendService {
     public void sendFriendRequest(User user, User friend) {
 
         if (friendRepository.existsByUserAndFriendAndState(user, friend,0)) { //이미 친구요청 보낸 상태
-            throw new ExistFriendException();
+            throw new ExistFriendRequestException();
         }
 
         if (friendRepository.existsByUserAndFriendAndState(user, friend,1)) { //이미 친구
