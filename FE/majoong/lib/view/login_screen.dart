@@ -1,21 +1,27 @@
-import 'package:checkbox_formfield/checkbox_formfield.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:majoong/common/const/colors.dart';
-import 'package:majoong/common/layout/default_layout.dart';
-import 'package:majoong/viewmodel/login_viewmodel.dart';
+import 'package:majoong/common/const/key_value.dart';
+import 'package:majoong/model/request/login_request_dto.dart';
+import 'package:majoong/model/response/base_response.dart';
+import 'package:majoong/model/response/user/login_response_dto.dart';
+import 'package:majoong/service/local/secure_storage.dart';
+import 'package:majoong/view/home_screen.dart';
+import 'package:majoong/viewmodel/login/kakao_login_provider.dart';
+import 'package:majoong/viewmodel/login/login_provider.dart';
+import 'package:majoong/viewmodel/login/login_request_state_provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends ConsumerWidget {
   LoginScreen({super.key});
 
-  late User userInfo ;
+  late User userInfo;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final PageController onBoardingController = PageController();
-    late User userInfo;
 
     return Scaffold(
       body: Column(
@@ -61,7 +67,41 @@ class LoginScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: GestureDetector(
               onTap: () {
+                const CircularProgressIndicator();
 
+                final kakaoLoginState = ref.watch(kakaoLoginProvider);
+                if (kakaoLoginState.value is User) {
+                  final socialPK = kakaoLoginState.value!.id.toString();
+                  ref
+                      .read(loginRequestStateProvider.notifier)
+                      .update((state) => LoginRequestDto(socialPK: socialPK));
+                  final loginState = ref.watch(loginProvier);
+                  if (loginState is BaseResponse<LoginResponseDto>) {
+                    final userInfo = loginState.data!;
+                    switch (loginState.status) {
+                      case 200:
+                        {
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => HomeScreen()));
+                          break;
+                        }
+                      //미가입 회원
+                      case 601:
+                        {
+                          //TODO 회원가입 페이지 이동
+                          break;
+                        }
+                      //탈퇴 회원
+                      case 602:
+                        {
+                          showToast("이미 탈퇴한 회원입니다.",
+                              animation: StyledToastAnimation.slideFromBottom);
+                        }
+                    }
+                  }
+                }
               },
               child: Image.asset('res/kakao_login_large_wide.png'),
             ),
@@ -69,48 +109,5 @@ class LoginScreen extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  loginKakao() async {
-    User user;
-    if (await isKakaoTalkInstalled()) {
-      print('카카오톡 설치 됨');
-      try {
-        await UserApi.instance.loginWithKakaoTalk();
-        print('카카오톡으로 로그인 성공');
-      } catch (error) {
-        print('카카오톡으로 로그인 실패 $error');
-
-        // 사용자가 카카오톡 설치 후 디바이스 권한 요청 화면에서 로그인을 취소한 경우,
-        // 의도적인 로그인 취소로 보고 카카오계정으로 로그인 시도 없이 로그인 취소로 처리 (예: 뒤로 가기)
-        if (error is PlatformException && error.code == 'CANCELED') {
-          return;
-        }
-        // 카카오톡에 연결된 카카오계정이 없는 경우, 카카오계정으로 로그인
-        try {
-          await UserApi.instance.loginWithKakaoAccount();
-          print('카카오계정으로 로그인 성공');
-        } catch (error) {
-          print('카카오계정으로 로그인 실패 $error');
-        }
-      }
-    } else {
-      print('카카오톡 설치 안됨');
-      try {
-        await UserApi.instance.loginWithKakaoAccount();
-        print('카카오계정으로 로그인 성공');
-      } catch (error) {
-        print('카카오계정으로 로그인 실패 $error');
-      }
-    }
-
-    try {
-      user = await UserApi.instance.me();
-      print(user);
-      userInfo = user;
-    } catch (error) {
-      print('사용자 정보 요청 실패 $error');
-      return;
-    }
   }
 }

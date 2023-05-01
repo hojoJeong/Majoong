@@ -20,6 +20,6 @@ class CheckAutoLoginStateNotifier extends StateNotifier<bool> {
 
   checkAutoLogin() async {
     final response = await secureStorage.read(key: AUTO_LOGIN);
-    state = response != null ? true : false;
+    state = response == AUTO_LOGIN ? true : false;
   }
 }
