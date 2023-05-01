@@ -11,6 +11,7 @@ void main() {
         Logger()
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         home: MainScreen(),
       ),
     ),

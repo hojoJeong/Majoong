@@ -1,8 +1,7 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:majoong/common/const/colors.dart';
 
 class MainScreen extends StatefulWidget {
   MainScreen({Key? key}) : super(key: key);
@@ -54,29 +53,137 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {});
   }
 
+  Widget bottomComponent(
+      {image: AssetImage, text: String, onPressed: Function}) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Image(
+          width: MediaQuery.of(context).size.width / 10,
+          image: image,
+        ),
+        Text(
+          text,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _locationData != null
-          ? GoogleMap(
-        onMapCreated: _onMapCreated,
-        initialCameraPosition: CameraPosition(
-          target: LatLng(_locationData!.latitude!, _locationData!.longitude!),
-          zoom: 14.0,
+      drawer: Drawer(
+        width: MediaQuery.of(context).size.width / 1.5,
+        child: Container(
+          child: Text("Drawer"),
         ),
-        myLocationEnabled: true,
-        markers: {
-          Marker(
-            markerId: MarkerId("current_location"),
-            position: LatLng(
-                _locationData!.latitude!, _locationData!.longitude!),
-            infoWindow: InfoWindow(title: "현재 위치"),
-          )
-        },
-      )
-          : Center(
-        child: CircularProgressIndicator(),
       ),
+      body: _locationData != null
+          ? Builder(builder: (context) {
+              return SafeArea(
+                child: Stack(alignment: Alignment.topCenter, children: [
+                  GoogleMap(
+                    onMapCreated: _onMapCreated,
+                    initialCameraPosition: CameraPosition(
+                      target: LatLng(
+                          _locationData!.latitude!, _locationData!.longitude!),
+                      zoom: 14.0,
+                    ),
+                    myLocationEnabled: true,
+                  ),
+                  Container(
+                    margin: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    width: double.infinity,
+                    height: MediaQuery.of(context).size.height / 14,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            Scaffold.of(context).openDrawer();
+                          },
+                          icon: const Icon(Icons.menu),
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              // Navigator.pushNamed(context, '/search');
+                            },
+                            child: const Text(
+                              '도착지를 입력해주세요',
+                              style: TextStyle(
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    left: 10,
+                    right: 10,
+                    bottom: 10,
+                    height: MediaQuery.of(context).size.height / 8,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height / 8,
+                      decoration: BoxDecoration(
+                        color: PRIMARY_COLOR,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            bottomComponent(
+                              image: AssetImage('res/call.png'),
+                              text: '보호자 통화',
+                              onPressed: () {},
+                            ),
+                            bottomComponent(
+                              image: AssetImage('res/body_cam.png'),
+                              text: '바디캠',
+                              onPressed: () {},
+                            ),
+                            bottomComponent(
+                              image: AssetImage('res/whistle.png'),
+                              text: '호루라기',
+                              onPressed: () {},
+                            ),
+                            bottomComponent(
+                              image: AssetImage('res/report.png'),
+                              text: '비상신고',
+                              onPressed: () {},
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                ]),
+              );
+            })
+          : const Center(
+              child: CircularProgressIndicator(),
+            ),
     );
   }
 }
