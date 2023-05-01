@@ -1,4 +1,4 @@
-package com.example.majoong.imageUpload;
+package com.example.majoong.tools;
 
 import org.springframework.web.multipart.MultipartFile;
 
