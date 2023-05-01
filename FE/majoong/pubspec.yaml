@@ -44,6 +44,8 @@ dependencies:
 
   smooth_page_indicator: ^1.1.0
   checkbox_formfield: ^0.2.0
+  google_maps_flutter: ^2.2.5
+  location: ^4.4.0
 
 dev_dependencies:
   flutter_test:
