@@ -6,6 +6,7 @@ import com.example.majoong.user.domain.User;
 import com.example.majoong.user.dto.*;
 import com.example.majoong.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.core.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -24,12 +25,15 @@ public class UserService {
 
     private final JwtTool jwtTool;
 
+    private final AmqpAdmin amqpAdmin;
+
+
     public UserInformationDto getUser(HttpServletRequest request) {
         String token = request.getHeader("Authorization").split(" ")[1];
         int userId = jwtTool.getUserIdFromToken(token);
 
         User user = userRepository.findById(userId).get();
-        if (user == null){
+        if (user == null) {
             throw new NoUserException();
         }
         UserInformationDto userInfo = new UserInformationDto();
@@ -43,6 +47,7 @@ public class UserService {
 
         return userInfo;
     }
+
     public void signupUser(CreateUserDto createUserDto) {
 
         String phoneNumber = createUserDto.getPhoneNumber();
@@ -75,13 +80,13 @@ public class UserService {
     public TokenDto generateUser(int id) {
         String accessToken = jwtTool.createAccessToken(id);
         String refreshToken = jwtTool.createRefreshToken(id);
-        TokenDto user = new TokenDto(id,accessToken,refreshToken);
+        TokenDto user = new TokenDto(id, accessToken, refreshToken);
         return user;
     }
 
-    public UserResponseDto login(String socialPK){
+    public UserResponseDto login(String socialPK) {
         User findUser = userRepository.findBySocialPK(socialPK);
-        if (findUser == null){
+        if (findUser == null) {
             throw new NoUserException();
         }
         if (findUser.getState() == 0) {
@@ -97,23 +102,23 @@ public class UserService {
         return user;
     }
 
-    public UserResponseDto autoLogin(HttpServletRequest request){
+    public UserResponseDto autoLogin(HttpServletRequest request) {
         String token = request.getHeader("Authorization").split(" ")[1];
         int userId = jwtTool.getUserIdFromToken(token);
         User user = userRepository.findById(userId).get();
         return login(user.getSocialPK());
     }
 
-    public TokenDto reToken(HttpServletRequest request){
+    public TokenDto reToken(HttpServletRequest request) {
         String token = request.getHeader("Authorization").split(" ")[1];
-        if(token == null
+        if (token == null
                 || !jwtTool.validateToken(token)) {
             throw new RefreshTokenException();
         }
         int userId = jwtTool.getUserIdFromToken(token);
 
         String newAccessToken = "Bearer " + jwtTool.createAccessToken(userId);
-        TokenDto newToken = new TokenDto(userId, newAccessToken,token);
+        TokenDto newToken = new TokenDto(userId, newAccessToken, token);
         return newToken;
     }
 
@@ -132,6 +137,12 @@ public class UserService {
         return "회원탈퇴 성공";
     }
 
-
-
+    void initQueue(int id) {
+        Queue queue = QueueBuilder.durable("location.queue." + id).build();
+        amqpAdmin.declareQueue(queue);
+        Binding binding = BindingBuilder.bind(queue)//queue
+                .to(new TopicExchange("location.exchange")) //exchange
+                .with(String.valueOf(id)); //routing key
+        amqpAdmin.declareBinding(binding);
+    }
 }

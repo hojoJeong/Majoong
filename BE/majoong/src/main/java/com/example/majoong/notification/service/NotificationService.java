@@ -4,6 +4,7 @@ import com.example.majoong.notification.domain.Notification;
 import com.example.majoong.notification.dto.NotificationUserDto;
 import com.example.majoong.user.domain.User;
 import com.example.majoong.user.repository.UserRepository;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
