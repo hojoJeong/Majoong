@@ -1,18 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:majoong/common/const/key_value.dart';
+import 'package:majoong/common/util/logger.dart';
+import 'package:majoong/model/response/user/login_response_dto.dart';
 import 'package:majoong/service/local/secure_storage.dart';
+import 'package:majoong/service/remote/api/user_api_service.dart';
+import 'package:majoong/service/remote/dio/dio_provider.dart';
 
-final checkAutoLoginProvider = FutureProvider.autoDispose<bool>((ref) async {
-  final autoLogin = await SecureStorage().checkAutoLogin();
-  if (autoLogin) {
-    return true;
-  } else {
-    /** 자동 로그인 불가, false return 후 splash_screen에서 로그인 페이지로 이동 */
-    return false;
-  }
+final userApiServiceProvider = Provider((ref) {
+  final dio = ref.watch(dioProvider);
+  final userApiService = UserApiService(dio);
+  return userApiService;
 });
 
-final loginProvider = FutureProvider.autoDispose((ref) async {
+class LoginViewModel {
 
+}
+
+final loginProvider = Provider((ref) {
+  final userApi = ref.watch(userApiServiceProvider);
 });
-

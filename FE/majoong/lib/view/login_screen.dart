@@ -8,7 +8,7 @@ import 'package:majoong/viewmodel/login_viewmodel.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class LoginScreen extends StatelessWidget {
-  LoginScreen({Key? key}) : super(key: key);
+  LoginScreen({super.key});
 
   late User userInfo ;
 
