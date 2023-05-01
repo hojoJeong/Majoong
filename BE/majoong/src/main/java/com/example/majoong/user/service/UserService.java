@@ -1,9 +1,7 @@
 package com.example.majoong.user.service;
 
 import com.example.majoong.exception.*;
-import com.example.majoong.imageUpload.S3Upload;
-import com.example.majoong.imageUpload.S3UploadImpl;
-import com.example.majoong.notification.service.NotificationService;
+import com.example.majoong.tools.S3Upload;
 import com.example.majoong.tools.JwtTool;
 import com.example.majoong.user.domain.User;
 import com.example.majoong.user.dto.*;
@@ -16,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 
 

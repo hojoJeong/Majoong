@@ -1,4 +1,4 @@
-package com.example.majoong.map.util;
+package com.example.majoong.tools;
 
 import com.example.majoong.map.dto.BellDto;
 import com.example.majoong.map.dto.CctvDto;
