@@ -1,6 +1,8 @@
 package com.example.majoong.user.service;
 
 import com.example.majoong.exception.*;
+import com.example.majoong.imageUpload.S3Upload;
+import com.example.majoong.imageUpload.S3UploadImpl;
 import com.example.majoong.notification.service.NotificationService;
 import com.example.majoong.tools.JwtTool;
 import com.example.majoong.user.domain.User;
@@ -10,8 +12,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +29,7 @@ public class UserService {
     private final RedisTemplate redisTemplate;
 
     private final JwtTool jwtTool;
+    private final S3Upload s3Upload;
 
     public UserInformationDto getUser(HttpServletRequest request) {
         String token = request.getHeader("Authorization").split(" ")[1];
@@ -152,5 +157,34 @@ public class UserService {
         return pin;
     }
 
+    public UserProfileResponseDto changeProfile(HttpServletRequest request, UserProfileRequestrDto userProfileRequestrDto, MultipartFile profileImage) throws IOException {
+        //토큰으로 유저 식별
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
 
+        Optional<User> user = userRepository.findById(userId);
+        if (user == null) {
+            throw new NoUserException();
+        }
+
+        // phoneNumber 중복확인
+        User existingUser = userRepository.findByPhoneNumber(userProfileRequestrDto.getPhoneNumber());
+        if (existingUser != null && user.get().getPhoneNumber() != userProfileRequestrDto.getPhoneNumber()) {
+            throw new DuplicatePhoneNumberException();
+        }
+        String fileType = "profile";
+        String profileImageUrl = s3Upload.uploadFile(userId, fileType, profileImage);
+
+        user.get().setPhoneNumber(userProfileRequestrDto.getPhoneNumber());
+        user.get().setNickname(userProfileRequestrDto.getNickname());
+        user.get().setProfileImage(profileImageUrl);
+        userRepository.save(user.get());
+
+        UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto();
+        userProfileResponseDto.setPhoneNumber(user.get().getPhoneNumber());
+        userProfileResponseDto.setNickname(user.get().getNickname());
+        userProfileResponseDto.setProfileImage(user.get().getProfileImage());
+
+        return userProfileResponseDto;
+    }
 }
