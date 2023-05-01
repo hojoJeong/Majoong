@@ -73,6 +73,19 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  List<String> _selectedChoices = [];
+
+  List<String> _choices = [
+    'CCTV',
+    '가로등',
+    '안전 비상벨',
+    '경찰서',
+    '편의점',
+    '여성 안심 귀갓길',
+    '도로 리뷰',
+    '위험 지역',
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,6 +107,41 @@ class _MainScreenState extends State<MainScreen> {
                       zoom: 14.0,
                     ),
                     myLocationEnabled: true,
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(
+                        top: MediaQuery.of(context).size.height / 10),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          for (String choice in _choices)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 4.0),
+                              child: ChoiceChip(
+                                backgroundColor: Colors.grey,
+                                label: Text(
+                                  choice,
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                selectedColor: PRIMARY_COLOR,
+                                selected: _selectedChoices.contains(choice),
+                                onSelected: (bool selected) {
+                                  setState(() {
+                                    print(_selectedChoices.toString());
+                                    if (selected) {
+                                      _selectedChoices.add(choice);
+                                    } else {
+                                      _selectedChoices.remove(choice);
+                                    }
+                                  });
+                                },
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
                   Container(
                     margin: const EdgeInsets.all(10),
