@@ -5,6 +5,8 @@ import com.example.majoong.user.dto.*;
 import com.example.majoong.user.service.MessageService;
 import com.example.majoong.user.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +17,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import javax.servlet.http.HttpServletRequest;
 
-
+@Tag(name = "회원 API", description = "로그인, 가입, 휴대폰인증, 탈퇴, 토큰")
 @RequestMapping("/user")
 @RequiredArgsConstructor
 @RestController
@@ -23,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 public class UserController {
     private final UserService userService;
     private final MessageService messageService;
+
 
     @GetMapping
     public ResponseEntity getUser(HttpServletRequest request) {
@@ -32,6 +35,7 @@ public class UserController {
         return data.builder();
     }
 
+    @Operation(summary = "회원가입", description = "회원가입 API")
     @PostMapping("/signup")
     public ResponseEntity joinUser(@RequestBody CreateUserDto user){
         ResponseData data = new ResponseData();
@@ -41,6 +45,7 @@ public class UserController {
         return data.builder();
     }
 
+    @Operation(summary = "로그인", description = "소셜 계정 PK로 로그인")
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody LoginDto info) {
         ResponseUserDto user = userService.login(info.getSocialPK());
@@ -50,6 +55,7 @@ public class UserController {
         return data.builder();
     }
 
+    @Operation(summary = "자동로그인", description = "AccessToken으로 자동로그인")
     @PostMapping("/auto-login")
     public ResponseEntity autoLogin(HttpServletRequest request) {
         ResponseUserDto user = userService.autoLogin(request);
@@ -58,6 +64,7 @@ public class UserController {
         data.setMessage("자동 로그인");
         return data.builder();
     }
+
     @PostMapping("/withdrawal")
     public ResponseEntity withdrawal(HttpServletRequest request) {
         ResponseData data = new ResponseData();
@@ -65,6 +72,7 @@ public class UserController {
         return data.builder();
     }
 
+    @Operation(summary = "토큰 재발급", description = "RefreshToken을 받아 AccessToken 재발급")
     @PostMapping("/retoken")
     public ResponseEntity reToken(HttpServletRequest request) {
         TokenDto newToken = userService.reToken(request);
@@ -74,7 +82,7 @@ public class UserController {
         return data.builder();
     }
 
-
+    @Operation(summary = "휴대폰 인증번호 전송", description = "인증번호를 전송합니다.")
     @PostMapping("/phone")
     public ResponseEntity<?> sendAuthNumber(@RequestBody PhoneNumberDto info) throws NoSuchAlgorithmException, URISyntaxException, InvalidKeyException, JsonProcessingException, UnsupportedEncodingException {
         ResponseData data = new ResponseData();
@@ -82,6 +90,7 @@ public class UserController {
         return data.builder();
     }
 
+    @Operation(summary = "휴대폰 인증번호 확인", description = "인증번호를 확인합니다.")
     @PostMapping("/phone/verify")
     public ResponseEntity<?> verifyAuthNumber(@RequestBody VerificationNumberDto info) {
         ResponseData data = new ResponseData();
