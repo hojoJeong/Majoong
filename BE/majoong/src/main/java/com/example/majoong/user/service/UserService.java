@@ -1,7 +1,6 @@
 package com.example.majoong.user.service;
 
 import com.example.majoong.exception.*;
-import com.example.majoong.notification.service.NotificationService;
 import com.example.majoong.tools.JwtTool;
 import com.example.majoong.user.domain.User;
 import com.example.majoong.user.dto.*;
@@ -12,7 +11,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 import java.util.Optional;
 
 
@@ -81,7 +79,7 @@ public class UserService {
         return user;
     }
 
-    public ResponseUserDto login(String socialPK){
+    public UserResponseDto login(String socialPK){
         User findUser = userRepository.findBySocialPK(socialPK);
         if (findUser == null){
             throw new NoUserException();
@@ -90,7 +88,7 @@ public class UserService {
             throw new DeletedUserException();
         }
         TokenDto token = generateUser(findUser.getId());
-        ResponseUserDto user = new ResponseUserDto();
+        UserResponseDto user = new UserResponseDto();
         user.setUserId(findUser.getId());
         user.setAccessToken(token.getAccessToken());
         user.setRefreshToken(token.getRefreshToken());
@@ -99,7 +97,7 @@ public class UserService {
         return user;
     }
 
-    public ResponseUserDto autoLogin(HttpServletRequest request){
+    public UserResponseDto autoLogin(HttpServletRequest request){
         String token = request.getHeader("Authorization").split(" ")[1];
         int userId = jwtTool.getUserIdFromToken(token);
         User user = userRepository.findById(userId).get();

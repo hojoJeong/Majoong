@@ -1,10 +1,8 @@
 package com.example.majoong.notification.service;
 
-import com.example.majoong.exception.NoUserException;
 import com.example.majoong.notification.domain.Notification;
 import com.example.majoong.notification.dto.NotificationUserDto;
 import com.example.majoong.user.domain.User;
-import com.example.majoong.user.dto.ResponseUserDto;
 import com.example.majoong.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;

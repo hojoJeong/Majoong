@@ -48,7 +48,7 @@ public class UserController {
     @Operation(summary = "로그인", description = "소셜 계정 PK로 로그인")
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody LoginDto info) {
-        ResponseUserDto user = userService.login(info.getSocialPK());
+        UserResponseDto user = userService.login(info.getSocialPK());
         ResponseData data = new ResponseData();
         data.setData(user);
         data.setMessage("로그인 성공");
@@ -58,7 +58,7 @@ public class UserController {
     @Operation(summary = "자동로그인", description = "AccessToken으로 자동로그인")
     @PostMapping("/auto-login")
     public ResponseEntity autoLogin(HttpServletRequest request) {
-        ResponseUserDto user = userService.autoLogin(request);
+        UserResponseDto user = userService.autoLogin(request);
         ResponseData data = new ResponseData();
         data.setData(user);
         data.setMessage("자동 로그인");
