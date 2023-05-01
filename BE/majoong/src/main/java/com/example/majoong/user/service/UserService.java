@@ -134,6 +134,23 @@ public class UserService {
         return "회원탈퇴 성공";
     }
 
+    public pinNumberDto changePin(HttpServletRequest request, String pinNumber){
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+
+        Optional<User> user = userRepository.findById(userId);
+        if (user == null) {
+            throw new NoUserException();
+        }
+
+        user.get().setPinNumber(pinNumber);
+        userRepository.save(user.get());
+
+        pinNumberDto pin = new pinNumberDto();
+        pin.setPinNumber(user.get().getPinNumber());
+
+        return pin;
+    }
 
 
 }
