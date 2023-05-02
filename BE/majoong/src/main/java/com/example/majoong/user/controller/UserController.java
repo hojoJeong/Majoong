@@ -39,6 +39,7 @@ public class UserController {
         data.setMessage("회원정보 조회 성공");
         log.info(data.toString());
         log.info("/user end\n");
+        log.info("");
         return data.builder();
     }
 
@@ -51,6 +52,7 @@ public class UserController {
         data.setMessage("회원가입 성공");
         log.info(data.toString());
         log.info("/user/signup end\n");
+        log.info("");
         return data.builder();
     }
 
@@ -63,6 +65,7 @@ public class UserController {
         data.setMessage("로그인 성공");
         log.info(data.toString());
         log.info("/user/login end\n");
+        log.info("");
         return data.builder();
     }
 
@@ -75,6 +78,7 @@ public class UserController {
         data.setMessage("자동 로그인");
         log.info(data.toString());
         log.info("/user/auto-login end\n");
+        log.info("");
         return data.builder();
     }
     @PostMapping("/withdrawal")
@@ -84,6 +88,7 @@ public class UserController {
         data.setMessage(userService.withdrawal(request));
         log.info(data.toString());
         log.info("/user/withdrawal end\n");
+        log.info("");
         return data.builder();
     }
 
@@ -96,6 +101,7 @@ public class UserController {
         data.setMessage("AccessToken 재발행 성공");
         log.info(data.toString());
         log.info("/user/retoken end\n");
+        log.info("");
         return data.builder();
     }
 
@@ -107,6 +113,7 @@ public class UserController {
         data.setData(messageService.sendMessage(info.getPhoneNumber()));
         log.info(data.toString());
         log.info("/user/phone end\n");
+        log.info("");
         return data.builder();
     }
 
@@ -119,6 +126,7 @@ public class UserController {
         }
         log.info(data.toString());
         log.info("/user/phone/verify end\n");
+        log.info("");
         return data.builder();
     }
 
@@ -131,6 +139,7 @@ public class UserController {
         data.setMessage("pin 수정 성공");
         log.info(data.toString());
         log.info("/user/pin end\n");
+        log.info("");
 
         return data.builder();
     }
@@ -150,6 +159,7 @@ public class UserController {
         data.setMessage("회원정보 수정 성공");
         log.info(data.toString());
         log.info("/user/profile end\n");
+        log.info("");
         return data.builder();
     }
 }
