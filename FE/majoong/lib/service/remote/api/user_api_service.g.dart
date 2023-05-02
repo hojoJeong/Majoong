@@ -40,7 +40,10 @@ class _UserApiService implements UserApiService {
               data: _data,
             )
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
-    final value = BaseResponse<ReTokenResponseDto>.fromJson(_result.data!);
+    final value = BaseResponse<ReTokenResponseDto>.fromJson(
+      _result.data!,
+      (json) => ReTokenResponseDto.fromJson(json as Map<String, dynamic>),
+    );
     return value;
   }
 
@@ -65,7 +68,10 @@ class _UserApiService implements UserApiService {
               data: _data,
             )
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
-    final value = BaseResponse<LoginResponseDto>.fromJson(_result.data!);
+    final value = BaseResponse<LoginResponseDto>.fromJson(
+      _result.data!,
+      (json) => LoginResponseDto.fromJson(json as Map<String, dynamic>),
+    );
     return value;
   }
 
@@ -89,7 +95,10 @@ class _UserApiService implements UserApiService {
               data: _data,
             )
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
-    final value = BaseResponse<LoginResponseDto>.fromJson(_result.data!);
+    final value = BaseResponse<LoginResponseDto>.fromJson(
+      _result.data!,
+      (json) => LoginResponseDto.fromJson(json as Map<String, dynamic>),
+    );
     return value;
   }
 

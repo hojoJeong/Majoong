@@ -5,7 +5,7 @@ import 'package:majoong/service/local/secure_storage.dart';
 
 final checkAutoLoginProvider =
     StateNotifierProvider<CheckAutoLoginStateNotifier, bool>((ref) {
-  final secureStorage = ref.watch(secureStorageProvider);
+  final secureStorage = ref.read(secureStorageProvider);
   final notifier = CheckAutoLoginStateNotifier(secureStorage: secureStorage);
 
   return notifier;

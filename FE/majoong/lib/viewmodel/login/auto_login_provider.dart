@@ -7,8 +7,8 @@ import 'package:majoong/service/local/secure_storage.dart';
 import 'package:majoong/service/remote/api/user_api_service.dart';
 
 final autoLoginProvider = StateNotifierProvider<AutoLoginStateNotifier, BaseResponseState>((ref) {
-  final userApi = ref.watch(userApiServiceProvider);
-  final secureStorage = ref.watch(secureStorageProvider);
+  final userApi = ref.read(userApiServiceProvider);
+  final secureStorage = ref.read(secureStorageProvider);
   final notifier = AutoLoginStateNotifier(userApi: userApi, secureStorage: secureStorage);
 
   return notifier;

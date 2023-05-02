@@ -22,6 +22,7 @@ class DioInterceptor extends Interceptor {
     if (options.headers[AUTHORIZATION] == AUTH) {
       options.headers.remove(ACCESS_TOKEN);
       final token = await secureStorage.read(key: ACCESS_TOKEN);
+      print("access token : $token");
       options.headers.addAll({ACCESS_TOKEN: 'Bearer $token'});
     }
 
@@ -38,10 +39,10 @@ class DioInterceptor extends Interceptor {
   @override
   void onError(DioError err, ErrorInterceptorHandler handler) async {
     super.onError(err, handler);
-    logger.d('[ERR] [${err.requestOptions.method}] ${err.requestOptions.uri}');
+    logger.d('[ERR] [${err.requestOptions.method}] ${err.requestOptions.uri}, ${err.message}, ${err.message}');
 
     final response =
-        BaseResponse.fromJson(err.response!.data as Map<String, dynamic>);
+        BaseResponse.fromJson(err.response!.data as Map<String, dynamic>, );
     final isRequestReToken = err.requestOptions.path == 'user/retoken';
 
     try {

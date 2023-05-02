@@ -94,9 +94,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   login() {
     final loginState = ref.watch(loginProvier);
     logger.d('login Api call, login response Status(0이면 초기값) : $loginState');
-    if (loginState != 0) {
+    if (loginState is BaseResponse) {
       logger.d('login response : $loginState');
-      switch (loginState) {
+      switch (loginState.status) {
         case 200:
           {
             Navigator.pushReplacement(
