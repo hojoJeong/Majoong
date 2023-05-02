@@ -11,4 +11,5 @@ public class MapFacilityResponseDto {
     private List<StoreDto> store;
     private List<BellDto> bell;
     private List<CctvDto> cctv;
+    private List<ReviewDto> review;
 }

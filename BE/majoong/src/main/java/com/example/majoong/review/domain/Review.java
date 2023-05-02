@@ -4,6 +4,7 @@ import com.example.majoong.user.domain.User;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -13,14 +14,14 @@ import java.util.Date;
 @Entity
 @Table(name = "review")
 @Getter
-@Data
+@Setter
 @EntityListeners(AuditingEntityListener.class)
 public class Review {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "review_id")
-    private int reviewId;
+    private long reviewId;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

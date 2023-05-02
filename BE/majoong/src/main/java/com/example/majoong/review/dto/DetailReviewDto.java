@@ -6,7 +6,7 @@ import lombok.Setter;
 @Data
 public class DetailReviewDto {
 
-    private int reviewId;
+    private long reviewId;
     private String address;
     private int score;
     private boolean isBright;
