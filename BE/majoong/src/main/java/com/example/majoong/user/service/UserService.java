@@ -7,6 +7,7 @@ import com.example.majoong.user.dto.*;
 import com.example.majoong.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -75,6 +76,8 @@ public class UserService {
         user.setSocialPK(socialPK);
 
         userRepository.save(user);
+
+        initQueue(user.getId());
     }
 
     public TokenDto generateUser(int id) {
@@ -138,11 +141,19 @@ public class UserService {
     }
 
     void initQueue(int id) {
-        Queue queue = QueueBuilder.durable("location.queue." + id).build();
+        String queueName = "location.queue." + id;
+        String exchangeName = "location.exchange";
+
+        Queue queue = QueueBuilder.durable(queueName).build();
         amqpAdmin.declareQueue(queue);
-        Binding binding = BindingBuilder.bind(queue)//queue
-                .to(new TopicExchange("location.exchange")) //exchange
-                .with(String.valueOf(id)); //routing key
+
+        TopicExchange exchange = new TopicExchange(exchangeName);
+        amqpAdmin.declareExchange(exchange);
+
+        Binding binding = BindingBuilder.bind(queue)
+                .to(exchange)
+                .with(String.valueOf(id));
         amqpAdmin.declareBinding(binding);
     }
+
 }
