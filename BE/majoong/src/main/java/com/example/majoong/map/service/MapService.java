@@ -115,7 +115,11 @@ public class MapService {
         response.put("path",path);
         response.put("userId",userId);
         response.put("nickname",user.getNickname());
-        response.put("phoneNumber",user.getPhoneNumber());
+        String phoneNumber = user.getPhoneNumber();
+        if (phoneNumber != null && phoneNumber.length() == 11) {
+            phoneNumber = phoneNumber.substring(0, 3) + "-" + phoneNumber.substring(3, 7) + "-" + phoneNumber.substring(7);
+        }
+        response.put("phoneNumber",phoneNumber);
         return response;
     }
 
