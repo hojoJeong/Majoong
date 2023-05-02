@@ -19,7 +19,7 @@ class SplashScreen extends ConsumerWidget {
 
     final checkAutoLoginState = ref.watch(checkAutoLoginProvider);
     if (checkAutoLoginState) {
-      final autoLoginState = ref.watch(loginProvier);
+      final autoLoginState = ref.watch(loginProvider);
       if (autoLoginState is BaseResponse && autoLoginState.status == 200 ) {
         Future.delayed(Duration.zero, () {
           Navigator.pushReplacement(context,

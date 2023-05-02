@@ -9,14 +9,13 @@ import 'package:majoong/service/local/secure_storage.dart';
 import 'package:majoong/service/remote/api/user_api_service.dart';
 import 'package:majoong/viewmodel/login/login_request_state_provider.dart';
 
-final loginProvier =
+final loginProvider =
     StateNotifierProvider<LoginStateNotifier, BaseResponseState>((ref) {
   final userApi = ref.watch(userApiServiceProvider);
   final loginRequest = ref.watch(loginRequestStateProvider);
   final secureStorage = ref.read(secureStorageProvider);
   final notifier = LoginStateNotifier(
       userApi: userApi, request: loginRequest, secureStorage: secureStorage);
-  logger.d('login notifier : $notifier');
 
   return notifier;
 });

@@ -23,7 +23,7 @@ class DioInterceptor extends Interceptor {
     if (options.headers[AUTHORIZATION] == AUTH) {
       options.headers.remove(ACCESS_TOKEN);
       final token = await secureStorage.read(key: ACCESS_TOKEN);
-      logger.d('token : $token');
+      logger.d('header accessToken : $token');
       options.headers.addAll({"Authorization": 'Bearer $token'});
     }
     super.onRequest(options, handler);

@@ -30,11 +30,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final PageController onBoardingController = PageController();
-    loginState = ref.watch(loginProvier);
+    loginState = ref.watch(loginProvider);
 
-    final socialPk = ref.watch(loginRequestStateProvider);
-    logger.d('social pk : ${socialPk.socialPK}');
-    if (socialPk.socialPK != '-1') {
+    final loginRequestState = ref.watch(loginRequestStateProvider);
+    logger.d('social pk : ${loginRequestState.socialPK}');
+    if (loginRequestState.socialPK != '-1') {
       login();
     }
 
@@ -82,7 +82,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: GestureDetector(
               onTap: () {
-                const CircularProgressIndicator();
+                if (loginState is BaseResponseLoading) {
+                  const CircularProgressIndicator();
+                }
                 loginKakao();
               },
               child: Image.asset('res/kakao_login_large_wide.png'),
@@ -94,29 +96,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   login() {
-    final loginState = this.loginState as BaseResponse;
-    logger.d('login Api call, login response Status(0이면 초기값) : $loginState');
-    logger.d('login response : $loginState');
-    switch (loginState.status) {
-      case 200:
-        {
-          Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (context) => HomeScreen()));
-          break;
-        }
-      //미가입 회원
-      case 601:
-        {
-          //TODO 회원가입 페이지 이동
-          logger.d('미가입 회원 : $loginState');
-          break;
-        }
-      //탈퇴 회원
-      case 602:
-        {
-          showToast("이미 탈퇴한 회원입니다.",
-              animation: StyledToastAnimation.slideFromBottom);
-        }
+    if (loginState is BaseResponse) {
+      final loginResponse = loginState as BaseResponse;
+      logger
+          .d('login Api call, login response Status(0이면 초기값) : $loginResponse');
+      switch (loginResponse.status) {
+        case 200:
+          {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Navigator.pushReplacement(context,
+                  MaterialPageRoute(builder: (context) => HomeScreen()));
+            });
+            break;
+          }
+        //미가입 회원
+        case 601:
+          {
+            //TODO 회원가입 페이지 이동
+            logger.d('미가입 회원 : $loginResponse');
+            break;
+          }
+        //탈퇴 회원
+        case 602:
+          {
+            showToast("이미 탈퇴한 회원입니다.",
+                animation: StyledToastAnimation.slideFromBottom);
+          }
+      }
     }
   }
 
