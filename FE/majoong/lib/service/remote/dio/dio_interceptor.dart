@@ -1,17 +1,14 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:majoong/common/const/key_value.dart';
 import 'package:majoong/common/const/path.dart';
 import 'package:majoong/common/util/logger.dart';
-import 'package:majoong/model/response/base_response.dart';
-import 'package:majoong/view/login_screen.dart';
 
 class DioInterceptor extends Interceptor {
   final FlutterSecureStorage secureStorage;
+  final Dio dio;
 
-  DioInterceptor({required this.secureStorage});
+  DioInterceptor({required this.secureStorage, required this.dio});
 
   @override
   void onRequest(
@@ -22,10 +19,7 @@ class DioInterceptor extends Interceptor {
     if (options.headers[ACCESS_TOKEN] == AUTH) {
       options.headers.remove(ACCESS_TOKEN);
       final token = await secureStorage.read(key: ACCESS_TOKEN);
-      options.headers.addAll({
-        "Authorization":
-            'Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MiwiaWF0IjoxNjgyOTEzOTIwLCJleHAiOjE2ODM1MTg3MjB9.FKf7FXHLz0BLzBQ_0XF6rxiwhDneM22aGXnpbN44P54'
-      });
+      options.headers.addAll({"Authorization": 'Bearer $token'});
     }
     super.onRequest(options, handler);
   }
@@ -37,49 +31,40 @@ class DioInterceptor extends Interceptor {
     logger.d('[RES] [$response]');
   }
 
-/** http 401 -> access token 만료, http 200 status 401 -> refresh 만료 */
-// @override
-// void onError(DioError err, ErrorInterceptorHandler handler) async {
-//   super.onError(err, handler);
-//   logger.d('[ERR] [${err.requestOptions.method}] ${err.requestOptions.uri}');
-//
-//   final response =
-//       BaseResponse.fromJson(err.response!.data as Map<String, dynamic>);
-//   final isRequestReToken = err.requestOptions.path == 'user/retoken';
-//
-//   try {
-//     if (err.response!.statusCode == 401 && !isRequestReToken) {
-//       logger.d('accessToken 만료');
-//
-//       final refreshToken = await secureStorage.read(key: REFRESH_TOKEN);
-//       if (refreshToken == null) {
-//         return handler.reject(err);
-//       }
-//
-//       final dio = Dio();
-//       final reTokenResponse = await dio.post('${BASE_URL}user/retoken',
-//           options: Options(headers: {REFRESH_TOKEN: 'Bearer $refreshToken'}));
-//       final newAccessToken =
-//           BaseResponse.fromJson(reTokenResponse.data).data['accessToken'];
-//
-//       logger.d('accessToken 재발급 : $newAccessToken');
-//
-//       final options = err.requestOptions;
-//       options.headers.addAll({
-//         ACCESS_TOKEN: 'Bearer $newAccessToken',
-//       });
-//
-//       await secureStorage.write(key: ACCESS_TOKEN, value: newAccessToken);
-//
-//       final newResponse = await dio.fetch(options);
-//       return handler.resolve(newResponse);
-//     } else if (isRequestReToken && response.status == 401) {
-//       logger.d('refreshToken 만료, 로그인 페이지로 이동');
-//       Navigator.pushReplacement(err.requestOptions.extra['context'],
-//           MaterialPageRoute(builder: (contex) => LoginScreen()));
-//     }
-//   } catch (e) {
-//     return handler.reject(err);
-//   }
-// }
+  /** http 401 -> access token 만료, http 200 status 401 -> refresh 만료 */
+  @override
+  void onError(DioError err, ErrorInterceptorHandler handler) async {
+    secureStorage.deleteAll();
+    logger
+        .d('[ERROR] [${err.requestOptions.method}] ${err.requestOptions.uri}');
+    final refreshTorken = await secureStorage.read(key: REFRESH_TOKEN);
+    if (refreshTorken == null) {
+      return handler.reject(err);
+    }
+
+    final isStatus401 = err.response?.statusCode == 401;
+    final isPathRefresh = err.requestOptions.path == '/user/retoken';
+
+    if (isStatus401 && !isPathRefresh) {
+      try {
+        final resp = await dio.post('${BASE_URL}user/retoken',
+            options:
+                Options(headers: {'Authorization': 'Bearer $refreshTorken'}));
+        final accessToken = resp.data['data']['accessToken'];
+        logger.d(accessToken);
+
+        final options = err.requestOptions;
+        options.headers.addAll({'Authorization': 'Bearer $accessToken'});
+        await secureStorage.write(key: ACCESS_TOKEN, value: accessToken);
+        final newToken = await secureStorage.read(key: ACCESS_TOKEN);
+        logger.d(newToken);
+        // 원래 요청 재전송
+        final response = await dio.fetch(options);
+        logger.d(response.statusCode);
+        return handler.resolve(response);
+      } on DioError catch (e) {
+        return handler.reject(e);
+      }
+    }
+  }
 }
