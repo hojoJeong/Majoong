@@ -29,7 +29,7 @@ public class SwaggerConfig {
                         .scheme("Bearer")
                         .bearerFormat("JWT"));
         Server server = new Server();
-        server.setUrl("https://majoong4u.com");
+        server.setUrl("https://majoong4u.com/api");
 
         return new OpenAPI()
                 .addServersItem(server)
