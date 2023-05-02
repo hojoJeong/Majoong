@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -60,9 +62,9 @@ public class MapController {
 
     @GetMapping("/share/{userId}")
     public ResponseEntity startMoving(@PathVariable("userId") int userId){
-        MovingInfoDto movingInfo = mapService.getLocationInfo(userId);
+        Map response = mapService.showSharedMoving(userId);
         ResponseData data = new ResponseData();
-        data.setData(movingInfo);
+        data.setData(response);
         return data.builder();
     }
 

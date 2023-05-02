@@ -74,27 +74,32 @@ public class MapService {
     public void saveLocationInfo(int userId, MovingInfoDto movingInfo) {
         String key = "moving_location:" + userId;
         HashOperations hashOperations = redisTemplate.opsForHash();
-        hashOperations.put(key, "startLng",String.valueOf(movingInfo.getStartLng()));
+        hashOperations.put(key, "startLng", String.valueOf(movingInfo.getStartLng()));
         hashOperations.put(key, "startLat", String.valueOf(movingInfo.getStartLat()));
         hashOperations.put(key, "endLng", String.valueOf(movingInfo.getEndLng()));
-        hashOperations.put(key, "engLat", String.valueOf(movingInfo.getEndLat()));
-        hashOperations.put(key, "isRecommend", String.valueOf(movingInfo.isRecommend()));
+        hashOperations.put(key, "endLat", String.valueOf(movingInfo.getEndLat()));
+        hashOperations.put(key, "isRecommend", String.valueOf(movingInfo.getIsRecommend()));
     }
+
 
     public MovingInfoDto getLocationInfo(int userId) {
         String key = "moving_location:" + userId;
         HashOperations hashOperations = redisTemplate.opsForHash();
+        Map<String, Object> hash = hashOperations.entries(key);
+        if (hash.isEmpty()) {
+            return null;
+        }
         MovingInfoDto movingInfo = new MovingInfoDto();
-        movingInfo.setStartLng((Double) hashOperations.get(key, "startLng"));
-        movingInfo.setStartLat((Double) hashOperations.get(key, "startLat"));
-        movingInfo.setEndLng((Double) hashOperations.get(key, "endLng"));
-        movingInfo.setEndLat((Double) hashOperations.get(key, "endLat"));
-        movingInfo.setRecommend((Boolean) hashOperations.get(key, "isRecommend"));
+        movingInfo.setStartLng(Double.parseDouble((String) hash.get("startLng")));
+        movingInfo.setStartLat(Double.parseDouble((String) hash.get("startLat")));
+        movingInfo.setEndLng(Double.parseDouble((String) hash.get("endLng")));
+        movingInfo.setEndLat(Double.parseDouble((String) hash.get("endLat")));
+        movingInfo.setIsRecommend(Boolean.parseBoolean((String)hash.get("isRecommend")));
         return movingInfo;
     }
 
 
-    public void showSharedMoving(int userId) {
+    public Map showSharedMoving(int userId) {
         MovingInfoDto movingInfo = getLocationInfo(userId);
         List<LocationDto> path = getRecommendPath(movingInfo);
         User user = userRepository.findById(userId).get();
@@ -103,5 +108,6 @@ public class MapService {
         response.put("userId",userId);
         response.put("nickname",user.getNickname());
         response.put("phoneNumber",user.getPhoneNumber());
+        return response;
     }
 }

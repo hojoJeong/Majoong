@@ -14,5 +14,5 @@ public class MovingInfoDto {
     double startLat;
     double endLng;
     double endLat;
-    boolean isRecommend;
+    Boolean isRecommend;
 }
