@@ -162,8 +162,11 @@ public class UserService {
     public pinNumberDto changePin(HttpServletRequest request, String pinNumber){
         String token = request.getHeader("Authorization").split(" ")[1];
         int userId = jwtTool.getUserIdFromToken(token);
-
+        System.out.println(userId);
         Optional<User> user = userRepository.findById(userId);
+        System.out.println(user.get().getId());
+        System.out.println(user.get().getPhoneNumber());
+        System.out.println(user.get().getNickname());
         if (user == null) {
             throw new NoUserException();
         }

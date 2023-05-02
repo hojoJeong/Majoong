@@ -8,5 +8,5 @@ public interface S3Upload {
 
     String uploadFile(int userId, String fileType, MultipartFile multipartFile) throws IOException;
 
-    String deleteFile(String fileName);
+    void deleteFile(String fileName);
 }

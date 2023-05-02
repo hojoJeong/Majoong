@@ -38,10 +38,10 @@ import java.util.Random;
 public class MessageService {
 
     @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private final RedisTemplate redisTemplate;
 
     @Value("${naver.sms.service-id}")
     private String serviceId;
