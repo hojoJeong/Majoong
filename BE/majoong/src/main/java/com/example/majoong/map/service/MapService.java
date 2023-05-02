@@ -102,7 +102,6 @@ public class MapService {
         movingInfo.setStartLat(Double.parseDouble((String) hash.get("startLat")));
         movingInfo.setEndLng(Double.parseDouble((String) hash.get("endLng")));
         movingInfo.setEndLat(Double.parseDouble((String) hash.get("endLat")));
-        System.out.println(movingInfo);
         return movingInfo;
     }
 

@@ -50,3 +50,15 @@ springdoc:
       enabled: true
   cache:
     disabled: true
+
+cloud:
+  aws:
+    s3:
+      bucket: ${AWS_BUCKET}
+    credentials:
+      accessKey: ${AWS_ACCESSKEY}
+      secretKey: ${AWS_SECRETKEY}
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
