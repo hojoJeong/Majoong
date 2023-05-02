@@ -135,7 +135,6 @@ public class MapService {
         User user = userRepository.findById(userId).get();
         Map<String,Object> response = new HashMap<>();
         response.put("path",movingInfo.getPath());
-        response.put("isRecommend",movingInfo.getIsRecommend());
         response.put("userId",userId);
         response.put("nickname",user.getNickname());
         String phoneNumber = user.getPhoneNumber();
