@@ -27,6 +27,7 @@ public class NotificationController {
         data.setData(notificationService.getNotificationsByToId(userId));
         log.info(data.toString());
         log.info("/user/notification end\n");
+        log.info("");
         return data.builder();
     }
 
@@ -37,6 +38,7 @@ public class NotificationController {
         ResponseData data = new ResponseData();
         log.info(data.toString());
         log.info("/user/notification end\n");
+        log.info("");
         return data.builder();
     }
 }
