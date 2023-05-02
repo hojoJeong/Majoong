@@ -53,6 +53,23 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {});
   }
 
+  Widget drawerMenu({title: String}) {
+    return Container(
+      alignment: Alignment.centerLeft,
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height / 18,
+      child: GestureDetector(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            title,
+            style: TextStyle(color: Colors.black, fontSize: 16),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget bottomComponent(
       {image: AssetImage, text: String, onPressed: Function}) {
     return Column(
@@ -60,6 +77,7 @@ class _MainScreenState extends State<MainScreen> {
       children: [
         Image(
           width: MediaQuery.of(context).size.width / 10,
+          height: MediaQuery.of(context).size.width / 10,
           image: image,
         ),
         Text(
@@ -91,8 +109,77 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       drawer: Drawer(
         width: MediaQuery.of(context).size.width / 1.5,
-        child: Container(
-          child: Text("Drawer"),
+        child: SafeArea(
+          child: Column(
+            children: [
+              Container(
+                width: MediaQuery.of(context).size.width,
+                child: IconButton(
+                  alignment: Alignment.topRight,
+                  icon: Icon(Icons.notifications_none_rounded),
+                  onPressed: () {},
+                ),
+              ),
+              Image(
+                image: AssetImage('res/profile_image.png'),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Text(
+                '김싸피',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Text(
+                '010-1234-5678',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.grey,
+                ),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Divider(
+                thickness: 1,
+              ),
+              drawerMenu(title: '즐겨찾기'),
+              drawerMenu(title: '친구 관리'),
+              drawerMenu(title: '녹화기록'),
+              drawerMenu(title: '회원정보 수정'),
+              drawerMenu(title: 'PIN 변경'),
+              drawerMenu(title: '알림 설정'),
+              Expanded(
+                child: Container(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        print('tab!!!!!!!');
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text('로그아웃'),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Icon(Icons.logout),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
         ),
       ),
       body: _locationData != null
@@ -196,33 +283,30 @@ class _MainScreenState extends State<MainScreen> {
                         color: PRIMARY_COLOR,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            bottomComponent(
-                              image: AssetImage('res/call.png'),
-                              text: '보호자 통화',
-                              onPressed: () {},
-                            ),
-                            bottomComponent(
-                              image: AssetImage('res/body_cam.png'),
-                              text: '바디캠',
-                              onPressed: () {},
-                            ),
-                            bottomComponent(
-                              image: AssetImage('res/whistle.png'),
-                              text: '호루라기',
-                              onPressed: () {},
-                            ),
-                            bottomComponent(
-                              image: AssetImage('res/report.png'),
-                              text: '비상신고',
-                              onPressed: () {},
-                            ),
-                          ],
-                        ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          bottomComponent(
+                            image: AssetImage('res/call.png'),
+                            text: '보호자 통화',
+                            onPressed: () {},
+                          ),
+                          bottomComponent(
+                            image: AssetImage('res/body_cam.png'),
+                            text: '바디캠',
+                            onPressed: () {},
+                          ),
+                          bottomComponent(
+                            image: AssetImage('res/whistle.png'),
+                            text: '호루라기',
+                            onPressed: () {},
+                          ),
+                          bottomComponent(
+                            image: AssetImage('res/report.png'),
+                            text: '비상신고',
+                            onPressed: () {},
+                          ),
+                        ],
                       ),
                     ),
                   )
