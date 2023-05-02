@@ -67,18 +67,18 @@ public class MapService {
         }
 
         // redis 저장
-        MovingInfoDto movingInfo = new MovingInfoDto(locationRequest.getStartLng(),locationRequest.getStartLat(),locationRequest.getEndLat(),locationRequest.getEndLng(), locationRequest.isRecommended());
+        MovingInfoDto movingInfo = new MovingInfoDto(locationRequest.getStartLng(),locationRequest.getStartLat(),locationRequest.getEndLat(),locationRequest.getEndLng(), locationRequest.isRecommend());
         saveLocationInfo(userId, movingInfo);
 
     }
     public void saveLocationInfo(int userId, MovingInfoDto movingInfo) {
         String key = "moving_location:" + userId;
         HashOperations hashOperations = redisTemplate.opsForHash();
-        hashOperations.put(key, "startLng",movingInfo.getStartLng());
-        hashOperations.put(key, "startLat", movingInfo.getStartLat());
-        hashOperations.put(key, "endLng", movingInfo.getEndLng());
-        hashOperations.put(key, "engLat", movingInfo.getEndLat());
-        hashOperations.put(key, "isRecommend", movingInfo.isRecommend());
+        hashOperations.put(key, "startLng",String.valueOf(movingInfo.getStartLng()));
+        hashOperations.put(key, "startLat", String.valueOf(movingInfo.getStartLat()));
+        hashOperations.put(key, "endLng", String.valueOf(movingInfo.getEndLng()));
+        hashOperations.put(key, "engLat", String.valueOf(movingInfo.getEndLat()));
+        hashOperations.put(key, "isRecommend", String.valueOf(movingInfo.isRecommend()));
     }
 
     public MovingInfoDto getLocationInfo(int userId) {

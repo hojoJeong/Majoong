@@ -3,6 +3,7 @@ package com.example.majoong.map.controller;
 import com.example.majoong.map.dto.LocationRequestDto;
 import com.example.majoong.map.dto.MapFacilityRequestDto;
 import com.example.majoong.map.dto.MapFacilityResponseDto;
+import com.example.majoong.map.dto.MovingInfoDto;
 import com.example.majoong.map.service.MapDataService;
 import com.example.majoong.map.service.MapFacilityService;
 import com.example.majoong.map.service.MapService;
@@ -50,10 +51,18 @@ public class MapController {
     }
 
     @PostMapping("/share")
-    public ResponseEntity startMoving(LocationRequestDto locationRequest){
+    public ResponseEntity startMoving(@RequestBody LocationRequestDto locationRequest){
         mapService.startMoving(locationRequest);
         ResponseData data = new ResponseData();
         data.setMessage("위치 공유 시작");
+        return data.builder();
+    }
+
+    @GetMapping("/share/{userId}")
+    public ResponseEntity startMoving(@PathVariable("userId") int userId){
+        MovingInfoDto movingInfo = mapService.getLocationInfo(userId);
+        ResponseData data = new ResponseData();
+        data.setData(movingInfo);
         return data.builder();
     }
 
