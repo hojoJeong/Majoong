@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import static java.rmi.server.LogStream.log;
 
-
+@Tag(name = "회원 API", description = "로그인, 가입, 휴대폰인증, 탈퇴, 토큰")
 @RequestMapping("/user")
 @RequiredArgsConstructor
 @RestController
@@ -30,6 +30,7 @@ import static java.rmi.server.LogStream.log;
 public class UserController {
     private final UserService userService;
     private final MessageService messageService;
+
 
     @GetMapping
     public ResponseEntity getUser(HttpServletRequest request) {
@@ -43,6 +44,7 @@ public class UserController {
         return data.builder();
     }
 
+    @Operation(summary = "회원가입", description = "회원가입 API")
     @PostMapping("/signup")
     public ResponseEntity joinUser(@RequestBody CreateUserDto user){
         log.info("/user/signup @Post start");
@@ -56,10 +58,11 @@ public class UserController {
         return data.builder();
     }
 
+    @Operation(summary = "로그인", description = "소셜 계정 PK로 로그인")
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody LoginDto info) {
+        UserResponseDto user = userService.login(info.getSocialPK());
         log.info("/user/login @Post start");
-        ResponseUserDto user = userService.login(info.getSocialPK());
         ResponseData data = new ResponseData();
         data.setData(user);
         data.setMessage("로그인 성공");
@@ -69,10 +72,11 @@ public class UserController {
         return data.builder();
     }
 
+    @Operation(summary = "자동로그인", description = "AccessToken으로 자동로그인")
     @PostMapping("/auto-login")
     public ResponseEntity autoLogin(HttpServletRequest request) {
+        UserResponseDto user = userService.autoLogin(request);
         log.info("/user/auto-login @Post start");
-        ResponseUserDto user = userService.autoLogin(request);
         ResponseData data = new ResponseData();
         data.setData(user);
         data.setMessage("자동 로그인");
@@ -92,6 +96,7 @@ public class UserController {
         return data.builder();
     }
 
+    @Operation(summary = "토큰 재발급", description = "RefreshToken을 받아 AccessToken 재발급")
     @PostMapping("/retoken")
     public ResponseEntity reToken(HttpServletRequest request) {
         log.info("/user/retoken @Post start");
@@ -105,7 +110,7 @@ public class UserController {
         return data.builder();
     }
 
-
+    @Operation(summary = "휴대폰 인증번호 전송", description = "인증번호를 전송합니다.")
     @PostMapping("/phone")
     public ResponseEntity<?> sendAuthNumber(@RequestBody PhoneNumberDto info) throws NoSuchAlgorithmException, URISyntaxException, InvalidKeyException, JsonProcessingException, UnsupportedEncodingException {
         log.info("/user/phone @Post start");
@@ -117,6 +122,7 @@ public class UserController {
         return data.builder();
     }
 
+    @Operation(summary = "휴대폰 인증번호 확인", description = "인증번호를 확인합니다.")
     @PostMapping("/phone/verify")
     public ResponseEntity<?> verifyAuthNumber(@RequestBody VerificationNumberDto info) {
         log.info("/user/phone/verify @Post start");
@@ -162,4 +168,6 @@ public class UserController {
         log.info("");
         return data.builder();
     }
+
+
 }
