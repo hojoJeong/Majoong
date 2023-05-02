@@ -10,7 +10,7 @@ import java.util.List;
 public class LocationRequestDto {
     int userId;
     List<Integer> guardians;
-    boolean isRecommend;
+    Boolean isRecommend;
     double startLng;
     double startLat;
     double endLng;

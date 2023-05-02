@@ -7,15 +7,17 @@ import com.example.majoong.notification.domain.Notification;
 import com.example.majoong.notification.service.NotificationService;
 import com.example.majoong.user.domain.User;
 import com.example.majoong.user.repository.UserRepository;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,7 +30,7 @@ public class MapService {
 
     private final UserRepository userRepository;
 
-    public List<LocationDto> getRecommendPath(MovingInfoDto pathPoints) { //나중에 진짜 추천 경로로 대체 (지금 그냥 예시)
+    public List<LocationDto> getRecommendPath(LocationRequestDto pathPoints) { //나중에 진짜 추천 경로로 대체 (지금 그냥 예시)
         List<Map<String, Double>> points = new ArrayList<>();
         Map<String, Double> point1 = new HashMap<>();
         point1.put("lng", pathPoints.getStartLng());
@@ -55,10 +57,10 @@ public class MapService {
         return pointDtos;
     }
 
-    public void startMoving(LocationRequestDto locationRequest) {
+    public void startMoving(LocationRequestDto movingInfo) {
         List<Integer> guardianIds;
-        guardianIds = locationRequest.getGuardians();
-        int userId = locationRequest.getUserId();
+        guardianIds = movingInfo.getGuardians();
+        int userId = movingInfo.getUserId();
 
         // 보호자에게 알림 전송
         for (int guardianId : guardianIds) {
@@ -67,40 +69,46 @@ public class MapService {
         }
 
         // redis 저장
-        MovingInfoDto movingInfo = new MovingInfoDto(locationRequest.getStartLng(),locationRequest.getStartLat(),locationRequest.getEndLat(),locationRequest.getEndLng(), locationRequest.isRecommend());
         saveLocationInfo(userId, movingInfo);
 
     }
-    public void saveLocationInfo(int userId, MovingInfoDto movingInfo) {
+    public void saveLocationInfo(int userId, LocationRequestDto movingInfo) {
         String key = "moving_location:" + userId;
         HashOperations hashOperations = redisTemplate.opsForHash();
+        hashOperations.put(key, "guardians", String.valueOf(movingInfo.getGuardians()));
+        hashOperations.put(key, "isRecommend", String.valueOf(movingInfo.getIsRecommend()));
         hashOperations.put(key, "startLng", String.valueOf(movingInfo.getStartLng()));
         hashOperations.put(key, "startLat", String.valueOf(movingInfo.getStartLat()));
         hashOperations.put(key, "endLng", String.valueOf(movingInfo.getEndLng()));
         hashOperations.put(key, "endLat", String.valueOf(movingInfo.getEndLat()));
-        hashOperations.put(key, "isRecommend", String.valueOf(movingInfo.getIsRecommend()));
     }
 
 
-    public MovingInfoDto getLocationInfo(int userId) {
+    public LocationRequestDto getLocationInfo(int userId) {
         String key = "moving_location:" + userId;
         HashOperations hashOperations = redisTemplate.opsForHash();
         Map<String, Object> hash = hashOperations.entries(key);
         if (hash.isEmpty()) {
             return null;
         }
-        MovingInfoDto movingInfo = new MovingInfoDto();
+        LocationRequestDto movingInfo = new LocationRequestDto();
+        String guardiansStr = (String) hash.get("guardians");
+        Gson gson = new Gson();
+        Type type = new TypeToken<List<Integer>>(){}.getType();
+        List<Integer> guardians = gson.fromJson(guardiansStr, type);
+        movingInfo.setGuardians(guardians);
+        movingInfo.setIsRecommend(Boolean.parseBoolean((String)hash.get("isRecommend")));
         movingInfo.setStartLng(Double.parseDouble((String) hash.get("startLng")));
         movingInfo.setStartLat(Double.parseDouble((String) hash.get("startLat")));
         movingInfo.setEndLng(Double.parseDouble((String) hash.get("endLng")));
         movingInfo.setEndLat(Double.parseDouble((String) hash.get("endLat")));
-        movingInfo.setIsRecommend(Boolean.parseBoolean((String)hash.get("isRecommend")));
+        System.out.println(movingInfo);
         return movingInfo;
     }
 
 
     public Map showSharedMoving(int userId) {
-        MovingInfoDto movingInfo = getLocationInfo(userId);
+        LocationRequestDto movingInfo = getLocationInfo(userId);
         List<LocationDto> path = getRecommendPath(movingInfo);
         User user = userRepository.findById(userId).get();
         Map<String,Object> response = new HashMap<>();
@@ -109,5 +117,10 @@ public class MapService {
         response.put("nickname",user.getNickname());
         response.put("phoneNumber",user.getPhoneNumber());
         return response;
+    }
+
+    public void endSharedMoving(int userId){
+        String key = "moving_location:" + userId;
+        redisTemplate.delete(key);
     }
 }
