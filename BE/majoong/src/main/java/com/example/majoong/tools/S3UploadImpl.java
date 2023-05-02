@@ -23,17 +23,25 @@ public class S3UploadImpl implements S3Upload{
 
     @Override
     public String uploadFile(int userId, String fileType, MultipartFile multipartFile) throws IOException {
-        String s3FileName = userId + "-" + fileType + "-" + System.currentTimeMillis(); // 3-profile-1698273
+        String originalFilename = multipartFile.getOriginalFilename();
+        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf('.') + 1);
+        String keyName = userId + "-" + fileType + "-" + System.currentTimeMillis() + "." + fileExtension; // 3-profile-1698273.jpg
 
         ObjectMetadata objMeta = new ObjectMetadata();
         objMeta.setContentLength(multipartFile.getInputStream().available());
 
-        amazonS3Client.putObject(bucket, s3FileName, multipartFile.getInputStream(), objMeta);
-        return amazonS3Client.getUrl(bucket, s3FileName).toString();
+        amazonS3Client.putObject(bucket, keyName, multipartFile.getInputStream(), objMeta);
+        return amazonS3Client.getUrl(bucket, keyName).toString();
     }
 
     @Override
-    public String deleteFile(String fileName) {
-        return null;
+    public void deleteFile(String imageUrl) {
+        try {
+            String keyName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+            amazonS3Client.deleteObject(bucket, keyName);
+            log.info("s3삭제 성공, fileName : ", imageUrl);
+        } catch (Exception e) {
+            log.error("s3삭제 실패", e.getMessage());
+        }
     }
 }

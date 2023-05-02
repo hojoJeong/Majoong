@@ -29,7 +29,8 @@ public class MapFacilityService {
         facilities.setPolice(getFacilityDtos("police", centerLng, centerLat, radius, PoliceDto.class));
         facilities.setStore(getFacilityDtos("store", centerLng, centerLat, radius, StoreDto.class));
         facilities.setBell(getFacilityDtos("bell", centerLng, centerLat, radius, BellDto.class));
-
+        facilities.setCctv(getFacilityDtos("cctv", centerLng, centerLat, radius, CctvDto.class));
+        facilities.setReview(getFacilityDtos("review", centerLng, centerLat,radius, ReviewDto.class));
         return facilities;
     }
 
@@ -55,6 +56,7 @@ public class MapFacilityService {
             else if (dto instanceof StoreDto) ((StoreDto) dto).setStoreId(Long.parseLong(id));
             else if (dto instanceof CctvDto) ((CctvDto) dto).setCctvId(Long.parseLong(id));
             else if (dto instanceof BellDto) ((BellDto) dto).setBellId(Long.parseLong(id));
+            else if (dto instanceof ReviewDto) ((ReviewDto) dto).setReviewId(Long.parseLong(id));
 
             dto.setLatitude(geoResult.getContent().getPoint().getY());
             dto.setLongitude(geoResult.getContent().getPoint().getX());

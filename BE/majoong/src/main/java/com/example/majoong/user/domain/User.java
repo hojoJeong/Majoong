@@ -1,6 +1,8 @@
 package com.example.majoong.user.domain;
 
 import com.example.majoong.friend.domain.Friend;
+import com.example.majoong.review.domain.Review;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,6 +33,10 @@ public class User {
     private int state=1;
     private String pinNumber;
     private boolean pushAlarm=true;
+
+    @JsonBackReference
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Review> reviewList;
 
     @PrePersist
     public void prePersist() {
