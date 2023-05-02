@@ -1,10 +1,10 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:majoong/common/util/logger.dart';
 
-final kakaoLoginProvider = FutureProvider<User>((ref) {
-  final response = loginKakao();
-  return response;
+final kakaoLoginProvider = FutureProvider<User>((ref) async{
+  return await loginKakao();
 });
 
 loginKakao() async {
@@ -42,7 +42,7 @@ loginKakao() async {
 
   try {
     user = await UserApi.instance.me();
-    print(user);
+    print('user info : $user');
     return user;
   } catch (error) {
     print('사용자 정보 요청 실패 $error');

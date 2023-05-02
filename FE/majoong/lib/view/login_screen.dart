@@ -4,6 +4,7 @@ import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/common/const/key_value.dart';
+import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/request/login_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/user/login_response_dto.dart';
@@ -68,16 +69,26 @@ class LoginScreen extends ConsumerWidget {
             child: GestureDetector(
               onTap: () {
                 const CircularProgressIndicator();
-
                 final kakaoLoginState = ref.watch(kakaoLoginProvider);
+                print('카카오 로그인 실행');
+                kakaoLoginState.when(
+                    data: (data) {
+                      logger
+                          .d('kakao login response }');
+                    },
+                    error: (err, stackTrace) {
+                      logger.e('kakao login error : $err, $stackTrace');
+                    },
+                    loading: () {});
                 if (kakaoLoginState.value is User) {
                   final socialPK = kakaoLoginState.value!.id.toString();
                   ref
                       .read(loginRequestStateProvider.notifier)
                       .update((state) => LoginRequestDto(socialPK: socialPK));
+                  logger.d('socialPK : $socialPK');
                   final loginState = ref.watch(loginProvier);
                   if (loginState is BaseResponse<LoginResponseDto>) {
-                    final userInfo = loginState.data!;
+                    logger.d('login response : $loginState');
                     switch (loginState.status) {
                       case 200:
                         {
@@ -91,6 +102,7 @@ class LoginScreen extends ConsumerWidget {
                       case 601:
                         {
                           //TODO 회원가입 페이지 이동
+                          logger.d('미가입 회원 : $loginState');
                           break;
                         }
                       //탈퇴 회원

@@ -45,6 +45,31 @@ class _UserApiService implements UserApiService {
   }
 
   @override
+  Future<BaseResponse<LoginResponseDto>> login(request) async {
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{r'accessToken': 'no_auth'};
+    _headers.removeWhere((k, v) => v == null);
+    final _data = <String, dynamic>{};
+    _data.addAll(request.toJson());
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<BaseResponse<LoginResponseDto>>(Options(
+      method: 'POST',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              'user/login',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
+    final value = BaseResponse<LoginResponseDto>.fromJson(_result.data!);
+    return value;
+  }
+
+  @override
   Future<BaseResponse<LoginResponseDto>> autoLogin() async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
@@ -53,7 +78,7 @@ class _UserApiService implements UserApiService {
     final _data = <String, dynamic>{};
     final _result = await _dio.fetch<Map<String, dynamic>>(
         _setStreamType<BaseResponse<LoginResponseDto>>(Options(
-      method: 'GET',
+      method: 'POST',
       headers: _headers,
       extra: _extra,
     )
