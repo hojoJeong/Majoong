@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+import java.util.Map;
+
 
 @AllArgsConstructor
 @RequiredArgsConstructor
@@ -15,4 +18,8 @@ public class MovingInfoDto {
     double endLng;
     double endLat;
     Boolean isRecommend;
+
+    List<Integer> guardians;
+
+    List<Map<String,Object>> path;
 }
