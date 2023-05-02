@@ -16,21 +16,22 @@ class DioInterceptor extends Interceptor {
   @override
   void onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
-    logger.d('[REQ] [${options.method}] ${options.uri}');
+    logger.d('[REQ] [${options.method}]  ${options.uri}, ${options.data}');
 
     /** auth API 호출 시 */
-    if (options.headers[ACCESS_TOKEN] == AUTH) {
+    if (options.headers[AUTHORIZATION] == AUTH) {
       options.headers.remove(ACCESS_TOKEN);
       final token = await secureStorage.read(key: ACCESS_TOKEN);
       options.headers.addAll({ACCESS_TOKEN: 'Bearer $token'});
     }
+
+    return super.onRequest(options, handler);
   }
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    super.onResponse(response, handler);
-
     logger.d('[RES] [$response]');
+    super.onResponse(response, handler);
   }
 
   /** http 401 -> access token 만료, http 200 status 401 -> refresh 만료 */

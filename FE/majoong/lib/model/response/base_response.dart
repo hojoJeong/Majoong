@@ -26,6 +26,6 @@ class BaseResponse<T> extends BaseResponseState {
     return BaseResponse<T>(
         status: json['status'] as int,
         message: json['message'] as String,
-        data: json['data']);
+        data: json['data']) as dynamic;
   }
 }

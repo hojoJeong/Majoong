@@ -1,4 +1,5 @@
 const String AUTO_LOGIN = "auto_login";
+const String AUTHORIZATION = "Authorization";
 const String ACCESS_TOKEN = "accessToken";
 const String REFRESH_TOKEN = "refreshToken";
 const String AUTH = "auth";
