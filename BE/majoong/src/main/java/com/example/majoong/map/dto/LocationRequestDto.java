@@ -9,8 +9,6 @@ public class LocationRequestDto {
     int userId;
     List<Integer> guardians;
     boolean isRecommended;
-    String nickname;
-    String phoneNumber;
     double startLng;
     double startLat;
     double endLng;

@@ -8,6 +8,7 @@ import com.example.majoong.notification.service.NotificationService;
 import com.example.majoong.user.domain.User;
 import com.example.majoong.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class MapService {
@@ -66,8 +69,6 @@ public class MapService {
         // redis 저장
         MovingInfoDto movingInfo = new MovingInfoDto(locationRequest.getStartLng(),locationRequest.getStartLat(),locationRequest.getEndLat(),locationRequest.getEndLng(), locationRequest.isRecommended());
         saveLocationInfo(userId, movingInfo);
-
-
 
     }
     public void saveLocationInfo(int userId, MovingInfoDto movingInfo) {
