@@ -25,7 +25,7 @@ public class JwtToolImpl implements JwtTool {
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 2)) //2시간
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 2))
                 .signWith(SignatureAlgorithm.HS256, this.generateKey())
                 .compact();
     }

@@ -1,9 +1,11 @@
 package com.example.majoong.map.controller;
 
+import com.example.majoong.map.dto.LocationRequestDto;
 import com.example.majoong.map.dto.MapFacilityRequestDto;
 import com.example.majoong.map.dto.MapFacilityResponseDto;
 import com.example.majoong.map.service.MapDataService;
 import com.example.majoong.map.service.MapFacilityService;
+import com.example.majoong.map.service.MapService;
 import com.example.majoong.response.ResponseData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,10 +13,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -25,6 +26,8 @@ public class MapController {
     @Autowired
     private final MapFacilityService mapFacilityService;
     private final MapDataService mapDataService;
+
+    private final MapService mapService;
 
     @GetMapping("/facility")
     @Operation(summary = "시설물 조회 API", description = "cctv, 가로등, 비상벨, 경찰서, 편의점, 안심귀갓길, 위험지역, 리뷰")
@@ -53,4 +56,21 @@ public class MapController {
 
         return "Reids에 저장 성공";
     }
+
+    @PostMapping("/share")
+    public ResponseEntity startMoving(@RequestBody LocationRequestDto locationRequest){
+        mapService.startMoving(locationRequest);
+        ResponseData data = new ResponseData();
+        data.setMessage("위치 공유 시작");
+        return data.builder();
+    }
+
+    @GetMapping("/share/{userId}")
+    public ResponseEntity startMoving(@PathVariable("userId") int userId){
+        Map response = mapService.showSharedMoving(userId);
+        ResponseData data = new ResponseData();
+        data.setData(response);
+        return data.builder();
+    }
+
 }

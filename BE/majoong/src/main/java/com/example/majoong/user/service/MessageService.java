@@ -38,10 +38,10 @@ import java.util.Random;
 public class MessageService {
 
     @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private final RedisTemplate redisTemplate;
 
     @Value("${naver.sms.service-id}")
     private String serviceId;
@@ -95,9 +95,6 @@ public class MessageService {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
         MessageResponseDto response =  restTemplate.postForObject(new URI("https://sens.apigw.ntruss.com/sms/v2/services/"+ serviceId +"/messages"), httpBody, MessageResponseDto.class);
-
-        //기존 인증번호 있으면 삭제
-        redisTemplate.delete("phone:"+phoneNumber);
 
         //인증번호 저장 (만료시간 5분)
         redisTemplate.opsForValue().set("phone:"+phoneNumber,randomNumber,Duration.ofMinutes(5));

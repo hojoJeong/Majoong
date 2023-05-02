@@ -7,6 +7,8 @@ import com.example.majoong.user.domain.User;
 import com.example.majoong.user.dto.*;
 import com.example.majoong.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -28,12 +30,15 @@ public class UserService {
     private final JwtTool jwtTool;
     private final S3Upload s3Upload;
 
+    private final AmqpAdmin amqpAdmin;
+
+
     public UserInformationDto getUser(HttpServletRequest request) {
         String token = request.getHeader("Authorization").split(" ")[1];
         int userId = jwtTool.getUserIdFromToken(token);
 
         User user = userRepository.findById(userId).get();
-        if (user == null){
+        if (user == null) {
             throw new NoUserException();
         }
         UserInformationDto userInfo = new UserInformationDto();
@@ -74,25 +79,27 @@ public class UserService {
         user.setSocialPK(socialPK);
 
         userRepository.save(user);
+
+        initQueue(user.getId());
     }
 
     public TokenDto generateUser(int id) {
         String accessToken = jwtTool.createAccessToken(id);
         String refreshToken = jwtTool.createRefreshToken(id);
-        TokenDto user = new TokenDto(id,accessToken,refreshToken);
+        TokenDto user = new TokenDto(id, accessToken, refreshToken);
         return user;
     }
 
-    public ResponseUserDto login(String socialPK){
+    public UserResponseDto login(String socialPK) {
         User findUser = userRepository.findBySocialPK(socialPK);
-        if (findUser == null){
+        if (findUser == null) {
             throw new NoUserException();
         }
         if (findUser.getState() == 0) {
             throw new DeletedUserException();
         }
         TokenDto token = generateUser(findUser.getId());
-        ResponseUserDto user = new ResponseUserDto();
+        UserResponseDto user = new UserResponseDto();
         user.setUserId(findUser.getId());
         user.setAccessToken(token.getAccessToken());
         user.setRefreshToken(token.getRefreshToken());
@@ -101,23 +108,23 @@ public class UserService {
         return user;
     }
 
-    public ResponseUserDto autoLogin(HttpServletRequest request){
+    public UserResponseDto autoLogin(HttpServletRequest request) {
         String token = request.getHeader("Authorization").split(" ")[1];
         int userId = jwtTool.getUserIdFromToken(token);
         User user = userRepository.findById(userId).get();
         return login(user.getSocialPK());
     }
 
-    public TokenDto reToken(HttpServletRequest request){
+    public TokenDto reToken(HttpServletRequest request) {
         String token = request.getHeader("Authorization").split(" ")[1];
-        if(token == null
+        if (token == null
                 || !jwtTool.validateToken(token)) {
             throw new RefreshTokenException();
         }
         int userId = jwtTool.getUserIdFromToken(token);
 
         String newAccessToken = "Bearer " + jwtTool.createAccessToken(userId);
-        TokenDto newToken = new TokenDto(userId, newAccessToken,token);
+        TokenDto newToken = new TokenDto(userId, newAccessToken, token);
         return newToken;
     }
 
@@ -134,6 +141,22 @@ public class UserService {
         userRepository.save(user.get());
 
         return "회원탈퇴 성공";
+    }
+
+    void initQueue(int id) {
+        String queueName = "location.queue." + id;
+        String exchangeName = "location.exchange";
+
+        Queue queue = QueueBuilder.durable(queueName).build();
+        amqpAdmin.declareQueue(queue);
+
+        TopicExchange exchange = new TopicExchange(exchangeName);
+        amqpAdmin.declareExchange(exchange);
+
+        Binding binding = BindingBuilder.bind(queue)
+                .to(exchange)
+                .with(String.valueOf(id));
+        amqpAdmin.declareBinding(binding);
     }
 
     public pinNumberDto changePin(HttpServletRequest request, String pinNumber){

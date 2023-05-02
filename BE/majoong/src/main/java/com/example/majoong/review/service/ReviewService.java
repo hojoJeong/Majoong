@@ -30,9 +30,9 @@ import java.util.Optional;
 public class ReviewService {
 
     @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
     @Autowired
-    private ReviewRepository reviewRepository;
+    private final ReviewRepository reviewRepository;
     private final RedisTemplate redisTemplate;
     private final JwtTool jwtTool;
     private final S3Upload s3Upload;
