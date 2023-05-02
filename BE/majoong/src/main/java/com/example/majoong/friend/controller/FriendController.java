@@ -45,6 +45,7 @@ public class FriendController {
         data.setMessage("친구요청 완료");
         log.info(data.toString());
         log.info("/user/friend end\n");
+        log.info("");
         return data.builder();
     }
 
@@ -58,6 +59,7 @@ public class FriendController {
         data.setData(friendrequests);
         log.info(data.toString());
         log.info("/user/friendrequests end\n");
+        log.info("");
         return data.builder();
     }
 
@@ -71,6 +73,7 @@ public class FriendController {
         data.setMessage("친구 수락");
         log.info(data.toString());
         log.info("/user/friend/accept end\n");
+        log.info("");
         return data.builder();
     }
 
@@ -84,6 +87,7 @@ public class FriendController {
         data.setMessage("친구요청 삭제");
         log.info(data.toString());
         log.info("/user/friend/deny end\n");
+        log.info("");
         return data.builder();
     }
 
@@ -97,6 +101,7 @@ public class FriendController {
         data.setMessage("친구 삭제");
         log.info(data.toString());
         log.info("/user/friend end\n");
+        log.info("");
         return data.builder();
     }
     @GetMapping("/friends/{isGuardian}")
@@ -109,6 +114,7 @@ public class FriendController {
         data.setData(friends);
         log.info(data.toString());
         log.info("/user/friends/{isGuardian} end\n");
+        log.info("");
         return data.builder();
     }
 
@@ -127,6 +133,7 @@ public class FriendController {
         data.setData(allFriendsList);
         log.info(data.toString());
         log.info("/user/guardian end\n");
+        log.info("");
         return data.builder();
     }
 
@@ -141,6 +148,7 @@ public class FriendController {
         data.setData(newFriendInfo);
         log.info(data.toString());
         log.info("/user/friend end\n");
+        log.info("");
         return data.builder();
     }
 }
