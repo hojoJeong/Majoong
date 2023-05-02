@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:majoong/common/const/colors.dart';
+import 'package:majoong/common/util/logger.dart';
+import 'package:majoong/service/remote/api/user_api_service.dart';
 
-class MainScreen extends StatefulWidget {
+class MainScreen extends ConsumerStatefulWidget {
   MainScreen({Key? key}) : super(key: key);
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  ConsumerState<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends ConsumerState<MainScreen> {
   late GoogleMapController mapController;
   Location location = Location();
   late bool _serviceEnabled;
@@ -106,6 +109,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userInfo = ref.watch(userInfoProvider);
     return Scaffold(
       drawer: Drawer(
         width: MediaQuery.of(context).size.width / 1.5,
@@ -120,14 +124,19 @@ class _MainScreenState extends State<MainScreen> {
                   onPressed: () {},
                 ),
               ),
-              Image(
-                image: AssetImage('res/profile_image.png'),
+              Container(
+                width: MediaQuery.of(context).size.width / 2.5,
+                height: MediaQuery.of(context).size.width / 2.5,
+                child: CircleAvatar(
+                  backgroundImage: NetworkImage(userInfo.profileImage),
+                  radius: 100, // 동그란 영역의 반지름
+                ),
               ),
               SizedBox(
                 height: 10,
               ),
               Text(
-                '김싸피',
+                userInfo.nickname,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
@@ -137,7 +146,7 @@ class _MainScreenState extends State<MainScreen> {
                 height: 10,
               ),
               Text(
-                '010-1234-5678',
+                userInfo.phoneNumber,
                 style: TextStyle(
                   fontSize: 15,
                   color: Colors.grey,
@@ -251,6 +260,7 @@ class _MainScreenState extends State<MainScreen> {
                       children: [
                         IconButton(
                           onPressed: () {
+                            ref.read(userInfoProvider.notifier).getUserInfo();
                             Scaffold.of(context).openDrawer();
                           },
                           icon: const Icon(Icons.menu),

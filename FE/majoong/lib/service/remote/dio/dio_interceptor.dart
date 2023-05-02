@@ -22,8 +22,12 @@ class DioInterceptor extends Interceptor {
     if (options.headers[ACCESS_TOKEN] == AUTH) {
       options.headers.remove(ACCESS_TOKEN);
       final token = await secureStorage.read(key: ACCESS_TOKEN);
-      options.headers.addAll({ACCESS_TOKEN: 'Bearer $token'});
+      options.headers.addAll({
+        "Authorization":
+            'Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MiwiaWF0IjoxNjgyOTEzOTIwLCJleHAiOjE2ODM1MTg3MjB9.FKf7FXHLz0BLzBQ_0XF6rxiwhDneM22aGXnpbN44P54'
+      });
     }
+    super.onRequest(options, handler);
   }
 
   @override
@@ -33,49 +37,49 @@ class DioInterceptor extends Interceptor {
     logger.d('[RES] [$response]');
   }
 
-  /** http 401 -> access token 만료, http 200 status 401 -> refresh 만료 */
-  @override
-  void onError(DioError err, ErrorInterceptorHandler handler) async {
-    super.onError(err, handler);
-    logger.d('[ERR] [${err.requestOptions.method}] ${err.requestOptions.uri}');
-
-    final response =
-        BaseResponse.fromJson(err.response!.data as Map<String, dynamic>);
-    final isRequestReToken = err.requestOptions.path == 'user/retoken';
-
-    try {
-      if (err.response!.statusCode == 401 && !isRequestReToken) {
-        logger.d('accessToken 만료');
-
-        final refreshToken = await secureStorage.read(key: REFRESH_TOKEN);
-        if (refreshToken == null) {
-          return handler.reject(err);
-        }
-
-        final dio = Dio();
-        final reTokenResponse = await dio.post('${BASE_URL}user/retoken',
-            options:
-                Options(headers: {REFRESH_TOKEN: 'Bearer $refreshToken'}));
-        final newAccessToken = BaseResponse.fromJson(reTokenResponse.data).data['accessToken'];
-
-        logger.d('accessToken 재발급 : $newAccessToken');
-
-        final options = err.requestOptions;
-        options.headers.addAll({
-          ACCESS_TOKEN: 'Bearer $newAccessToken',
-        });
-
-        await secureStorage.write(key: ACCESS_TOKEN, value: newAccessToken);
-
-        final newResponse = await dio.fetch(options);
-        return handler.resolve(newResponse);
-      } else if (isRequestReToken && response.status == 401) {
-        logger.d('refreshToken 만료, 로그인 페이지로 이동');
-        Navigator.pushReplacement(err.requestOptions.extra['context'],
-            MaterialPageRoute(builder: (contex) => LoginScreen()));
-      }
-    } catch (e) {
-      return handler.reject(err);
-    }
-  }
+/** http 401 -> access token 만료, http 200 status 401 -> refresh 만료 */
+// @override
+// void onError(DioError err, ErrorInterceptorHandler handler) async {
+//   super.onError(err, handler);
+//   logger.d('[ERR] [${err.requestOptions.method}] ${err.requestOptions.uri}');
+//
+//   final response =
+//       BaseResponse.fromJson(err.response!.data as Map<String, dynamic>);
+//   final isRequestReToken = err.requestOptions.path == 'user/retoken';
+//
+//   try {
+//     if (err.response!.statusCode == 401 && !isRequestReToken) {
+//       logger.d('accessToken 만료');
+//
+//       final refreshToken = await secureStorage.read(key: REFRESH_TOKEN);
+//       if (refreshToken == null) {
+//         return handler.reject(err);
+//       }
+//
+//       final dio = Dio();
+//       final reTokenResponse = await dio.post('${BASE_URL}user/retoken',
+//           options: Options(headers: {REFRESH_TOKEN: 'Bearer $refreshToken'}));
+//       final newAccessToken =
+//           BaseResponse.fromJson(reTokenResponse.data).data['accessToken'];
+//
+//       logger.d('accessToken 재발급 : $newAccessToken');
+//
+//       final options = err.requestOptions;
+//       options.headers.addAll({
+//         ACCESS_TOKEN: 'Bearer $newAccessToken',
+//       });
+//
+//       await secureStorage.write(key: ACCESS_TOKEN, value: newAccessToken);
+//
+//       final newResponse = await dio.fetch(options);
+//       return handler.resolve(newResponse);
+//     } else if (isRequestReToken && response.status == 401) {
+//       logger.d('refreshToken 만료, 로그인 페이지로 이동');
+//       Navigator.pushReplacement(err.requestOptions.extra['context'],
+//           MaterialPageRoute(builder: (contex) => LoginScreen()));
+//     }
+//   } catch (e) {
+//     return handler.reject(err);
+//   }
+// }
 }

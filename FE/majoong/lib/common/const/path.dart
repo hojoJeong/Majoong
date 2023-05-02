@@ -1,1 +1,1 @@
-const String BASE_URL = "http://13.125.101.46/api/";
+const String BASE_URL = "https://majoong4u.com/api/";
