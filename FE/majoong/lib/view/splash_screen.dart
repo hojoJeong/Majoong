@@ -7,7 +7,6 @@ import 'package:majoong/model/response/user/login_response_dto.dart';
 import 'package:majoong/service/local/secure_storage.dart';
 import 'package:majoong/view/home_screen.dart';
 import 'package:majoong/view/login_screen.dart';
-import 'package:majoong/viewmodel/login/auto_login_provider.dart';
 import 'package:majoong/viewmodel/login/check_auto_login_provider.dart';
 import 'package:majoong/viewmodel/login/login_provider.dart';
 import '../common/const/colors.dart';
@@ -20,8 +19,8 @@ class SplashScreen extends ConsumerWidget {
 
     final checkAutoLoginState = ref.watch(checkAutoLoginProvider);
     if (checkAutoLoginState) {
-      final autoLoginState = ref.watch(autoLoginProvider);
-      if (autoLoginState is BaseResponse<LoginResponseDto>) {
+      final autoLoginState = ref.watch(loginProvier);
+      if (autoLoginState is BaseResponse && autoLoginState.status == 200 ) {
         Future.delayed(Duration.zero, () {
           Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) => const HomeScreen()));

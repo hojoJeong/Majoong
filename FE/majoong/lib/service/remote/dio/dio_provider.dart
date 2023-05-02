@@ -6,7 +6,7 @@ import 'package:majoong/service/remote/dio/dio_interceptor.dart';
 final dioProvider = Provider((ref) {
   final dio = Dio();
   final secureStorage = ref.watch(secureStorageProvider);
-  dio.interceptors.add(DioInterceptor(secureStorage: secureStorage));
+  dio.interceptors.add(DioInterceptor(secureStorage: secureStorage, dio: dio));
 
   return dio;
 });

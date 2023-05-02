@@ -10,74 +10,67 @@ import 'package:majoong/view/login_screen.dart';
 
 class DioInterceptor extends Interceptor {
   final FlutterSecureStorage secureStorage;
+  final Dio dio;
 
-  DioInterceptor({required this.secureStorage});
+  DioInterceptor({required this.secureStorage, required this.dio});
 
   @override
   void onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
-    logger.d('[REQ] [${options.method}]  ${options.uri}, ${options.data}');
+    logger.d('[REQ] [${options.method}] ${options.uri}, ${options.data}');
 
     /** auth API 호출 시 */
     if (options.headers[AUTHORIZATION] == AUTH) {
       options.headers.remove(ACCESS_TOKEN);
       final token = await secureStorage.read(key: ACCESS_TOKEN);
-      print("access token : $token");
-      options.headers.addAll({ACCESS_TOKEN: 'Bearer $token'});
+      logger.d('token : $token');
+      options.headers.addAll({"Authorization": 'Bearer $token'});
     }
-
-    return super.onRequest(options, handler);
+    super.onRequest(options, handler);
   }
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    logger.d('[RES] [$response]');
     super.onResponse(response, handler);
+
+    logger.d('[RES] [$response]');
   }
 
   /** http 401 -> access token 만료, http 200 status 401 -> refresh 만료 */
   @override
   void onError(DioError err, ErrorInterceptorHandler handler) async {
-    super.onError(err, handler);
-    logger.d('[ERR] [${err.requestOptions.method}] ${err.requestOptions.uri}, ${err.message}, ${err.message}');
+    secureStorage.deleteAll();
+    logger
+        .d('[ERROR] [${err.requestOptions.method}] ${err.requestOptions.uri}');
+    final refreshTorken = await secureStorage.read(key: REFRESH_TOKEN);
+    if (refreshTorken == null) {
+      return handler.reject(err);
+    }
 
-    final response =
-        BaseResponse.fromJson(err.response!.data as Map<String, dynamic>, );
-    final isRequestReToken = err.requestOptions.path == 'user/retoken';
+    final isStatus401 = err.response?.statusCode == 401;
+    final isPathRefresh = err.requestOptions.path == '/user/retoken';
 
-    try {
-      if (err.response!.statusCode == 401 && !isRequestReToken) {
-        logger.d('accessToken 만료');
-
-        final refreshToken = await secureStorage.read(key: REFRESH_TOKEN);
-        if (refreshToken == null) {
-          return handler.reject(err);
-        }
-
-        final dio = Dio();
-        final reTokenResponse = await dio.post('${BASE_URL}user/retoken',
+    if (isStatus401 && !isPathRefresh) {
+      logger.d('401 에러 떳당');
+      try {
+        final resp = await dio.post('${BASE_URL}user/retoken',
             options:
-                Options(headers: {REFRESH_TOKEN: 'Bearer $refreshToken'}));
-        final newAccessToken = BaseResponse.fromJson(reTokenResponse.data).data['accessToken'];
-
-        logger.d('accessToken 재발급 : $newAccessToken');
+            Options(headers: {'Authorization': 'Bearer $refreshTorken'}));
+        final accessToken = resp.data['data']['accessToken'];
+        logger.d(accessToken);
 
         final options = err.requestOptions;
-        options.headers.addAll({
-          ACCESS_TOKEN: 'Bearer $newAccessToken',
-        });
-
-        await secureStorage.write(key: ACCESS_TOKEN, value: newAccessToken);
-
-        final newResponse = await dio.fetch(options);
-        return handler.resolve(newResponse);
-      } else if (isRequestReToken && response.status == 401) {
-        logger.d('refreshToken 만료, 로그인 페이지로 이동');
-        Navigator.pushReplacement(err.requestOptions.extra['context'],
-            MaterialPageRoute(builder: (contex) => LoginScreen()));
+        options.headers.addAll({'Authorization': 'Bearer $accessToken'});
+        await secureStorage.write(key: ACCESS_TOKEN, value: accessToken);
+        final newToken = await secureStorage.read(key: ACCESS_TOKEN);
+        logger.d(newToken);
+        // 원래 요청 재전송
+        final response = await dio.fetch(options);
+        logger.d(response.statusCode);
+        return handler.resolve(response);
+      } on DioError catch (e) {
+        return handler.reject(e);
       }
-    } catch (e) {
-      return handler.reject(err);
     }
   }
 }

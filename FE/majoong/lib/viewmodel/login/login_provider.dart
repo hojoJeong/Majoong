@@ -35,25 +35,33 @@ class LoginStateNotifier extends StateNotifier<BaseResponseState> {
   }
 
   login(LoginRequestDto request) async {
-    if (request.socialPK != "-1") {
-      final response = await userApi.login(request);
-
-      logger.d("login provider response : ${response.status}, ${response.message}, ${response.data}");
+    final isAutoLogin = await secureStorage.read(key: AUTO_LOGIN) == AUTO_LOGIN ? true : false;
+    late BaseResponse response;
+    logger.d('isAutoLogin : $isAutoLogin');
+    if(isAutoLogin){
+      response = await userApi.autoLogin();
       state = response;
-
-      if (response.data != null && response.status == 200) {
-        final response = state as BaseResponse<LoginResponseDto>;
-        final userInfo = response.data;
-        if (userInfo != null) {
-          await secureStorage.write(key: AUTO_LOGIN, value: AUTO_LOGIN);
-          await secureStorage.write(key: USER_ID, value: userInfo.userId.toString());
-          await secureStorage.write(key: ACCESS_TOKEN, value: userInfo.accessToken);
-          await secureStorage.write(key: REFRESH_TOKEN, value: userInfo.refreshToken);
-
-          print(
-              'Save AUTO_LOGIN into SecureStorage : ${secureStorage.read(key: AUTO_LOGIN)}');
-        }
+      logger.d("login provider response auto: ${response.status}, ${response.message}, ${response.data}");
+    } else {
+      if (request.socialPK != "-1") {
+        response = await userApi.login(request);
+        state = response;
+        logger.d("login provider response : ${response.status}, ${response.message}, ${response.data}");
       }
+    }
+
+    if (response.data != null) {
+      final response = state as BaseResponse<LoginResponseDto>;
+      final userInfo = response.data!;
+
+      await secureStorage.write(key: AUTO_LOGIN, value: AUTO_LOGIN);
+      await secureStorage.write(key: USER_ID, value: userInfo.userId.toString());
+      await secureStorage.write(key: ACCESS_TOKEN, value: userInfo.accessToken);
+      await secureStorage.write(key: REFRESH_TOKEN, value: userInfo.refreshToken);
+
+      final token = await secureStorage.read(key: ACCESS_TOKEN);
+      print(
+          'Save AUTO_LOGIN into SecureStorage : $token');
     }
   }
 }
