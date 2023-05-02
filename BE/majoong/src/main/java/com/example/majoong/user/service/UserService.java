@@ -123,7 +123,7 @@ public class UserService {
         }
         int userId = jwtTool.getUserIdFromToken(token);
 
-        String newAccessToken = "Bearer " + jwtTool.createAccessToken(userId);
+        String newAccessToken = jwtTool.createAccessToken(userId);
         TokenDto newToken = new TokenDto(userId, newAccessToken, token);
         return newToken;
     }
