@@ -1,11 +1,8 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/common/const/path.dart';
 import 'package:majoong/common/const/size_value.dart';
