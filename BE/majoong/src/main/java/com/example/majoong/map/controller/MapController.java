@@ -73,4 +73,12 @@ public class MapController {
         return data.builder();
     }
 
+    @PostMapping("/share/{userId}")
+    public ResponseEntity endMoving(@PathVariable("userId") int userId){
+        mapService.endMoving(userId);
+        ResponseData data = new ResponseData();
+        data.setMessage("위치 공유 종료");
+        return data.builder();
+    }
+
 }
