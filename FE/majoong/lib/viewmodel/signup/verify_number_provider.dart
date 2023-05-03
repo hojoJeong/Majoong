@@ -14,7 +14,7 @@ class VerifyNumberStateNotifier extends StateNotifier<bool>{
 
   VerifyNumberStateNotifier({
     required this.userApi
-}): super(false);
+}): super(true);
 
   verifyNumber(VerifyNumberRequestDto request) async {
     final response = await userApi.verifyNumber(request);

@@ -257,13 +257,15 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) =>
-                                            const PinNumberScreen()));
+                                            PinNumberScreen()));
                               }
                             : null,
                         child: Text(
                           '계속하기',
                           style: TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.bold),
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: BASE_TITLE_FONT_SIZE),
                         )),
                   ),
                 )
