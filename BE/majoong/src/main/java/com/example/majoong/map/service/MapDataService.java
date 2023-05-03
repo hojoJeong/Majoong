@@ -59,8 +59,8 @@ public class MapDataService {
         return CsvUtils.convertToPoliceDtoList("police")
                 .stream().map(policeDto -> Police.builder()
                         .policeId(policeDto.getPoliceId())
-                        .longitude(policeDto.getLongitude())
-                        .latitude(policeDto.getLatitude())
+                        .longitude(policeDto.getLng())
+                        .latitude(policeDto.getLat())
                         .address(policeDto.getAddress())
                         .build())
                 .collect(Collectors.toList());
@@ -70,8 +70,8 @@ public class MapDataService {
         return CsvUtils.convertToStoreDtoList("store")
                 .stream().map(storeDto -> Store.builder()
                         .storeId(storeDto.getStoreId())
-                        .longitude(storeDto.getLongitude())
-                        .latitude(storeDto.getLatitude())
+                        .longitude(storeDto.getLng())
+                        .latitude(storeDto.getLat())
                         .address(storeDto.getAddress())
                         .build())
                 .collect(Collectors.toList());
@@ -81,8 +81,8 @@ public class MapDataService {
         return CsvUtils.convertToCctvDtoList("cctv")
                 .stream().map(cctvDto -> Cctv.builder()
                         .cctvId(cctvDto.getCctvId())
-                        .longitude(cctvDto.getLongitude())
-                        .latitude(cctvDto.getLatitude())
+                        .longitude(cctvDto.getLng())
+                        .latitude(cctvDto.getLat())
                         .address(cctvDto.getAddress())
                         .build())
                 .collect(Collectors.toList());
@@ -92,8 +92,8 @@ public class MapDataService {
         return CsvUtils.convertToBellDtoList("bell")
                 .stream().map(bellDto -> Bell.builder()
                         .bellId(bellDto.getBellId())
-                        .longitude(bellDto.getLongitude())
-                        .latitude(bellDto.getLatitude())
+                        .longitude(bellDto.getLng())
+                        .latitude(bellDto.getLat())
                         .address(bellDto.getAddress())
                         .build())
                 .collect(Collectors.toList());

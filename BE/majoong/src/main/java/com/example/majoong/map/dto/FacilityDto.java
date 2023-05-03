@@ -9,7 +9,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FacilityDto {
-    private double longitude;
-    private double latitude;
+    private double lng;
+    private double lat;
     private String address;
 }

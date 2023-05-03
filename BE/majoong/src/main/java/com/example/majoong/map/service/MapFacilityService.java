@@ -61,8 +61,8 @@ public class MapFacilityService {
                 ((ReviewDto) dto).setScore(Integer.parseInt(member[2]));
             }
 
-            dto.setLatitude(geoResult.getContent().getPoint().getY());
-            dto.setLongitude(geoResult.getContent().getPoint().getX());
+            dto.setLat(geoResult.getContent().getPoint().getY());
+            dto.setLng(geoResult.getContent().getPoint().getX());
             dto.setAddress(address);
             dtos.add(dto);
         }
