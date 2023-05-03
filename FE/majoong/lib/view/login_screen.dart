@@ -6,15 +6,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:majoong/common/const/colors.dart';
-import 'package:majoong/common/const/key_value.dart';
+import 'package:majoong/common/const/path.dart';
 import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/request/login_request_dto.dart';
+import 'package:majoong/model/request/sign_up_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/user/login_response_dto.dart';
-import 'package:majoong/service/local/secure_storage.dart';
 import 'package:majoong/view/home_screen.dart';
+import 'package:majoong/view/sign_up_screen.dart';
 import 'package:majoong/viewmodel/login/login_provider.dart';
 import 'package:majoong/viewmodel/login/login_request_state_provider.dart';
+import 'package:majoong/viewmodel/login/sign_up_provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -25,17 +27,17 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  late BaseResponseState loginState;
-
   @override
   Widget build(BuildContext context) {
     final PageController onBoardingController = PageController();
-    loginState = ref.watch(loginProvider);
 
     final loginRequestState = ref.watch(loginRequestStateProvider);
+    final loginState = ref.watch(loginProvider);
     logger.d('social pk : ${loginRequestState.socialPK}');
-    if (loginRequestState.socialPK != '-1') {
-      login();
+    if (loginRequestState.socialPK != '-1' && loginState is BaseResponse<LoginResponseDto>) {
+      Future.delayed(Duration.zero, (){
+        login(loginState);
+      });
     }
 
     return Scaffold(
@@ -95,34 +97,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  login() {
-    if (loginState is BaseResponse) {
-      final loginResponse = loginState as BaseResponse;
-      logger
-          .d('login Api call, login response Status(0이면 초기값) : $loginResponse');
-      switch (loginResponse.status) {
-        case 200:
-          {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => HomeScreen()));
-            });
-            break;
-          }
-        //미가입 회원
-        case 601:
-          {
-            //TODO 회원가입 페이지 이동
-            logger.d('미가입 회원 : $loginResponse');
-            break;
-          }
-        //탈퇴 회원
-        case 602:
-          {
-            showToast("이미 탈퇴한 회원입니다.",
-                animation: StyledToastAnimation.slideFromBottom);
-          }
-      }
+  login(BaseResponse<LoginResponseDto> loginResponse) {
+    logger.d('login Status : ${loginResponse.data}');
+    switch (loginResponse.status) {
+      case 200:
+        {
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()));
+          break;
+        }
+      //미가입 회원
+      case 601:
+        {
+          logger.d('미가입 회원 : $loginResponse');
+          Navigator.of(context)
+              .pushReplacement(MaterialPageRoute(builder: (_) => const SignUpScreen()));
+          break;
+        }
+      //탈퇴 회원
+      case 602:
+        {
+          showToast(
+              context: context,
+              '이미 탈퇴한 회원입니다.',
+              animation: StyledToastAnimation.slideFromBottom);
+        }
     }
   }
 
@@ -161,12 +160,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     try {
       user = await UserApi.instance.me();
-      print('user info : $user');
       final socialPK = user.id.toString();
       print('socialPK : $socialPK');
+
       ref
           .read(loginRequestStateProvider.notifier)
           .update((state) => LoginRequestDto(socialPK: socialPK));
+
+      final nickname = user.kakaoAccount!.profile!.nickname!;
+      final profileImage =
+          user.kakaoAccount?.profile?.profileImageUrl ?? BASE_PROFILE_URL;
+      final signUpState = ref.read(signUpProvider.notifier).update((state) =>
+          SignUpRequestDto(
+              nickname: nickname,
+              phoneNumber: '',
+              profileImage: profileImage,
+              pinNumber: '',
+              socialPK: socialPK));
+
+      logger.d(
+          'Input SignUpState : ${signUpState.socialPK}, ${signUpState.profileImage}, ${signUpState.nickname}');
       return user;
     } catch (error) {
       print('사용자 정보 요청 실패 $error');

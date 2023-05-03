@@ -1,12 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:majoong/common/const/key_value.dart';
 import 'package:majoong/common/const/path.dart';
 import 'package:majoong/common/util/logger.dart';
-import 'package:majoong/model/response/base_response.dart';
-import 'package:majoong/view/login_screen.dart';
 
 class DioInterceptor extends Interceptor {
   final FlutterSecureStorage secureStorage;
