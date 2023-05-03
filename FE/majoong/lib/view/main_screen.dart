@@ -21,13 +21,29 @@ class MainScreen extends ConsumerStatefulWidget {
 
 class _MainScreenState extends ConsumerState<MainScreen> {
   late GoogleMapController mapController;
+  Set<Marker> _markers = {};
   Location location = Location();
   late bool _serviceEnabled;
   late PermissionStatus _permissionGranted;
   LocationData? _locationData;
 
-  void _onMapCreated(GoogleMapController controller) {
+  void _onMapCreated(GoogleMapController controller){
     mapController = controller;
+    setState(() async {
+      _markers.add(
+        Marker(
+          markerId: MarkerId("1"),
+          position: LatLng(36.109227765491326, 128.41661386191845),
+          icon: await _getMarkerImage(),
+          infoWindow: InfoWindow(title: "San Francisco"),
+        ),
+      );
+    });
+  }
+
+  Future<BitmapDescriptor> _getMarkerImage() async {
+    const config = ImageConfiguration();
+    return await BitmapDescriptor.fromAssetImage(config, 'res/cctv.png');
   }
 
   @override
@@ -205,6 +221,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 child: Stack(alignment: Alignment.topCenter, children: [
                   GoogleMap(
                     onMapCreated: _onMapCreated,
+                    markers: _markers,
                     initialCameraPosition: CameraPosition(
                       target: LatLng(
                           _locationData!.latitude!, _locationData!.longitude!),
