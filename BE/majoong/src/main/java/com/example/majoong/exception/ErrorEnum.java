@@ -2,6 +2,9 @@ package com.example.majoong.exception;
 
 public enum ErrorEnum {
     INVALID_REFRESHTOKEN("refreshToken 만료", 401),
+    NOT_EXIST_SESSION("해당 세션이 존재하지 않습니다.",404),
+    NOT_EXIST_RECORDING("해당 녹화 영상은 존재하지 않습니다.", 404),
+    RECORDING_IN_PROGRESS("녹화가 진행중이므로 삭제할 수 없습니다.", 409),
     DUPLICATE_PHONENUMBER("이미 가입된 휴대폰번호입니다.", 600),
     DUPLICATE_SOCIAL_PK("중복된 social PK 입니다.",600),
     NO_USER("가입된 회원이 아닙니다.", 601),
