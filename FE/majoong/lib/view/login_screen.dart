@@ -5,8 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/common/const/path.dart';
+import 'package:majoong/common/const/size_value.dart';
+import 'package:majoong/common/layout/loading_layout.dart';
 import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/request/login_request_dto.dart';
 import 'package:majoong/model/request/sign_up_request_dto.dart';
@@ -33,68 +36,80 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     final loginRequestState = ref.watch(loginRequestStateProvider);
     final loginState = ref.watch(loginProvider);
+
     logger.d('social pk : ${loginRequestState.socialPK}');
-    if (loginRequestState.socialPK != '-1' && loginState is BaseResponse<LoginResponseDto>) {
-      Future.delayed(Duration.zero, (){
-        login(loginState);
-      });
+    if (loginRequestState.socialPK != '-1') {
+      ref.read(loginProvider.notifier).login(loginRequestState);
+      if (loginState is BaseResponse<LoginResponseDto>) {
+        Future.delayed(Duration.zero, () {
+          login(loginState);
+        });
+      }
     }
 
-    return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Container(
-            decoration: const BoxDecoration(color: POLICE_MARKER_COLOR),
-            height: MediaQuery.of(context).size.height * 0.8, // 필요한 높이를 지정
-            child: PageView(
-              controller: onBoardingController,
-              children: [
-                Image.asset('res/onboarding1.png'),
-                Image.asset('res/onboarding2.png'),
-                Image.asset('res/onboarding3.png'),
-              ],
-            ),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: GAINSBORO,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SmoothPageIndicator(
-                controller: onBoardingController,
-                count: 3,
-                effect: const WormEffect(
-                    activeDotColor: POLICE_MARKER_COLOR,
-                    dotColor: TEXT_HINT_COLOR,
-                    dotHeight: 6,
-                    dotWidth: 6),
+      return  Scaffold(
+        body: Stack(
+          children:[
+            Padding(
+              padding: const EdgeInsets.only(bottom: BASE_PADDING),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    decoration: const BoxDecoration(color: POLICE_MARKER_COLOR),
+                    height: MediaQuery.of(context).size.height * 0.8, // 필요한 높이를 지정
+                    child: PageView(
+                      controller: onBoardingController,
+                      children: [
+                        Image.asset('res/onboarding1.png'),
+                        Image.asset('res/onboarding2.png'),
+                        Image.asset('res/onboarding3.png'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: GAINSBORO,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SmoothPageIndicator(
+                        controller: onBoardingController,
+                        count: 3,
+                        effect: const WormEffect(
+                            activeDotColor: POLICE_MARKER_COLOR,
+                            dotColor: TEXT_HINT_COLOR,
+                            dotHeight: 6,
+                            dotWidth: 6),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: GestureDetector(
+                      onTap: () {
+                        loginKakao();
+                      },
+                      child: Image.asset('res/kakao_login_large_wide.png'),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: GestureDetector(
-              onTap: () {
-                if (loginState is BaseResponseLoading) {
-                  const CircularProgressIndicator();
-                }
-                loginKakao();
-              },
-              child: Image.asset('res/kakao_login_large_wide.png'),
-            ),
-          ),
-        ],
-      ),
-    );
+            Visibility(
+                visible: loginRequestState.socialPK != '-1' ? true : false,
+                child: LoadingLayout())
+          ]
+        ),
+      );
+
   }
 
   login(BaseResponse<LoginResponseDto> loginResponse) {
@@ -111,7 +126,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         {
           logger.d('미가입 회원 : $loginResponse');
           Navigator.of(context)
-              .pushReplacement(MaterialPageRoute(builder: (_) => const SignUpScreen()));
+              .push(MaterialPageRoute(builder: (_) => const SignUpScreen()));
           break;
         }
       //탈퇴 회원
@@ -170,8 +185,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final nickname = user.kakaoAccount!.profile!.nickname!;
       final profileImage =
           user.kakaoAccount?.profile?.profileImageUrl ?? BASE_PROFILE_URL;
-      final signUpState = ref.read(signUpRequestDtoProvider.notifier).update((state) =>
-          SignUpRequestDto(
+      final signUpState = ref.read(signUpRequestDtoProvider.notifier).update(
+          (state) => SignUpRequestDto(
               nickname: nickname,
               phoneNumber: '',
               profileImage: profileImage,

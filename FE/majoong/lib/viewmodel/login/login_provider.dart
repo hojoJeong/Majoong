@@ -11,8 +11,8 @@ import 'package:majoong/viewmodel/login/login_request_state_provider.dart';
 
 final loginProvider =
     StateNotifierProvider<LoginStateNotifier, BaseResponseState>((ref) {
-  final userApi = ref.watch(userApiServiceProvider);
-  final loginRequest = ref.watch(loginRequestStateProvider);
+  final userApi = ref.read(userApiServiceProvider);
+  final loginRequest = ref.read(loginRequestStateProvider);
   final secureStorage = ref.read(secureStorageProvider);
   final notifier = LoginStateNotifier(
       userApi: userApi, request: loginRequest, secureStorage: secureStorage);
@@ -29,20 +29,19 @@ class LoginStateNotifier extends StateNotifier<BaseResponseState> {
       {required this.userApi,
       required this.request,
       required this.secureStorage})
-      : super(BaseResponseLoading()) {
-    login(request);
-  }
+      : super(BaseResponseLoading());
 
-  login(LoginRequestDto request) async {
+  login(LoginRequestDto? request) async {
     final isAutoLogin = await secureStorage.read(key: AUTO_LOGIN) == AUTO_LOGIN ? true : false;
     late BaseResponse response;
     logger.d('isAutoLogin : $isAutoLogin');
+
     if(isAutoLogin){
       response = await userApi.autoLogin();
       state = response;
       logger.d("login provider response auto: ${response.status}, ${response.message}, ${response.data}");
     } else {
-      if (request.socialPK != "-1") {
+      if (request!.socialPK != "-1" && state is BaseResponseLoading) {
         response = await userApi.login(request);
         state = response;
         logger.d("login provider response : ${response.status}, ${response.message}, ${response.data}");

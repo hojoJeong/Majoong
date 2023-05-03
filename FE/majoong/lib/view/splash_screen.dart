@@ -16,18 +16,18 @@ class SplashScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     final checkAutoLoginState = ref.watch(checkAutoLoginProvider);
+    final autoLoginState = ref.watch(loginProvider);
     if (checkAutoLoginState) {
-      final autoLoginState = ref.watch(loginProvider);
-      if (autoLoginState is BaseResponse && autoLoginState.status == 200 ) {
+      ref.read(loginProvider.notifier).login(null);
+      if (autoLoginState is BaseResponse && autoLoginState.status == 200) {
         Future.delayed(Duration.zero, () {
           Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) => const HomeScreen()));
         });
       }
     } else {
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(Duration(seconds: 2), () {
         Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (context) => const LoginScreen()));
       });

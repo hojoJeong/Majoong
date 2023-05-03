@@ -68,18 +68,21 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 const SizedBox(
                   height: BASE_MARGIN_TITLE_TO_CONTENT,
                 ),
-                TextField(
-                  controller: nicknameController,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: WHITE_SMOKE,
-                    hintText: '이름을 입력하세요',
-                    focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(4)),
-                        borderSide: BorderSide.none),
-                    enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(4)),
-                        borderSide: BorderSide.none),
+                SizedBox(
+                  height: 60,
+                  child: TextField(
+                    controller: nicknameController,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: WHITE_SMOKE,
+                      hintText: '이름을 입력하세요',
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(4)),
+                          borderSide: BorderSide.none),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(4)),
+                          borderSide: BorderSide.none),
+                    ),
                   ),
                 ),
                 SizedBox(
@@ -102,26 +105,29 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: TextField(
-                        controller: phoneNumberController,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: WHITE_SMOKE,
-                          hintText: '-를 제외하고 입력하세요',
-                          focusedBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(4)),
-                              borderSide: BorderSide.none),
-                          enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(4)),
-                              borderSide: BorderSide.none),
+                      child: SizedBox(
+                        height: 60,
+                        child: TextField(
+                          controller: phoneNumberController,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: WHITE_SMOKE,
+                            hintText: '-를 제외하고 입력하세요',
+                            focusedBorder: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(4)),
+                                borderSide: BorderSide.none),
+                            enabledBorder: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(4)),
+                                borderSide: BorderSide.none),
+                          ),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(11),
+                          ],
                         ),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(11),
-                        ],
                       ),
                     ),
                     SizedBox(
@@ -139,15 +145,18 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           color: POLICE_MARKER_COLOR,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Text(
-                            '인증번호\n받기',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontWeight: FontWeight.normal,
-                                fontSize: 14,
-                                color: Colors.white),
+                        child: SizedBox(
+                          width: 70,
+                          height: 60,
+                          child: Center(
+                            child: Text(
+                              '인증번호\n받기',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 14,
+                                  color: Colors.white),
+                            ),
                           ),
                         ),
                       ),
@@ -174,26 +183,29 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: TextField(
-                        controller: verificationNumberController,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: WHITE_SMOKE,
-                          hintText: '인증번호를 입력하세요',
-                          focusedBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(4)),
-                              borderSide: BorderSide.none),
-                          enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(4)),
-                              borderSide: BorderSide.none),
+                      child: SizedBox(
+                        height: 60,
+                        child: TextField(
+                          controller: verificationNumberController,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: WHITE_SMOKE,
+                            hintText: '인증번호를 입력하세요',
+                            focusedBorder: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(4)),
+                                borderSide: BorderSide.none),
+                            enabledBorder: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(4)),
+                                borderSide: BorderSide.none),
+                          ),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(4),
+                          ],
                         ),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(4),
-                        ],
                       ),
                     ),
                     SizedBox(
@@ -219,15 +231,18 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           color: POLICE_MARKER_COLOR,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Text(
-                            '인증번호\n확인',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontWeight: FontWeight.normal,
-                                fontSize: 14,
-                                color: Colors.white),
+                        child: SizedBox(
+                          width: 70,
+                          height: 60,
+                          child: Center(
+                            child: Text(
+                              '인증번호\n확인',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 14,
+                                  color: Colors.white),
+                            ),
                           ),
                         ),
                       ),
