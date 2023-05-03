@@ -10,7 +10,8 @@ final centerPositionProvider = StateProvider<GetFacilityRequestDto>((ref) {
   return GetFacilityRequestDto(centerLng: 0, centerLat: 0, radius: 0);
 });
 
-final facilityProvider = StateNotifierProvider((ref) {
+final facilityProvider =
+    StateNotifierProvider<FacilityNotifier, BaseResponseState>((ref) {
   final mapService = ref.watch(mapApiServiceProvider);
   final facilityNotifier = FacilityNotifier(service: mapService);
   return facilityNotifier;
@@ -21,13 +22,11 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
 
   FacilityNotifier({required this.service}) : super(BaseResponseLoading()) {}
 
-  getFacility(GetFacilityRequestDto request) {
+  getFacility(GetFacilityRequestDto request) async {
     logger.d('request: ${request.toJson()}');
-    service.getFacility(request).then((value) {
-      if (value is BaseResponse && value.data != null) {
-        final response = value;
-        state = response;
-      }
-    });
+    final BaseResponse response = await service.getFacility(request);
+    if (response.status == 200) {
+      state = response;
+    }
   }
 }

@@ -7,6 +7,7 @@ import 'package:location/location.dart';
 import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/model/request/map/get_facility_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
+import 'package:majoong/model/response/map/get_facility_response_dto.dart';
 import 'package:majoong/viewmodel/main/facility_provider.dart';
 
 import '../common/util/logger.dart';
@@ -27,7 +28,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   late PermissionStatus _permissionGranted;
   LocationData? _locationData;
 
-  void _onMapCreated(GoogleMapController controller){
+  void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
     setState(() async {
       _markers.add(
@@ -132,6 +133,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final userInfo = ref.watch(userInfoProvider);
+    final facilityInfo = ref.watch(facilityProvider);
+
     return Scaffold(
       drawer: Drawer(
         width: MediaQuery.of(context).size.width / 1.5,
@@ -285,12 +288,32 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   Positioned(
                     top: MediaQuery.of(context).size.height / 7,
                     child: GestureDetector(
-                      onTap: () {
+                      onTap: () async {
                         final request =
                             ref.read(centerPositionProvider.notifier).state;
                         ref
                             .read(facilityProvider.notifier)
                             .getFacility(request);
+                        if (facilityInfo
+                            is BaseResponse<GetFacilityResponseDto>) {
+                          final facilityResponse = facilityInfo;
+                          final cctvList = facilityResponse.data?.cctv ?? [];
+                          final policeList =
+                              facilityResponse.data?.police ?? [];
+                          final icon = await BitmapDescriptor.fromAssetImage(
+                              ImageConfiguration(), 'res/cctv.png');
+
+                          for (var cctv in cctvList) {
+                            _markers.add(
+                              Marker(
+                                markerId: MarkerId(cctv.cctvId.toString()),
+                                position: LatLng(cctv.lat, cctv.lng),
+                                icon: icon,
+                                infoWindow: InfoWindow(title: "San Francisco"),
+                              ),
+                            );
+                          }
+                        }
                       },
                       child: Container(
                         alignment: Alignment.center,
