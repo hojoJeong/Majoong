@@ -94,7 +94,7 @@ public class ReviewService {
         review.setReviewImage(reviewImageURL);
         reviewRepository.save(review);
 
-        saveReviewtoReids(review.getReviewId(), review.getLongitude(), review.getLatitude(), review.getAddress());
+        saveReviewtoReids(review.getReviewId(), review.getLongitude(), review.getLatitude(), review.getScore(), review.getAddress());
     }
 
     @Transactional
@@ -118,12 +118,12 @@ public class ReviewService {
         s3Upload.deleteFile(imageUrl);
         reviewRepository.delete(review);
 
-        deleteReviewFromRedis(reviewId, review.getAddress());
+        deleteReviewFromRedis(reviewId, review.getScore(), review.getAddress());
     }
 
-    private void saveReviewtoReids(long reviewId, double longitude, double latitude, String address) {
+    private void saveReviewtoReids(long reviewId, double longitude, double latitude, int score, String address) {
         String key = "review";
-        String member = Long.toString(reviewId) + "_" + address;
+        String member = reviewId + "_" + address + "_" + score;
 
         try {
             GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
@@ -134,9 +134,9 @@ public class ReviewService {
         }
     }
 
-    private void deleteReviewFromRedis(long reviewId, String address) {
+    private void deleteReviewFromRedis(long reviewId, int score, String address) {
         String key = "review";
-        String member = Long.toString(reviewId) + "_" + address;
+        String member = reviewId + "_" + address + "_" + score;
 
         try {
             GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
