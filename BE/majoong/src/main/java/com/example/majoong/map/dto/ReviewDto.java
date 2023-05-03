@@ -13,4 +13,5 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 public class ReviewDto extends FacilityDto{
     private Long reviewId;
+    private int score;
 }

@@ -56,7 +56,10 @@ public class MapFacilityService {
             else if (dto instanceof StoreDto) ((StoreDto) dto).setStoreId(Long.parseLong(id));
             else if (dto instanceof CctvDto) ((CctvDto) dto).setCctvId(Long.parseLong(id));
             else if (dto instanceof BellDto) ((BellDto) dto).setBellId(Long.parseLong(id));
-            else if (dto instanceof ReviewDto) ((ReviewDto) dto).setReviewId(Long.parseLong(id));
+            else if (dto instanceof ReviewDto) {
+                ((ReviewDto) dto).setReviewId(Long.parseLong(id));
+                ((ReviewDto) dto).setScore(Integer.parseInt(member[2]));
+            }
 
             dto.setLatitude(geoResult.getContent().getPoint().getY());
             dto.setLongitude(geoResult.getContent().getPoint().getX());
