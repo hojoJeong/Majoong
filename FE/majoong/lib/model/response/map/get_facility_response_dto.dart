@@ -5,12 +5,16 @@ part 'get_facility_response_dto.g.dart';
 @JsonSerializable()
 class GetFacilityResponseDto {
   final List<CCTV> cctv;
+  final List<Police> police;
+  final List<Lamp> lamp;
+  final List<Bell> bell;
   final List<SafeRoad> safeRoad;
   final List<DangerZone> dangerZone;
   final List<Review> review;
 
-  GetFacilityResponseDto(this.cctv, this.safeRoad, this.dangerZone,
-      this.review);
+  GetFacilityResponseDto(this.cctv, this.police, this.lamp, this.bell,
+      this.safeRoad, this.dangerZone, this.review);
+
 
   factory GetFacilityResponseDto.fromJson(Map<String, dynamic> json) =>
       _$GetFacilityResponseDtoFromJson(json);
@@ -72,7 +76,6 @@ class Bell {
   factory Bell.fromJson(Map<String, dynamic> json) => _$BellFromJson(json);
 
   Map<String, dynamic> toJson() => _$BellToJson(this);
-
 }
 
 @JsonSerializable()
@@ -87,7 +90,6 @@ class Store {
   factory Store.fromJson(Map<String, dynamic> json) => _$StoreFromJson(json);
 
   Map<String, dynamic> toJson() => _$StoreToJson(this);
-
 }
 
 @JsonSerializable()

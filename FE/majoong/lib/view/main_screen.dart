@@ -1,10 +1,15 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:majoong/common/const/colors.dart';
+import 'package:majoong/model/request/map/get_facility_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
+import 'package:majoong/viewmodel/main/facility_provider.dart';
 
+import '../common/util/logger.dart';
 import '../viewmodel/main/user_info_provider.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
@@ -205,40 +210,91 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                           _locationData!.latitude!, _locationData!.longitude!),
                       zoom: 14.0,
                     ),
+                    onCameraMove: (CameraPosition position) {
+                      final lat = position.target.latitude;
+                      final lng = position.target.longitude;
+                      final zoom = position.zoom;
+                      final centerLat = lat + (180 / pow(2, zoom));
+                      final centerLng = lng;
+                      ref.read(centerPositionProvider.notifier).update((state) {
+                        return state = GetFacilityRequestDto(
+                          centerLat: centerLat,
+                          centerLng: centerLng,
+                          radius: 2000,
+                        );
+                      });
+                      logger.d('centerLat: $centerLat centerLng: $centerLng');
+                    },
                     myLocationEnabled: true,
                   ),
-                  Container(
-                    margin: EdgeInsets.only(
-                        top: MediaQuery.of(context).size.height / 10),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          for (String choice in _choices)
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 4.0),
-                              child: ChoiceChip(
-                                backgroundColor: Colors.grey,
-                                label: Text(
-                                  choice,
-                                  style: TextStyle(color: Colors.white),
+                  Positioned(
+                    top: MediaQuery.of(context).size.height / 12,
+                    left: MediaQuery.of(context).size.width / 50,
+                    right: MediaQuery.of(context).size.width / 50,
+                    child: Container(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            for (String choice in _choices)
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4.0),
+                                child: ChoiceChip(
+                                  backgroundColor: Colors.grey,
+                                  label: Text(
+                                    choice,
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  selectedColor: PRIMARY_COLOR,
+                                  selected: _selectedChoices.contains(choice),
+                                  onSelected: (bool selected) {
+                                    setState(() {
+                                      print(_selectedChoices.toString());
+                                      if (selected) {
+                                        _selectedChoices.add(choice);
+                                      } else {
+                                        _selectedChoices.remove(choice);
+                                      }
+                                    });
+                                  },
                                 ),
-                                selectedColor: PRIMARY_COLOR,
-                                selected: _selectedChoices.contains(choice),
-                                onSelected: (bool selected) {
-                                  setState(() {
-                                    print(_selectedChoices.toString());
-                                    if (selected) {
-                                      _selectedChoices.add(choice);
-                                    } else {
-                                      _selectedChoices.remove(choice);
-                                    }
-                                  });
-                                },
                               ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: MediaQuery.of(context).size.height / 7,
+                    child: GestureDetector(
+                      onTap: () {
+                        final request =
+                            ref.read(centerPositionProvider.notifier).state;
+                        ref
+                            .read(facilityProvider.notifier)
+                            .getFacility(request);
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        height: MediaQuery.of(context).size.height / 25,
+                        width: MediaQuery.of(context).size.width / 3,
+                        child: Text(
+                          '현재 위치에서 검색',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30),
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                              offset: const Offset(0, 3),
                             ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -282,6 +338,26 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  Positioned(
+                    left: MediaQuery.of(context).size.width / 4,
+                    bottom: MediaQuery.of(context).size.height / 7,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width / 2,
+                      height: MediaQuery.of(context).size.height / 20,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Color(0xFF77469C),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: Text(
+                        '+ 현재위치 리뷰 작성',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                   Positioned(

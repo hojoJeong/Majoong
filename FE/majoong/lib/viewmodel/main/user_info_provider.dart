@@ -7,7 +7,6 @@ final userInfoProvider =
     StateNotifierProvider<UserInfoNotifier, UserInfoResponseDto>((ref) {
   final userService = ref.watch(userApiServiceProvider);
   final userInfoNotifier = UserInfoNotifier(service: userService);
-  userInfoNotifier.getUserInfo();
   return userInfoNotifier;
 });
 
