@@ -29,7 +29,7 @@ public class MapController {
 
     private final MapService mapService;
 
-    @GetMapping("/facility")
+    @PostMapping("/facility")
     @Operation(summary = "시설물 조회 API", description = "cctv, 가로등, 비상벨, 경찰서, 편의점, 안심귀갓길, 위험지역, 리뷰")
     public ResponseEntity getFacility(@RequestBody MapFacilityRequestDto position) {
         MapFacilityResponseDto facilities = mapFacilityService.getMapFacilities(position);
