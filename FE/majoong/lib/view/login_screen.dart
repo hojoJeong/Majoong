@@ -104,7 +104,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
             Visibility(
-                visible: loginRequestState.socialPK != '-1' ? true : false,
+                visible: loginRequestState.socialPK != '-1' && loginState is BaseResponseLoading ? true : false,
                 child: LoadingLayout())
           ]
         ),
