@@ -72,4 +72,21 @@ public class ErrorHandler {
         return data.builder();
     }
 
+    @ExceptionHandler(NotExistRecordingException.class)
+    public ResponseEntity<?> NotExistRecordingException() {
+        ResponseData data = new ResponseData(ErrorEnum.NOT_EXIST_RECORDING);
+        return data.builder();
+    }
+
+    @ExceptionHandler(RecordingInProgressException.class)
+    public ResponseEntity<?> RecordingInProgressException() {
+        ResponseData data = new ResponseData(ErrorEnum.RECORDING_IN_PROGRESS);
+        return data.builder();
+    }
+
+    @ExceptionHandler(NotExistSessionException.class)
+    public ResponseEntity<?> NotExistSessionException() {
+        ResponseData data = new ResponseData(ErrorEnum.NOT_EXIST_SESSION);
+        return data.builder();
+    }
 }
