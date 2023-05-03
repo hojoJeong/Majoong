@@ -16,7 +16,7 @@ public class FCMInitializer {
 
     @PostConstruct
     public void initialize() throws IOException {
-        ClassPathResource resource = new ClassPathResource("firebase_service_key.json");
+        ClassPathResource resource = new ClassPathResource("fcm/firebase_service_key.json");
 
         try (InputStream is = resource.getInputStream()) {
             FirebaseOptions options = FirebaseOptions.builder()

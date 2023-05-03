@@ -26,7 +26,7 @@ public class FCMService {
     public String getAccessToken() throws IOException {
 
         GoogleCredentials googleCredentials = GoogleCredentials
-                .fromStream(new ClassPathResource("firebase_service_key.json").getInputStream())
+                .fromStream(new ClassPathResource("fcm/firebase_service_key.json").getInputStream())
                 .createScoped(List.of("https://www.googleapis.com/auth/cloud-platform"));
 
         googleCredentials.refreshIfExpired();
