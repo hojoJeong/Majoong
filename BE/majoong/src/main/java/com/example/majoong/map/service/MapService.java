@@ -145,7 +145,8 @@ public class MapService {
         return response;
     }
 
-    public void endSharedMoving(int userId){
+
+    public void endMoving(int userId) {
         String key = "moving_location:" + userId;
         redisTemplate.delete(key);
     }
