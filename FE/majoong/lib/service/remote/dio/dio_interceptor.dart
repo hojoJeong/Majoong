@@ -16,10 +16,13 @@ class DioInterceptor extends Interceptor {
     logger.d('[REQ] [${options.method}] ${options.uri}');
 
     /** auth API 호출 시 */
-    if (options.headers[ACCESS_TOKEN] == AUTH) {
+    if (options.headers[AUTHORIZATION] == AUTH) {
       options.headers.remove(ACCESS_TOKEN);
       final token = await secureStorage.read(key: ACCESS_TOKEN);
-      options.headers.addAll({"Authorization": 'Bearer $token'});
+      options.headers.addAll({
+        "Authorization":
+            'Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MiwiaWF0IjoxNjgyOTEzOTIwLCJleHAiOjE2ODM1MTg3MjB9.FKf7FXHLz0BLzBQ_0XF6rxiwhDneM22aGXnpbN44P54'
+      });
     }
     super.onRequest(options, handler);
   }

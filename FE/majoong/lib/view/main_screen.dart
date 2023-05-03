@@ -1,14 +1,11 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:majoong/common/const/colors.dart';
-import 'package:majoong/common/const/key_value.dart';
-import 'package:majoong/common/util/logger.dart';
-import 'package:majoong/service/remote/api/user_api_service.dart';
+import 'package:majoong/model/response/base_response.dart';
+
+import '../viewmodel/main/user_info_provider.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   MainScreen({Key? key}) : super(key: key);
@@ -118,81 +115,83 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       drawer: Drawer(
         width: MediaQuery.of(context).size.width / 1.5,
         child: SafeArea(
-          child: Column(
-            children: [
-              Container(
-                width: MediaQuery.of(context).size.width,
-                child: IconButton(
-                  alignment: Alignment.topRight,
-                  icon: Icon(Icons.notifications_none_rounded),
-                  onPressed: () {},
-                ),
-              ),
-              Container(
-                width: MediaQuery.of(context).size.width / 2.5,
-                height: MediaQuery.of(context).size.width / 2.5,
-                child: CircleAvatar(
-                  backgroundImage: NetworkImage(userInfo.profileImage),
-                  radius: 100, // 동그란 영역의 반지름
-                ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Text(
-                userInfo.nickname,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Text(
-                userInfo.phoneNumber,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: Colors.grey,
-                ),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Divider(
-                thickness: 1,
-              ),
-              drawerMenu(title: '즐겨찾기'),
-              drawerMenu(title: '친구 관리'),
-              drawerMenu(title: '녹화기록'),
-              drawerMenu(title: '회원정보 수정'),
-              drawerMenu(title: 'PIN 변경'),
-              drawerMenu(title: '알림 설정'),
-              Expanded(
-                child: Container(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: GestureDetector(
-                      onTap: () {
-                        print('tab!!!!!!!');
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text('로그아웃'),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          Icon(Icons.logout),
-                        ],
+          child: userInfo is BaseResponseLoading
+              ? Center(child: CircularProgressIndicator())
+              : Column(
+                  children: [
+                    Container(
+                      width: MediaQuery.of(context).size.width,
+                      child: IconButton(
+                        alignment: Alignment.topRight,
+                        icon: Icon(Icons.notifications_none_rounded),
+                        onPressed: () {},
                       ),
                     ),
-                  ),
+                    Container(
+                      width: MediaQuery.of(context).size.width / 2.5,
+                      height: MediaQuery.of(context).size.width / 2.5,
+                      child: CircleAvatar(
+                        backgroundImage: NetworkImage(userInfo.profileImage),
+                        radius: 100, // 동그란 영역의 반지름
+                      ),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      userInfo.nickname,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      userInfo.phoneNumber,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Divider(
+                      thickness: 1,
+                    ),
+                    drawerMenu(title: '즐겨찾기'),
+                    drawerMenu(title: '친구 관리'),
+                    drawerMenu(title: '녹화기록'),
+                    drawerMenu(title: '회원정보 수정'),
+                    drawerMenu(title: 'PIN 변경'),
+                    drawerMenu(title: '알림 설정'),
+                    Expanded(
+                      child: Container(
+                        alignment: Alignment.bottomCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: GestureDetector(
+                            onTap: () {
+                              print('tab!!!!!!!');
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text('로그아웃'),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Icon(Icons.logout),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
                 ),
-              )
-            ],
-          ),
         ),
       ),
       body: _locationData != null

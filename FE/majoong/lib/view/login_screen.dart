@@ -5,7 +5,7 @@ import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/common/const/key_value.dart';
 import 'package:majoong/common/util/logger.dart';
-import 'package:majoong/model/request/login_request_dto.dart';
+import 'package:majoong/model/request/user/login_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/user/login_response_dto.dart';
 import 'package:majoong/service/local/secure_storage.dart';
@@ -73,8 +73,7 @@ class LoginScreen extends ConsumerWidget {
                 print('카카오 로그인 실행');
                 kakaoLoginState.when(
                     data: (data) {
-                      logger
-                          .d('kakao login response }');
+                      logger.d('kakao login response }');
                     },
                     error: (err, stackTrace) {
                       logger.e('kakao login error : $err, $stackTrace');

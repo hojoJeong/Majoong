@@ -4,12 +4,14 @@ import 'package:majoong/common/const/key_value.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/user/login_response_dto.dart';
 import 'package:majoong/service/local/secure_storage.dart';
-import 'package:majoong/service/remote/api/user_api_service.dart';
+import 'package:majoong/service/remote/api/user/user_api_service.dart';
 
-final autoLoginProvider = StateNotifierProvider<AutoLoginStateNotifier, BaseResponseState>((ref) {
+final autoLoginProvider =
+    StateNotifierProvider<AutoLoginStateNotifier, BaseResponseState>((ref) {
   final userApi = ref.watch(userApiServiceProvider);
   final secureStorage = ref.watch(secureStorageProvider);
-  final notifier = AutoLoginStateNotifier(userApi: userApi, secureStorage: secureStorage);
+  final notifier =
+      AutoLoginStateNotifier(userApi: userApi, secureStorage: secureStorage);
 
   return notifier;
 });

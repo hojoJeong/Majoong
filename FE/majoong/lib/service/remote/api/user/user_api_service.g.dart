@@ -24,7 +24,7 @@ class _UserApiService implements UserApiService {
   Future<BaseResponse<ReTokenResponseDto>> getNewAccessToken() async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{r'refreshToken': 'auth'};
+    final _headers = <String, dynamic>{r'Authorization': 'auth'};
     _headers.removeWhere((k, v) => v == null);
     final _data = <String, dynamic>{};
     final _result = await _dio.fetch<Map<String, dynamic>>(
@@ -51,7 +51,7 @@ class _UserApiService implements UserApiService {
   Future<BaseResponse<LoginResponseDto>> login(request) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{r'accessToken': 'no_auth'};
+    final _headers = <String, dynamic>{r'Authorization': 'no_auth'};
     _headers.removeWhere((k, v) => v == null);
     final _data = <String, dynamic>{};
     _data.addAll(request.toJson());
@@ -79,7 +79,7 @@ class _UserApiService implements UserApiService {
   Future<BaseResponse<LoginResponseDto>> autoLogin() async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{r'accessToken': 'auth'};
+    final _headers = <String, dynamic>{r'Authorization': 'auth'};
     _headers.removeWhere((k, v) => v == null);
     final _data = <String, dynamic>{};
     final _result = await _dio.fetch<Map<String, dynamic>>(
@@ -106,7 +106,7 @@ class _UserApiService implements UserApiService {
   Future<BaseResponse<UserInfoResponseDto>> getUserInfo() async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{r'accessToken': 'auth'};
+    final _headers = <String, dynamic>{r'Authorization': 'auth'};
     _headers.removeWhere((k, v) => v == null);
     final _data = <String, dynamic>{};
     final _result = await _dio.fetch<Map<String, dynamic>>(
