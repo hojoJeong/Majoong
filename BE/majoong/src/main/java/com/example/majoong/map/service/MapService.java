@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -81,17 +83,23 @@ public class MapService {
         hashOperations.put(key, "startLat", String.valueOf(movingInfo.getStartLat()));
         hashOperations.put(key, "endLng", String.valueOf(movingInfo.getEndLng()));
         hashOperations.put(key, "endLat", String.valueOf(movingInfo.getEndLat()));
+
+        List<LocationDto> path = getRecommendPath(movingInfo);
+
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        hashOperations.put(key, "path", String.valueOf(path));
+
     }
 
 
-    public LocationRequestDto getLocationInfo(int userId) {
+    public MovingInfoDto getLocationInfo(int userId) {
         String key = "moving_location:" + userId;
         HashOperations hashOperations = redisTemplate.opsForHash();
         Map<String, Object> hash = hashOperations.entries(key);
         if (hash.isEmpty()) {
             return null;
         }
-        LocationRequestDto movingInfo = new LocationRequestDto();
+        MovingInfoDto movingInfo = new MovingInfoDto();
         String guardiansStr = (String) hash.get("guardians");
         Gson gson = new Gson();
         Type type = new TypeToken<List<Integer>>(){}.getType();
@@ -102,16 +110,31 @@ public class MapService {
         movingInfo.setStartLat(Double.parseDouble((String) hash.get("startLat")));
         movingInfo.setEndLng(Double.parseDouble((String) hash.get("endLng")));
         movingInfo.setEndLat(Double.parseDouble((String) hash.get("endLat")));
+
+        String path = (String) hash.get("path");
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        path = path.replaceAll("LocationDto", "");
+
+        Pattern pattern = Pattern.compile("\\(lng=(.*?), lat=(.*?)\\)");
+        Matcher matcher = pattern.matcher(path);
+        while (matcher.find()) {
+            String lng = matcher.group(1);
+            String lat = matcher.group(2);
+            Map<String, Object> locationMap = new HashMap<>();
+            locationMap.put("lng", Double.parseDouble(lng));
+            locationMap.put("lat", Double.parseDouble(lat));
+            resultList.add(locationMap);
+        }
+        movingInfo.setPath(resultList);
         return movingInfo;
     }
 
 
     public Map showSharedMoving(int userId) {
-        LocationRequestDto movingInfo = getLocationInfo(userId);
-        List<LocationDto> path = getRecommendPath(movingInfo);
+        MovingInfoDto movingInfo = getLocationInfo(userId);
         User user = userRepository.findById(userId).get();
         Map<String,Object> response = new HashMap<>();
-        response.put("path",path);
+        response.put("path",movingInfo.getPath());
         response.put("userId",userId);
         response.put("nickname",user.getNickname());
         String phoneNumber = user.getPhoneNumber();
