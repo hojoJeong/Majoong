@@ -1,4 +1,4 @@
-const double BASE_PADDING = 20;
+const double BASE_PADDING = 28;
 const double BASE_MARGIN_TITLE_TO_CONTENT = 10;
 const double BASE_MARGIN_CONTENTS_TO_CONTENTS = 14;
 const double BASE_TITLE_FONT_SIZE = 16;
