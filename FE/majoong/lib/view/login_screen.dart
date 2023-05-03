@@ -16,7 +16,7 @@ import 'package:majoong/view/home_screen.dart';
 import 'package:majoong/view/sign_up_screen.dart';
 import 'package:majoong/viewmodel/login/login_provider.dart';
 import 'package:majoong/viewmodel/login/login_request_state_provider.dart';
-import 'package:majoong/viewmodel/login/sign_up_provider.dart';
+import 'package:majoong/viewmodel/signup/sign_up_request_dto_provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -170,7 +170,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final nickname = user.kakaoAccount!.profile!.nickname!;
       final profileImage =
           user.kakaoAccount?.profile?.profileImageUrl ?? BASE_PROFILE_URL;
-      final signUpState = ref.read(signUpProvider.notifier).update((state) =>
+      final signUpState = ref.read(signUpRequestDtoProvider.notifier).update((state) =>
           SignUpRequestDto(
               nickname: nickname,
               phoneNumber: '',

@@ -6,9 +6,10 @@ import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/layout/default_layout.dart';
 import 'package:majoong/common/util/logger.dart';
+import 'package:majoong/model/request/sign_up_request_dto.dart';
 import 'package:majoong/model/request/verify_number_request_dto.dart';
 import 'package:majoong/view/pin_number_screen.dart';
-import 'package:majoong/viewmodel/login/sign_up_provider.dart';
+import 'package:majoong/viewmodel/signup/sign_up_request_dto_provider.dart';
 import 'package:majoong/viewmodel/signup/verify_number_provider.dart';
 
 import '../viewmodel/signup/receive_verification_number_provider.dart';
@@ -24,7 +25,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     final verifyNumberState = ref.watch(verifyNumberProvider);
-    final signUpState = ref.read(signUpProvider);
+    final signUpState = ref.read(signUpRequestDtoProvider);
     final receiveNumberState = ref.watch(receiveVerificationNumberProvide);
     if (receiveNumberState == 200) {
       showToast(context: context, '인증번호를 전송하였습니다.');
@@ -251,8 +252,22 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                             backgroundColor: POLICE_MARKER_COLOR,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8))),
-                        onPressed: verifyNumberState
+                        onPressed: (nicknameController.text.isNotEmpty &&
+                                phoneNumberController.text.length == 11 &&
+                                verifyNumberState)
                             ? () {
+                                final signUpRequestDto =
+                                    ref.read(signUpRequestDtoProvider);
+                                ref
+                                    .read(signUpRequestDtoProvider.notifier)
+                                    .update((state) => SignUpRequestDto(
+                                        nickname: nicknameController.text,
+                                        phoneNumber: phoneNumberController.text,
+                                        profileImage:
+                                            signUpRequestDto.profileImage,
+                                        pinNumber: "",
+                                        socialPK: signUpRequestDto.socialPK));
+
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
