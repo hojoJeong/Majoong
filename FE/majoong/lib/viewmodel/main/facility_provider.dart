@@ -25,7 +25,8 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
     logger.d('request: ${request.toJson()}');
     service.getFacility(request).then((value) {
       if (value is BaseResponse && value.data != null) {
-        logger.d(value.data!.cctv[0]);
+        final response = value;
+        state = response;
       }
     });
   }
