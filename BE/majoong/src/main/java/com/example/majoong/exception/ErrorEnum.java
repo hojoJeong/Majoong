@@ -1,7 +1,10 @@
 package com.example.majoong.exception;
 
 public enum ErrorEnum {
+    NOT_EXIST_SESSION_FOR_CONNECTION("세션이 존재하지 않아 연결을 삭제할 수 없습니다.",400),
     INVALID_REFRESHTOKEN("refreshToken 만료", 401),
+    SESSION_DELETION_PERMISSION("세션 삭제 권한이 없습니다.",403),
+    NOT_EXIST_CONNECTION("해당 연결이 존재하지 않습니다.",404),
     NOT_EXIST_SESSION("해당 세션이 존재하지 않습니다.",404),
     NOT_EXIST_RECORDING("해당 녹화 영상은 존재하지 않습니다.", 404),
     RECORDING_IN_PROGRESS("녹화가 진행중이므로 삭제할 수 없습니다.", 409),

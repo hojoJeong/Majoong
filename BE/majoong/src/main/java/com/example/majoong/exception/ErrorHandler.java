@@ -89,4 +89,22 @@ public class ErrorHandler {
         ResponseData data = new ResponseData(ErrorEnum.NOT_EXIST_SESSION);
         return data.builder();
     }
+
+    @ExceptionHandler(SessionDeletionPermissionException.class)
+    public ResponseEntity<?> SessionDeletionPermissionException() {
+        ResponseData data = new ResponseData(ErrorEnum.SESSION_DELETION_PERMISSION);
+        return data.builder();
+    }
+
+    @ExceptionHandler(NotExistConnectionException.class)
+    public ResponseEntity<?> NotExistConnectionException() {
+        ResponseData data = new ResponseData(ErrorEnum.NOT_EXIST_CONNECTION);
+        return data.builder();
+    }
+
+    @ExceptionHandler(NotExistSessionForConnectionException.class)
+    public ResponseEntity<?> NotExistSessionForConnectionException() {
+        ResponseData data = new ResponseData(ErrorEnum.NOT_EXIST_SESSION_FOR_CONNECTION);
+        return data.builder();
+    }
 }
