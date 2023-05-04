@@ -2,6 +2,7 @@ package com.example.majoong.response;
 
 import com.example.majoong.exception.ErrorEnum;
 import lombok.Data;
+import lombok.ToString;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 

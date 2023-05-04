@@ -40,7 +40,15 @@ dependencies {
 	implementation 'com.opencsv:opencsv:5.5.2'
 	//swagger
 	implementation 'org.springdoc:springdoc-openapi-ui:1.6.12'
-
+	//rabbitmq
+	implementation 'org.springframework.boot:spring-boot-starter-amqp'
+	//gson
+	implementation 'com.google.code.gson:gson:2.9.0'
+	//s3
+	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+	// FCM
+	implementation 'com.google.firebase:firebase-admin:8.1.0'
+	implementation 'com.squareup.okhttp3:okhttp:4.9.2'
 }
 
 tasks.named('test') {
