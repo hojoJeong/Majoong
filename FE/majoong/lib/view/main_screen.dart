@@ -1,13 +1,12 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:location/location.dart';
 import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/model/request/map/get_facility_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
-import 'package:majoong/model/response/map/get_facility_response_dto.dart';
+import 'package:majoong/model/response/user/user_info_response_dto.dart';
 import 'package:majoong/viewmodel/main/facility_provider.dart';
 import 'package:majoong/viewmodel/main/marker_provider.dart';
 
@@ -114,8 +113,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     );
   }
 
-  List<String> _selectedChoices = [];
-
   List<String> _choices = [
     'CCTV',
     '가로등',
@@ -129,91 +126,106 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userInfo = ref.watch(userInfoProvider);
+    final userInfo = ref.watch(userInfoProvider.notifier).state;
     final facilityInfo = ref.watch(facilityProvider.notifier);
     final markerInfo = ref.watch(markerProvider.notifier);
     final chipInfo = ref.watch(chipProvider.notifier);
+    final cameraMovedInfo = ref.watch(cameraMovedProvider);
     return Scaffold(
       drawer: Drawer(
         width: MediaQuery.of(context).size.width / 1.5,
         child: SafeArea(
-          child: userInfo is BaseResponseLoading
-              ? Center(child: CircularProgressIndicator())
-              : Column(
-                  children: [
-                    Container(
-                      width: MediaQuery.of(context).size.width,
-                      child: IconButton(
-                        alignment: Alignment.topRight,
-                        icon: Icon(Icons.notifications_none_rounded),
-                        onPressed: () {},
-                      ),
-                    ),
-                    Container(
+          child: Column(
+            children: [
+              Container(
+                width: MediaQuery.of(context).size.width,
+                child: IconButton(
+                  alignment: Alignment.topRight,
+                  icon: Icon(Icons.notifications_none_rounded),
+                  onPressed: () {},
+                ),
+              ),
+              userInfo is BaseResponseLoading
+                  ? Container()
+                  : Container(
                       width: MediaQuery.of(context).size.width / 2.5,
                       height: MediaQuery.of(context).size.width / 2.5,
                       child: CircleAvatar(
-                        backgroundImage: NetworkImage(userInfo.profileImage),
+                        backgroundColor: Colors.transparent,
+                        backgroundImage: NetworkImage(
+                            (userInfo as BaseResponse<UserInfoResponseDto>)
+                                .data!
+                                .profileImage!),
                         radius: 100, // 동그란 영역의 반지름
                       ),
                     ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Text(
-                      userInfo.nickname,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Text(
-                      userInfo.phoneNumber,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Divider(
-                      thickness: 1,
-                    ),
-                    drawerMenu(title: '즐겨찾기'),
-                    drawerMenu(title: '친구 관리'),
-                    drawerMenu(title: '녹화기록'),
-                    drawerMenu(title: '회원정보 수정'),
-                    drawerMenu(title: 'PIN 변경'),
-                    drawerMenu(title: '알림 설정'),
-                    Expanded(
-                      child: Container(
-                        alignment: Alignment.bottomCenter,
-                        child: Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: GestureDetector(
-                            onTap: () {
-                              print('tab!!!!!!!');
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Text('로그아웃'),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Icon(Icons.logout),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
-                  ],
+              SizedBox(
+                height: 10,
+              ),
+              Text(
+                userInfo is BaseResponse<UserInfoResponseDto>
+                    ? (userInfo as BaseResponse<UserInfoResponseDto>)
+                            .data
+                            ?.nickname ??
+                        ''
+                    : '',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
                 ),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Text(
+                userInfo is BaseResponse<UserInfoResponseDto>
+                    ? (userInfo as BaseResponse<UserInfoResponseDto>)
+                            .data
+                            ?.phoneNumber ??
+                        ''
+                    : '',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.grey,
+                ),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Divider(
+                thickness: 1,
+              ),
+              drawerMenu(title: '즐겨찾기'),
+              drawerMenu(title: '친구 관리'),
+              drawerMenu(title: '녹화기록'),
+              drawerMenu(title: '회원정보 수정'),
+              drawerMenu(title: 'PIN 변경'),
+              drawerMenu(title: '알림 설정'),
+              Expanded(
+                child: Container(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        print('tab!!!!!!!');
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text('로그아웃'),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Icon(Icons.logout),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            ],
+          ),
         ),
       ),
       body: _locationData != null
@@ -229,7 +241,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       zoom: 15.7,
                     ),
                     onCameraMove: (CameraPosition position) {
-                      logger.d(position.zoom);
                       final lat = position.target.latitude;
                       final lng = position.target.longitude;
                       final centerLat = lat;
@@ -241,7 +252,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                           radius: 1000,
                         );
                       });
-                      logger.d('centerLat: $centerLat centerLng: $centerLng');
+                      ref
+                          .read(cameraMovedProvider.notifier)
+                          .update((state) => true);
                     },
                     myLocationEnabled: true,
                   ),
@@ -268,7 +281,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                   selected: chipInfo.state.contains(choice),
                                   onSelected: (bool selected) {
                                     chipInfo.toggleChip(choice);
-                                    logger.d(chipInfo.state.toString());
                                     markerInfo.renderMarker();
                                     setState(() {});
                                   },
@@ -284,30 +296,39 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     child: GestureDetector(
                       onTap: () async {
                         facilityInfo.getFacility();
+                        ref
+                            .read(cameraMovedProvider.notifier)
+                            .update((state) => false);
                       },
-                      child: Container(
-                        alignment: Alignment.center,
-                        height: MediaQuery.of(context).size.height / 25,
-                        width: MediaQuery.of(context).size.width / 3,
-                        child: Text(
-                          '현재 위치에서 검색',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 2,
-                              blurRadius: 5,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                      ),
+                      child: cameraMovedInfo
+                          ? Container(
+                              alignment: Alignment.center,
+                              height: MediaQuery.of(context).size.height / 25,
+                              width: MediaQuery.of(context).size.width / 3,
+                              child: Text(
+                                '현재 위치에서 검색',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(30),
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.5),
+                                    spreadRadius: 2,
+                                    blurRadius: 5,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Container(),
                     ),
                   ),
+                  ref.read(facilityProvider.notifier).state
+                          is BaseResponseLoading
+                      ? loadingWidget()
+                      : Container(),
                   Container(
                     margin: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
@@ -415,6 +436,31 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           : const Center(
               child: CircularProgressIndicator(),
             ),
+    );
+  }
+
+  Widget loadingWidget() {
+    return Positioned(
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height,
+      child: Container(
+        color: Colors.black.withOpacity(0.5),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '잠시만 기다려주세요 :)',
+              style:
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            LoadingAnimationWidget.staggeredDotsWave(
+                color: Colors.white, size: 60)
+          ],
+        ),
+      ),
     );
   }
 }

@@ -12,17 +12,14 @@ class MarkerNotifier extends StateNotifier<Set<Marker>> {
   MarkerNotifier({required this.chipNotifier}) : super(Set()) {}
   final cctvMarkerSet = Set();
   final policeMarkerSet = Set();
+  final lampMarkerSet = Set();
   final ChipNotifier chipNotifier;
 
   renderMarker() {
     state.clear();
     final chips = chipNotifier.state;
-    logger.d('chips: $chips');
     if (chips.contains('CCTV')) {
-      logger.d('cctvMarkerSet');
       addAllMarker(cctvMarkerSet);
-      logger.d(cctvMarkerSet.length);
-      logger.d(state.length);
     }
     if (chips.contains('경찰서')) {
       addAllMarker(policeMarkerSet);
@@ -45,6 +42,10 @@ class MarkerNotifier extends StateNotifier<Set<Marker>> {
 
   addPoliceMarker(marker) {
     policeMarkerSet.add(marker);
+  }
+
+  addLampMarker(marker) {
+    lampMarkerSet.add(marker);
   }
 }
 

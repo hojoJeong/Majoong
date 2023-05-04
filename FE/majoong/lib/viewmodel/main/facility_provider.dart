@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:majoong/model/response/map/get_facility_response_dto.dart';
@@ -12,6 +15,10 @@ import '../../model/response/base_response.dart';
 // 시설물 조회 api RequestDto
 final centerPositionProvider = StateProvider<GetFacilityRequestDto>((ref) {
   return GetFacilityRequestDto(centerLng: 0, centerLat: 0, radius: 0);
+});
+
+final cameraMovedProvider = StateProvider<bool>((ref) {
+  return false;
 });
 
 final facilityProvider =
@@ -42,13 +49,12 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
       : super(BaseResponseLoading()) {}
 
   getFacility() async {
+    state = BaseResponseLoading();
     final request = centerPositionNotifier.state;
-    logger.d('request: ${request.toJson()}');
     final BaseResponse<GetFacilityResponseDto> response =
         await service.getFacility(request);
     if (response.status == 200) {
       state = response;
-      logger.d(response.data?.cctv?.length ?? 'null');
       final cctvList = response.data?.cctv ?? [];
       final policeList = response.data?.police ?? [];
       final lampList = response.data?.lamp ?? [];
@@ -75,8 +81,42 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
         ));
       }
 
+      final lampIcon = await BitmapDescriptor.fromAssetImage(
+          ImageConfiguration(), 'res/lamp.png');
+      for (var lamp in lampList) {
+        markerNotifier.addLampMarker(Marker(
+          markerId: MarkerId(lamp.lampId.toString()),
+          position: LatLng(lamp.lat, lamp.lng),
+          icon: lampIcon,
+          infoWindow: InfoWindow(title: lamp.address),
+        ));
+      }
       markerNotifier.renderMarker();
-      logger.d('renderMarker');
     }
+  }
+
+  Future<BitmapDescriptor> getCustomMarkerIcon() async {
+    final Size imageSize = Size(30, 30);
+    final PictureRecorder pictureRecorder = PictureRecorder();
+    final Canvas canvas = Canvas(pictureRecorder);
+
+    final Paint paint = Paint()
+      ..color = Colors.yellow.withOpacity(0.2)
+      ..style = PaintingStyle.fill;
+
+    canvas.drawCircle(
+      Offset(imageSize.width / 2, imageSize.height / 2),
+      imageSize.width / 2,
+      paint,
+    );
+
+    final img = await pictureRecorder.endRecording().toImage(
+          imageSize.width.toInt(),
+          imageSize.height.toInt(),
+        );
+    final data = await img.toByteData(format: ImageByteFormat.png);
+    final bytes = data?.buffer.asUint8List();
+
+    return BitmapDescriptor.fromBytes(bytes!);
   }
 }
