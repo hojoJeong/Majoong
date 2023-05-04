@@ -90,9 +90,9 @@ public class ErrorHandler {
         return data.builder();
     }
 
-    @ExceptionHandler(SessionDeletionPermissionException.class)
+    @ExceptionHandler(InsufficientPermissionException.class)
     public ResponseEntity<?> SessionDeletionPermissionException() {
-        ResponseData data = new ResponseData(ErrorEnum.SESSION_DELETION_PERMISSION);
+        ResponseData data = new ResponseData(ErrorEnum.INSUFFICIENT_PERMISSION);
         return data.builder();
     }
 
@@ -105,6 +105,20 @@ public class ErrorHandler {
     @ExceptionHandler(NotExistSessionForConnectionException.class)
     public ResponseEntity<?> NotExistSessionForConnectionException() {
         ResponseData data = new ResponseData(ErrorEnum.NOT_EXIST_SESSION_FOR_CONNECTION);
+        return data.builder();
+    }
+
+
+    @ExceptionHandler(NoConnectedParticipantsException.class)
+    public ResponseEntity<?> NoConnectedParticipantsException() {
+        ResponseData data = new ResponseData(ErrorEnum.NO_CONNECTED_PARTICIPANTS);
+        return data.builder();
+    }
+
+
+    @ExceptionHandler(RecordingNotStartedException.class)
+    public ResponseEntity<?> RecordingNotStartedException() {
+        ResponseData data = new ResponseData(ErrorEnum.RECORDING_NOT_STARTED);
         return data.builder();
     }
 }
