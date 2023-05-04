@@ -18,6 +18,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import static java.rmi.server.LogStream.log;
@@ -132,6 +133,18 @@ public class UserController {
         }
         log.info(data.toString());
         log.info("/user/phone/verify end\n");
+        log.info("");
+        return data.builder();
+    }
+
+    @Operation(summary = "휴대폰 인증번호 전송", description = "인증번호를 전송합니다.")
+    @PostMapping("/phone112")
+    public ResponseEntity<?> sendAuthNumber(@RequestBody Map<String,String> message) throws NoSuchAlgorithmException, URISyntaxException, InvalidKeyException, JsonProcessingException, UnsupportedEncodingException {
+        log.info("/user/phone112 @Post start");
+        ResponseData data = new ResponseData();
+        data.setData(messageService.sendContentMessage(message.get("content")));
+        log.info(data.toString());
+        log.info("/user/phone112 end\n");
         log.info("");
         return data.builder();
     }
