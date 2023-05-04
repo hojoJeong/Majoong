@@ -46,6 +46,6 @@ abstract class UserApiService {
   Future<BaseResponse> verifyNumber(@Body() VerifyNumberRequestDto request) ;
 
   @Headers({AUTHORIZATION: NO_AUTH})
-  @POST('user/signUp')
+  @POST('user/signup')
   Future<BaseResponse> signUp(@Body() SignUpRequestDto request);
 }

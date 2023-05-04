@@ -5,6 +5,7 @@ import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/layout/default_layout.dart';
+import 'package:majoong/common/layout/loading_visibility_provider.dart';
 import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/request/sign_up_request_dto.dart';
 import 'package:majoong/view/login_screen.dart';
@@ -15,41 +16,50 @@ class PinNumberScreen extends ConsumerStatefulWidget {
   const PinNumberScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => PinNumberScreenState();
+  ConsumerState<PinNumberScreen> createState() => _PinNumberScreenState();
 }
 
-class PinNumberScreenState extends ConsumerState {
+class _PinNumberScreenState extends ConsumerState<PinNumberScreen> {
   bool _onEditing = true;
   String? _code = "";
 
   @override
   Widget build(BuildContext context) {
     final signUpState = ref.watch(signUpProvider);
-
+    if (signUpState) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        showToast(context: context, '환영합니다! 로그인을 시도해주세요.');
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => LoginScreen()),
+            (route) => false);
+      });
+    }
     return DefaultLayout(
-        title: 'PIN 번호 입력',
-        body: Padding(
-          padding: const EdgeInsets.symmetric(vertical: BASE_PADDING),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  '경찰 신고 취소 등\n오작동 방지용으로 사용됩니다.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      fontSize: BASE_TITLE_FONT_SIZE, color: Colors.black),
+      title: 'PIN 번호 입력',
+      body: Padding(
+        padding: const EdgeInsets.symmetric(vertical: BASE_PADDING),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                '경찰 신고 취소 등\n오작동 방지용으로 사용됩니다.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: BASE_TITLE_FONT_SIZE, color: Colors.black),
+              ),
+              const SizedBox(
+                height: 40,
+              ),
+              VerificationCode(
+                textStyle: TextStyle(
+                  fontSize: 40,
                 ),
-                const SizedBox(
-                  height: 40,
-                ),
-                VerificationCode(
-                  textStyle: TextStyle(
-                    fontSize: 40,
-                  ),
-                  underlineColor: Colors.black,
-                  length: 4,
-                  onCompleted: (String value) {
+                underlineColor: Colors.black,
+                length: 4,
+                onCompleted: (String value) {
+                  Future.delayed(Duration.zero, () {
                     setState(() {
                       _code = value;
                       final signUpRequest = ref.read(signUpRequestDtoProvider);
@@ -61,53 +71,48 @@ class PinNumberScreenState extends ConsumerState {
                               pinNumber: _code!,
                               socialPK: signUpRequest.socialPK));
                     });
-                  },
-                  onEditing: (bool value) {
+                  });
+                },
+                onEditing: (bool value) {
+                  Future.delayed(Duration.zero, () {
                     setState(() {
                       _code = "";
                       _onEditing = value;
                     });
                     if (!_onEditing) FocusScope.of(context).unfocus();
-                  },
-                ),
-                const Spacer(),
-                SizedBox(
-                  height: 50,
-                  width: double.infinity,
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: POLICE_MARKER_COLOR,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8))),
-                      onPressed: _code != ""
-                          ? () {
-                              final request =
-                                  ref.read(signUpRequestDtoProvider);
-                              logger.d('회원 가입 정보 : $request');
-                              ref.read(signUpProvider.notifier).signUp(request);
+                  });
 
-                              if (signUpState) {
-                                showToast(
-                                    context: context, '환영합니다! 로그인을 시도해주세요.');
+                },
+              ),
+              const Spacer(),
+              SizedBox(
+                height: 50,
+                width: double.infinity,
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: POLICE_MARKER_COLOR,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8))),
+                    onPressed: _code != ""
+                        ? () {
+                            final request = ref.read(signUpRequestDtoProvider);
+                            logger.d('회원 가입 정보 : $request');
 
-                                Navigator.of(context).pushReplacement(
-                                    MaterialPageRoute(
-                                        builder: (_) => const LoginScreen()));
-                              }
-                            }
-                          : null,
-                      child: const Text(
-                        '가입하기',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: BASE_TITLE_FONT_SIZE),
-                      )),
-                )
-              ],
-            ),
+                            ref.read(signUpProvider.notifier).signUp(request);
+                          }
+                        : null,
+                    child: const Text(
+                      '가입하기',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: BASE_TITLE_FONT_SIZE),
+                    )),
+              )
+            ],
           ),
         ),
-        actions: []);
+      ),
+    );
   }
 }

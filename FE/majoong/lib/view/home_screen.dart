@@ -13,6 +13,6 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return DefaultLayout(title: '', body: Container(
       child: Text('home')
-    ), actions: [],);
+    ),);
   }
 }

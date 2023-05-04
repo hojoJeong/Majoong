@@ -174,7 +174,7 @@ class _UserApiService implements UserApiService {
     )
             .compose(
               _dio.options,
-              'user/signUp',
+              'user/signup',
               queryParameters: queryParameters,
               data: _data,
             )

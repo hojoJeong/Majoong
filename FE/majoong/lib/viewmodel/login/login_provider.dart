@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:majoong/common/const/key_value.dart';
@@ -31,12 +33,16 @@ class LoginStateNotifier extends StateNotifier<BaseResponseState> {
       required this.secureStorage})
       : super(BaseResponseLoading());
 
+  setStateBaseResponseLoading(){
+    state = BaseResponseLoading();
+  }
+
   login(LoginRequestDto? request) async {
     final isAutoLogin = await secureStorage.read(key: AUTO_LOGIN) == AUTO_LOGIN ? true : false;
     late BaseResponse response;
     logger.d('isAutoLogin : $isAutoLogin');
 
-    if(isAutoLogin){
+    if(isAutoLogin && state is BaseResponseLoading){
       response = await userApi.autoLogin();
       state = response;
       logger.d("login provider response auto: ${response.status}, ${response.message}, ${response.data}");

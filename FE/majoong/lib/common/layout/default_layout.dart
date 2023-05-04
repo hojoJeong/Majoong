@@ -8,12 +8,10 @@ class DefaultLayout extends ConsumerWidget {
   final Color? backgroundColor;
   final String title;
   final Widget body;
-  final List<Widget> actions;
 
   const DefaultLayout({this.backgroundColor,
     required this.title,
     required this.body,
-    required this.actions,
     Key? key})
       : super(key: key);
 
@@ -21,6 +19,7 @@ class DefaultLayout extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final loadingVisibility = ref.watch(loadingVisibilityProvider);
     return Scaffold(
+
         resizeToAvoidBottomInset: false,
         backgroundColor: backgroundColor ?? Colors.white,
         appBar: AppBar(
@@ -31,12 +30,11 @@ class DefaultLayout extends ConsumerWidget {
           title: Text(
             title,
           ),
-          actions: actions,
         ),
         body: Stack(
           children: [
             Padding(
-                padding: const EdgeInsets.symmetric(horizontal: BASE_PADDING),
+                padding: const EdgeInsets.all(BASE_PADDING),
                 child: body),
             Visibility(visible: loadingVisibility,
                 child: LoadingLayout())

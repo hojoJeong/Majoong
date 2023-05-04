@@ -23,90 +23,68 @@ class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final PageController onBoardingController = PageController();
-
-    final loginRequestState = ref.watch(loginRequestStateProvider);
-    final loginState = ref.watch(loginProvider);
-
-    logger.d('social pk : ${loginRequestState.socialPK}');
-    if (loginRequestState.socialPK != '-1') {
-      ref.read(loginProvider.notifier).login(loginRequestState);
-      if (loginState is BaseResponse<LoginResponseDto>) {
-        Future.delayed(Duration.zero, () {
-          login(loginState);
-        });
-      }
-    }
-
-      return  Scaffold(
-        body: Stack(
-          children:[
-            Padding(
-              padding: const EdgeInsets.only(bottom: BASE_PADDING),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.only(bottom: BASE_PADDING),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              decoration: const BoxDecoration(color: POLICE_MARKER_COLOR),
+              height: MediaQuery.of(context).size.height * 0.8, // 필요한 높이를 지정
+              child: PageView(
+                controller: onBoardingController,
                 children: [
-                  Container(
-                    decoration: const BoxDecoration(color: POLICE_MARKER_COLOR),
-                    height: MediaQuery.of(context).size.height * 0.8, // 필요한 높이를 지정
-                    child: PageView(
-                      controller: onBoardingController,
-                      children: [
-                        Image.asset('res/onboarding1.png'),
-                        Image.asset('res/onboarding2.png'),
-                        Image.asset('res/onboarding3.png'),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      color: GAINSBORO,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SmoothPageIndicator(
-                        controller: onBoardingController,
-                        count: 3,
-                        effect: const WormEffect(
-                            activeDotColor: POLICE_MARKER_COLOR,
-                            dotColor: TEXT_HINT_COLOR,
-                            dotHeight: 6,
-                            dotWidth: 6),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: GestureDetector(
-                      onTap: () {
-                        loginKakao();
-                      },
-                      child: Image.asset('res/kakao_login_large_wide.png'),
-                    ),
-                  ),
+                  Image.asset('res/onboarding1.png'),
+                  Image.asset('res/onboarding2.png'),
+                  Image.asset('res/onboarding3.png'),
                 ],
               ),
             ),
-            Visibility(
-                visible: loginRequestState.socialPK != '-1' && loginState is BaseResponseLoading ? true : false,
-                child: LoadingLayout())
-          ]
+            const SizedBox(
+              height: 10,
+            ),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: GAINSBORO,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SmoothPageIndicator(
+                  controller: onBoardingController,
+                  count: 3,
+                  effect: const WormEffect(
+                      activeDotColor: POLICE_MARKER_COLOR,
+                      dotColor: TEXT_HINT_COLOR,
+                      dotHeight: 6,
+                      dotWidth: 6),
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: GestureDetector(
+                onTap: () {
+                  loginKakao();
+                },
+                child: Image.asset('res/kakao_login_large_wide.png'),
+              ),
+            ),
+          ],
         ),
-      );
-
+      ),
+    );
   }
 
   login(BaseResponse<LoginResponseDto> loginResponse) {
@@ -122,8 +100,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       case 601:
         {
           logger.d('미가입 회원 : $loginResponse');
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (_) => const SignUpScreen()));
+          ref.read(loginProvider.notifier).setStateBaseResponseLoading();
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const SignUpScreen(),
+                  maintainState: true));
           break;
         }
       //탈퇴 회원
@@ -138,7 +120,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   loginKakao() async {
-    User user;
     if (await isKakaoTalkInstalled()) {
       print('카카오톡 설치 됨');
       try {
@@ -171,13 +152,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
 
     try {
-      user = await UserApi.instance.me();
+      logger.d('사용자 정보 조회 시작');
+      User user = await UserApi.instance.me();
+      logger.d('kakao user info : $user');
       final socialPK = user.id.toString();
       print('socialPK : $socialPK');
 
-      ref
+      final loginRequestState = ref
           .read(loginRequestStateProvider.notifier)
           .update((state) => LoginRequestDto(socialPK: socialPK));
+
 
       final nickname = user.kakaoAccount!.profile!.nickname!;
       final profileImage =
@@ -192,9 +176,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       logger.d(
           'Input SignUpState : ${signUpState.socialPK}, ${signUpState.profileImage}, ${signUpState.nickname}');
+
+      await ref.read(loginProvider.notifier).login(loginRequestState);
+      final loginState = ref.read(loginProvider);
+      logger.d(loginState);
+      if (loginState is BaseResponse<LoginResponseDto> && loginState.status >= 200) {
+          login(loginState);
+      }
+
       return user;
     } catch (error) {
-      print('사용자 정보 요청 실패 $error');
+      logger.d('사용자 정보 요청 실패 $error');
       return;
     }
   }
