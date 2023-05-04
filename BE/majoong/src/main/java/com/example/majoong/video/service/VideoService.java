@@ -88,7 +88,7 @@ public class VideoService {
         //다른 사람이 세션을 종료하지 못하도록 예외 처리
         String[] splitId = sessionId.split("-");
         if (!splitId[0].equals(String.valueOf(userId))) {
-            throw new SessionDeletionPermissionException();
+            throw new InsufficientPermissionException();
         }
 
         String url = OPENVIDU_BASE_PATH + "sessions/" + sessionId;
@@ -241,8 +241,13 @@ public class VideoService {
             if (splitId[0].equals(String.valueOf(userId))) {
                 String createdAt = unitConverter.timestampToDate(item.getAsJsonObject().get("createdAt").getAsLong());
                 long duration = item.getAsJsonObject().get("duration").getAsLong();
-                String recordingUrl = item.getAsJsonObject().get("url").getAsString();
-                String thumbnailImageUrl = recordingUrl.replace("mp4", "jpg");
+                String recordingUrl = null;
+                String thumbnailImageUrl = null;
+                if (!item.getAsJsonObject().get("url").isJsonNull()){ // 녹화가 진행중인 파일은 url이 존재하지 않아 예외처리함.
+                    recordingUrl = item.getAsJsonObject().get("url").getAsString();
+                    thumbnailImageUrl = recordingUrl.replace("mp4", "jpg");
+                }
+
 
                 GetRecordingsResponseDto responseDto = new GetRecordingsResponseDto();
                 responseDto.setRecordingId(recordingId);
@@ -286,6 +291,99 @@ public class VideoService {
             }
             else if (statusCode == HttpStatus.CONFLICT) {   //409: 녹화가 진행중인 경우
                 throw new RecordingInProgressException();
+            }
+        }
+
+    }
+
+    public void startRecording(HttpServletRequest request, String sessionId) {
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+
+        //다른 사람이 녹화를 시작하지 못하도록 예외 처리
+        String[] splitId = sessionId.split("-");
+        if (!splitId[0].equals(String.valueOf(userId))) {
+            throw new InsufficientPermissionException();
+        }
+
+        String url = OPENVIDU_BASE_PATH + "recordings/start";
+
+        // OPENVIDU REST API 요청
+        RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+        // Header 생성
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.add("Authorization", "Basic " + OPENVIDU_SECRET);
+        // Body 생성
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("session", sessionId);
+        // Header + Body
+        HttpEntity<String> entity = new HttpEntity<String>(jsonObject.toString(), headers);
+        // request
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url, //{요청할 서버 주소}
+                    HttpMethod.POST, //{요청할 방식}
+                    entity, // {요청할 때 보낼 데이터}
+                    String.class
+            );
+        }
+        catch (HttpClientErrorException | HttpServerErrorException e){
+            HttpStatus statusCode = e.getStatusCode();
+
+            if (statusCode == HttpStatus.NOT_FOUND){        //404: 세션이 없는 경우
+                throw new NotExistSessionException();
+            }
+            else if (statusCode == HttpStatus.NOT_ACCEPTABLE) {   //406: 세션에 연결된 참여자가 없는 경우
+                throw new NoConnectedParticipantsException();
+            }
+            else if (statusCode == HttpStatus.CONFLICT) {   //409: 이미 녹화중인 경우
+                throw new RecordingInProgressException();
+            }
+        }
+
+    }
+
+    public void stopRecording(HttpServletRequest request, String sessionId) {
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+
+        //다른 사람이 녹화를 종료하지 못하도록 예외 처리
+        String[] splitId = sessionId.split("-");
+        if (!splitId[0].equals(String.valueOf(userId))) {
+            throw new InsufficientPermissionException();
+        }
+
+        String url = OPENVIDU_BASE_PATH + "recordings/stop/" + sessionId;
+
+        // OPENVIDU REST API 요청
+        RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+        // Header 생성
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.add("Authorization", "Basic " + OPENVIDU_SECRET);
+
+        // Header + Body
+        HttpEntity<String> entity = new HttpEntity<String>("", headers);
+        // request
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url, //{요청할 서버 주소}
+                    HttpMethod.POST, //{요청할 방식}
+                    entity, // {요청할 때 보낼 데이터}
+                    String.class
+            );
+        }
+        catch (HttpClientErrorException | HttpServerErrorException e){
+            HttpStatus statusCode = e.getStatusCode();
+
+            if (statusCode == HttpStatus.NOT_FOUND){        //404: 녹화 파일이 없는 경우
+                throw new NotExistRecordingException();
+            }
+            else if (statusCode == HttpStatus.NOT_ACCEPTABLE) {   //406: 녹화가 starting인 경우 (started 상태여야 녹화 중단 가능)
+                throw new RecordingNotStartedException();
             }
         }
 
