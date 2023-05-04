@@ -1,12 +1,12 @@
 package com.example.majoong.video.service;
 
 
-import com.example.majoong.exception.NotExistRecordingException;
-import com.example.majoong.exception.RecordingInProgressException;
+import com.example.majoong.exception.*;
 import com.example.majoong.tools.JwtTool;
 import com.example.majoong.tools.UnitConverter;
 import com.example.majoong.user.repository.UserRepository;
 import com.example.majoong.video.dto.GetRecordingsResponseDto;
+import com.example.majoong.video.dto.InitializeConnectionResponseDto;
 import com.example.majoong.video.dto.InitializeSessionResponseDto;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -81,7 +81,16 @@ public class VideoService {
         return responseDto;
     }
 
-    public void closeSession(String sessionId){//다른 사람이 세션을 종료하지 못하도록 예외 처리
+    public void closeSession(HttpServletRequest request, String sessionId){
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+
+        //다른 사람이 세션을 종료하지 못하도록 예외 처리
+        String[] splitId = sessionId.split("-");
+        if (!splitId[0].equals(String.valueOf(userId))) {
+            throw new SessionDeletionPermissionException();
+        }
+
         String url = OPENVIDU_BASE_PATH + "sessions/" + sessionId;
 
         // OPENVIDU REST API 요청
@@ -107,6 +116,94 @@ public class VideoService {
 
             if (statusCode == HttpStatus.NOT_FOUND){        //404: 해당 세션이 존재하지 않는 경우
                 throw new NotExistRecordingException();
+            }
+        }
+    }
+
+    public InitializeConnectionResponseDto initializeConnection(HttpServletRequest request, String sessionId){
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+
+        String role = "SUBSCRIBER";
+        String[] splitId = sessionId.split("-");
+        if (splitId[0].equals(String.valueOf(userId))) {
+            role = "PUBLISHER";
+        }
+
+        String url = OPENVIDU_BASE_PATH + "sessions/"+ sessionId + "/connection";
+        // OPENVIDU REST API 요청
+        RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+        // Header 생성
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.add("Authorization", "Basic " + OPENVIDU_SECRET);
+        // Body 생성
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("role",role);
+        // Header + Body
+        HttpEntity<String> entity = new HttpEntity<String>(jsonObject.toString(), headers);
+
+        // request
+        InitializeConnectionResponseDto responseDto = new InitializeConnectionResponseDto();
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url, //{요청할 서버 주소}
+                    HttpMethod.POST, //{요청할 방식}
+                    entity, // {요청할 때 보낼 데이터}
+                    String.class
+            );
+            // response
+            JsonParser parser = new JsonParser();
+            JsonObject responseBody = parser.parse(response.getBody()).getAsJsonObject();
+            String connectionId = responseBody.get("connectionId").getAsString();
+            String connectionToken = responseBody.get("token").getAsString();
+
+            responseDto.setConnectionId(connectionId);
+            responseDto.setConnectionToken(connectionToken);
+
+        }
+        catch (HttpClientErrorException | HttpServerErrorException e){
+            HttpStatus statusCode = e.getStatusCode();
+
+            if (statusCode == HttpStatus.NOT_FOUND){        //404: 해당 세션이 존재하지 않는 경우
+                throw new NotExistSessionException();
+            }
+        }
+
+        return responseDto;
+    }
+
+    public void closeConnection(String sessionId, String connectionId){
+
+        String url = OPENVIDU_BASE_PATH + "sessions/" + sessionId + "/connection/" + connectionId;
+
+        // OPENVIDU REST API 요청
+        RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+        // Header 생성
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.add("Authorization", "Basic " + OPENVIDU_SECRET);
+
+        HttpEntity<String> entity = new HttpEntity<String>("", headers);
+        // request
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url, //{요청할 서버 주소}
+                    HttpMethod.DELETE, //{요청할 방식}
+                    entity, // {요청할 때 보낼 데이터}
+                    String.class
+            );
+        }
+        catch (HttpClientErrorException | HttpServerErrorException e){
+            HttpStatus statusCode = e.getStatusCode();
+
+            if (statusCode == HttpStatus.NOT_FOUND){        //404: 해당 커넥션이 존재하지 않는 경우
+                throw new NotExistConnectionException();
+            }
+            else if (statusCode == HttpStatus.BAD_REQUEST) { //400: 해당 세션이 존재하지 않는 경우
+                throw new NotExistSessionForConnectionException();
             }
         }
     }
