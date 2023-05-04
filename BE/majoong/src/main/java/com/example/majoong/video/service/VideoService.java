@@ -50,12 +50,6 @@ public class VideoService {
         String customSessionId = userId + "-" + System.currentTimeMillis();
         String recordingMode = "ALWAYS";
 
-        // 세션 시작 권한 확인
-        String[] splitId = customSessionId.split("-");
-        if (!splitId[0].equals(String.valueOf(userId))) {
-            throw new InsufficientPermissionException();// 403
-        }
-
         // OPENVIDU REST API 요청
         RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
         // Header 생성
