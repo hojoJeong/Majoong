@@ -1,7 +1,15 @@
 package com.example.majoong.exception;
 
 public enum ErrorEnum {
+    NOT_EXIST_SESSION_FOR_CONNECTION("세션이 존재하지 않아 연결을 삭제할 수 없습니다.",400),
     INVALID_REFRESHTOKEN("refreshToken 만료", 401),
+    INSUFFICIENT_PERMISSION("권한이 없습니다.",403),
+    NOT_EXIST_CONNECTION("해당 연결이 존재하지 않습니다.",404),
+    NOT_EXIST_SESSION("해당 세션이 존재하지 않습니다.",404),
+    NOT_EXIST_RECORDING("해당 녹화 영상은 존재하지 않습니다.", 404),
+    NO_CONNECTED_PARTICIPANTS("녹화 시작 실패: 세션에 연결된 참가자가 없습니다.",406),
+    RECORDING_NOT_STARTED("녹화를 중단할 수 없습니다. 잠시 후 다시 시도해주세요.",406),
+    RECORDING_IN_PROGRESS("녹화가 진행중입니다.", 409),
     DUPLICATE_PHONENUMBER("이미 가입된 휴대폰번호입니다.", 600),
     DUPLICATE_SOCIAL_PK("중복된 social PK 입니다.",600),
     NO_USER("가입된 회원이 아닙니다.", 601),

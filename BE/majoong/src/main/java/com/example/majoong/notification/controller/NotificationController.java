@@ -20,17 +20,25 @@ public class NotificationController {
     private final NotificationService notificationService;
     @GetMapping("/notification")
     public ResponseEntity getNotification(HttpServletRequest request){
+        log.info("/user/notification @Get start");
         String token = request.getHeader("Authorization").split(" ")[1];
         int userId = jwtTool.getUserIdFromToken(token);
         ResponseData data = new ResponseData();
         data.setData(notificationService.getNotificationsByToId(userId));
+        log.info(data.toString());
+        log.info("/user/notification end\n");
+        log.info("");
         return data.builder();
     }
 
     @DeleteMapping("/notification")
     public ResponseEntity getNotification(@RequestBody NotificationIdDto notificationIdDto){
+        log.info("/user/notification @Delete start");
         notificationService.deleteNotification(notificationIdDto.getNotificationId());
         ResponseData data = new ResponseData();
+        log.info(data.toString());
+        log.info("/user/notification end\n");
+        log.info("");
         return data.builder();
     }
 }
