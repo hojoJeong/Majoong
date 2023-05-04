@@ -88,7 +88,7 @@ public class VideoService {
         //다른 사람이 세션을 종료하지 못하도록 예외 처리
         String[] splitId = sessionId.split("-");
         if (!splitId[0].equals(String.valueOf(userId))) {
-            throw new InsufficientPermissionException();
+            throw new InsufficientPermissionException();// 403
         }
 
         String url = OPENVIDU_BASE_PATH + "sessions/" + sessionId;
@@ -269,7 +269,7 @@ public class VideoService {
         //다른 사람이 세션을 종료하지 못하도록 예외 처리
         String[] splitId = recordingId.split("-");
         if (!splitId[0].equals(String.valueOf(userId))) {
-            throw new InsufficientPermissionException();
+            throw new InsufficientPermissionException();// 403
         }
         String url = OPENVIDU_BASE_PATH + "recordings/" + recordingId;
 
@@ -294,7 +294,7 @@ public class VideoService {
         catch (HttpClientErrorException | HttpServerErrorException e){
             HttpStatus statusCode = e.getStatusCode();
 
-            if (statusCode == HttpStatus.NOT_FOUND){        //404: 삭제할 녹황파일이 없는 경우
+            if (statusCode == HttpStatus.NOT_FOUND){        //404: 삭제할 녹화파일이 없는 경우
                 throw new NotExistRecordingException();
             }
             else if (statusCode == HttpStatus.CONFLICT) {   //409: 녹화가 진행중인 경우
@@ -311,7 +311,7 @@ public class VideoService {
         //다른 사람이 녹화를 시작하지 못하도록 예외 처리
         String[] splitId = sessionId.split("-");
         if (!splitId[0].equals(String.valueOf(userId))) {
-            throw new InsufficientPermissionException();
+            throw new InsufficientPermissionException();// 403
         }
 
         String url = OPENVIDU_BASE_PATH + "recordings/start";
@@ -360,7 +360,7 @@ public class VideoService {
         //다른 사람이 녹화를 종료하지 못하도록 예외 처리
         String[] splitId = sessionId.split("-");
         if (!splitId[0].equals(String.valueOf(userId))) {
-            throw new InsufficientPermissionException();
+            throw new InsufficientPermissionException();// 403
         }
 
         String url = OPENVIDU_BASE_PATH + "recordings/stop/" + sessionId;
