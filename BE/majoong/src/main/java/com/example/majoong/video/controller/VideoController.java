@@ -33,7 +33,7 @@ public class VideoController {
 
         ResponseData data = new ResponseData();
         data.setData(responseDto);
-        data.setMessage("session 생성 성공");
+        data.setMessage("initializeSession 성공");
 
         return data.builder();
     }
@@ -44,7 +44,7 @@ public class VideoController {
 
         videoService.closeSession(request, sessionId);
         ResponseData data = new ResponseData();
-        data.setMessage("session 삭제 성공");
+        data.setMessage("closeSession 성공");
         return data.builder();
     }
 
@@ -56,7 +56,7 @@ public class VideoController {
 
         ResponseData data = new ResponseData();
         data.setData(responseDto);
-        data.setMessage("connection 생성 성공");
+        data.setMessage("initializeConnection 성공");
         return data.builder();
     }
 
@@ -65,23 +65,29 @@ public class VideoController {
     public ResponseEntity<?> closeConnection(@PathVariable("sessionId")String sessionId, @PathVariable("connectionId")String connectionId) {
         videoService.closeConnection(sessionId, connectionId);
         ResponseData data = new ResponseData();
-        data.setMessage("connection 삭제 성공");
+        data.setMessage("closeConnection 성공");
         return data.builder();
     }
 
     @PostMapping("/recordings/start/{sessionId}")
     @Operation(summary = "recording 시작", description = "특정 세션에서 녹화를 시작합니다.")
-    public ResponseEntity<?> startRecording(@PathVariable("sessionId") String sessionId) {
+    public ResponseEntity<?> startRecording(HttpServletRequest request, @PathVariable("sessionId") String sessionId) {
+
+        videoService.startRecording(request, sessionId);
 
         ResponseData data = new ResponseData();
+        data.setMessage("startRecording 성공");
         return data.builder();
     }
 
     @PostMapping("/recordings/stop/{sessionId}")
     @Operation(summary = "recording 종료", description = "특정 세션에서 녹화를 종료합니다.")
-    public ResponseEntity<?> stopRecording(@PathVariable("sessionId") String sessionId) {
+    public ResponseEntity<?> stopRecording(HttpServletRequest request, @PathVariable("sessionId") String sessionId) {
+
+        videoService.stopRecording(request, sessionId);
 
         ResponseData data = new ResponseData();
+        data.setMessage("stopRecording 성공");
         return data.builder();
     }
 
@@ -93,7 +99,7 @@ public class VideoController {
 
         ResponseData data = new ResponseData();
         data.setData(responseDtos);
-        data.setMessage("녹화 목록 조회");
+        data.setMessage("getRecordings 성공");
         return data.builder();
     }
 
@@ -103,7 +109,7 @@ public class VideoController {
     public ResponseEntity<?> removeRecording(@PathVariable("recordingId") String recordingId) {
         videoService.removeRecording(recordingId);
         ResponseData data = new ResponseData();
-        data.setMessage("녹화파일 삭제");
+        data.setMessage("removeRecording 성공");
         return data.builder();
     }
 }
