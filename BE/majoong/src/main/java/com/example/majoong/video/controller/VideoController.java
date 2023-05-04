@@ -3,6 +3,7 @@ package com.example.majoong.video.controller;
 import com.example.majoong.response.ResponseData;
 import com.example.majoong.user.service.UserService;
 import com.example.majoong.video.dto.GetRecordingsResponseDto;
+import com.example.majoong.video.dto.InitializeConnectionResponseDto;
 import com.example.majoong.video.dto.InitializeSessionResponseDto;
 import com.example.majoong.video.service.VideoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,9 +40,9 @@ public class VideoController {
 
     @DeleteMapping("/sessions/{sessionId}")
     @Operation(summary = "session 삭제", description = "session을 삭제합니다. 세션에 대한 모든 connection도 삭제합니다.")
-    public ResponseEntity<?> closeSession(@PathVariable("sessionId") String sessionId) {
+    public ResponseEntity<?> closeSession(HttpServletRequest request, @PathVariable("sessionId") String sessionId) {
 
-        videoService.closeSession(sessionId);
+        videoService.closeSession(request, sessionId);
         ResponseData data = new ResponseData();
         data.setMessage("session 삭제 성공");
         return data.builder();
@@ -49,19 +50,25 @@ public class VideoController {
 
     @PostMapping("/sessions/{sessionId}/connection")
     @Operation(summary = "connection 생성", description = "특정 session에 대한 connection을 생성합니다.")
-    public ResponseEntity<?> initializeConnection() {
+    public ResponseEntity<?> initializeConnection(HttpServletRequest request, @PathVariable("sessionId")String sessionId) {
+
+        InitializeConnectionResponseDto responseDto = videoService.initializeConnection(request, sessionId);
 
         ResponseData data = new ResponseData();
+        data.setData(responseDto);
+        data.setMessage("connection 생성 성공");
         return data.builder();
     }
 
     @DeleteMapping("/sessions/{sessionId}/connection/{connectionId}")
     @Operation(summary = "connection 삭제", description = "특정 session에 대한 특정한 connection을 삭제합니다.")
-    public ResponseEntity<?> closeConnection() {
-
+    public ResponseEntity<?> closeConnection(@PathVariable("sessionId")String sessionId, @PathVariable("connectionId")String connectionId) {
+        videoService.closeConnection(sessionId, connectionId);
         ResponseData data = new ResponseData();
+        data.setMessage("connection 삭제 성공");
         return data.builder();
     }
+
     @PostMapping("/recordings/start/{sessionId}")
     @Operation(summary = "recording 시작", description = "특정 세션에서 녹화를 시작합니다.")
     public ResponseEntity<?> startRecording(@PathVariable("sessionId") String sessionId) {
@@ -77,6 +84,7 @@ public class VideoController {
         ResponseData data = new ResponseData();
         return data.builder();
     }
+
     @GetMapping("/recordings")
     @Operation(summary = "recording 목록 조회", description = "유저의 녹화목록을 조회합니다.")
 
