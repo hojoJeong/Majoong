@@ -1,4 +1,0 @@
-#Tue Apr 25 14:07:55 KST 2023
-base.0=C\:\\Users\\SSAFY\\Documents\\S08P31D105\\Suyong\\toonflix\\build\\app\\intermediates\\dex\\debug\\mergeDexDebug\\classes.dex
-renamed.0=classes.dex
-path.0=classes.dex

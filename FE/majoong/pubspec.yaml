@@ -80,6 +80,7 @@ flutter:
     - res/onboarding1.png
     - res/onboarding2.png
     - res/onboarding3.png
+    - res/icon_favorite.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
