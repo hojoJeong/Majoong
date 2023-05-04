@@ -40,6 +40,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     location.onLocationChanged.listen((event) {
       setState(() {
         _locationData = event;
+        ref.read(centerPositionProvider.notifier).update((state) =>
+            GetFacilityRequestDto(
+                centerLng: _locationData!.longitude!,
+                centerLat: _locationData!.latitude!,
+                radius: 1000));
       });
     });
   }
@@ -62,6 +67,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     }
 
     _locationData = await location.getLocation();
+    ref.read(centerPositionProvider.notifier).update((state) =>
+        GetFacilityRequestDto(
+            centerLng: _locationData!.longitude!,
+            centerLat: _locationData!.latitude!,
+            radius: 1000));
+    ref.read(facilityProvider.notifier).getFacility();
     setState(() {});
   }
 
@@ -272,9 +283,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     top: MediaQuery.of(context).size.height / 7,
                     child: GestureDetector(
                       onTap: () async {
-                        final request =
-                            ref.read(centerPositionProvider.notifier).state;
-                        facilityInfo.getFacility(request);
+                        facilityInfo.getFacility();
                       },
                       child: Container(
                         alignment: Alignment.center,

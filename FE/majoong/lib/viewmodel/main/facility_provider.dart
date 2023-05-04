@@ -19,8 +19,12 @@ final facilityProvider =
   final mapService = ref.watch(mapApiServiceProvider);
   final markerInfo = ref.watch(markerProvider.notifier);
   final chipInfo = ref.watch(chipProvider.notifier);
+  final centerPositionInfo = ref.watch(centerPositionProvider.notifier);
   final facilityNotifier = FacilityNotifier(
-      service: mapService, markerNotifier: markerInfo, chipNotifier: chipInfo);
+      service: mapService,
+      markerNotifier: markerInfo,
+      chipNotifier: chipInfo,
+      centerPositionNotifier: centerPositionInfo);
   return facilityNotifier;
 });
 
@@ -28,14 +32,17 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
   final MapApiService service;
   final MarkerNotifier markerNotifier;
   final ChipNotifier chipNotifier;
+  final StateNotifier centerPositionNotifier;
 
   FacilityNotifier(
       {required this.service,
       required this.markerNotifier,
-      required this.chipNotifier})
-      : super(BaseResponseLoading());
+      required this.chipNotifier,
+      required this.centerPositionNotifier})
+      : super(BaseResponseLoading()) {}
 
-  getFacility(GetFacilityRequestDto request) async {
+  getFacility() async {
+    final request = centerPositionNotifier.state;
     logger.d('request: ${request.toJson()}');
     final BaseResponse<GetFacilityResponseDto> response =
         await service.getFacility(request);
