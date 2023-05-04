@@ -1,19 +1,77 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../../common/util/logger.dart';
+
 final markerProvider =
     StateNotifierProvider<MarkerNotifier, Set<Marker>>((ref) {
-  return MarkerNotifier();
+  return MarkerNotifier(chipNotifier: ref.watch(chipProvider.notifier));
 });
 
 class MarkerNotifier extends StateNotifier<Set<Marker>> {
-  MarkerNotifier() : super(Set()) {}
+  MarkerNotifier({required this.chipNotifier}) : super(Set()) {}
+  final cctvMarkerSet = Set();
+  final policeMarkerSet = Set();
+  final ChipNotifier chipNotifier;
 
-  addMarker(marker) {
-    state.add(marker);
+  renderMarker() {
+    state.clear();
+    final chips = chipNotifier.state;
+    logger.d('chips: $chips');
+    if (chips.contains('CCTV')) {
+      logger.d('cctvMarkerSet');
+      addAllMarker(cctvMarkerSet);
+      logger.d(cctvMarkerSet.length);
+      logger.d(state.length);
+    }
+    if (chips.contains('경찰서')) {
+      addAllMarker(policeMarkerSet);
+    }
+  }
+
+  addAllMarker(Set markers) {
+    for (var marker in markers) {
+      state.add(marker);
+    }
   }
 
   clearMarker() {
+    state.clear();
+  }
+
+  addCctvMarker(marker) {
+    cctvMarkerSet.add(marker);
+  }
+
+  addPoliceMarker(marker) {
+    policeMarkerSet.add(marker);
+  }
+}
+
+final chipProvider = StateNotifierProvider<ChipNotifier, Set<String>>((ref) {
+  return ChipNotifier();
+});
+
+class ChipNotifier extends StateNotifier<Set<String>> {
+  ChipNotifier() : super(Set()) {}
+
+  toggleChip(chip) {
+    if (state.contains(chip)) {
+      state.remove(chip);
+    } else {
+      state.add(chip);
+    }
+  }
+
+  addChip(chip) {
+    state.add(chip);
+  }
+
+  removeChip(chip) {
+    state.remove(chip);
+  }
+
+  clearChip() {
     state.clear();
   }
 }

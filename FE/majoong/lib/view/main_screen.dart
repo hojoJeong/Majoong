@@ -33,11 +33,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     mapController = controller;
   }
 
-  Future<BitmapDescriptor> _getMarkerImage() async {
-    const config = ImageConfiguration();
-    return await BitmapDescriptor.fromAssetImage(config, 'res/cctv.png');
-  }
-
   @override
   void initState() {
     super.initState();
@@ -126,7 +121,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final userInfo = ref.watch(userInfoProvider);
     final facilityInfo = ref.watch(facilityProvider.notifier);
     final markerInfo = ref.watch(markerProvider.notifier);
-
+    final chipInfo = ref.watch(chipProvider.notifier);
     return Scaffold(
       drawer: Drawer(
         width: MediaQuery.of(context).size.width / 1.5,
@@ -220,19 +215,19 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     initialCameraPosition: CameraPosition(
                       target: LatLng(
                           _locationData!.latitude!, _locationData!.longitude!),
-                      zoom: 14.0,
+                      zoom: 15.7,
                     ),
                     onCameraMove: (CameraPosition position) {
+                      logger.d(position.zoom);
                       final lat = position.target.latitude;
                       final lng = position.target.longitude;
-                      final zoom = position.zoom;
-                      final centerLat = lat + (180 / pow(2, zoom));
+                      final centerLat = lat;
                       final centerLng = lng;
                       ref.read(centerPositionProvider.notifier).update((state) {
                         return state = GetFacilityRequestDto(
                           centerLat: centerLat,
                           centerLng: centerLng,
-                          radius: 2000,
+                          radius: 1000,
                         );
                       });
                       logger.d('centerLat: $centerLat centerLng: $centerLng');
@@ -259,16 +254,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                     style: TextStyle(color: Colors.white),
                                   ),
                                   selectedColor: PRIMARY_COLOR,
-                                  selected: _selectedChoices.contains(choice),
+                                  selected: chipInfo.state.contains(choice),
                                   onSelected: (bool selected) {
-                                    setState(() {
-                                      print(_selectedChoices.toString());
-                                      if (selected) {
-                                        _selectedChoices.add(choice);
-                                      } else {
-                                        _selectedChoices.remove(choice);
-                                      }
-                                    });
+                                    chipInfo.toggleChip(choice);
+                                    logger.d(chipInfo.state.toString());
+                                    markerInfo.renderMarker();
+                                    setState(() {});
                                   },
                                 ),
                               ),
