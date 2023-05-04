@@ -10,8 +10,7 @@ import 'package:majoong/model/response/user/user_info_response_dto.dart';
 import 'package:majoong/viewmodel/main/facility_provider.dart';
 import 'package:majoong/viewmodel/main/marker_provider.dart';
 
-import '../common/util/logger.dart';
-import '../viewmodel/main/user_info_provider.dart';
+import '../../viewmodel/main/user_info_provider.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   MainScreen({Key? key}) : super(key: key);
@@ -433,8 +432,25 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 ]),
               );
             })
-          : const Center(
-              child: CircularProgressIndicator(),
+          : Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              color: Colors.black.withOpacity(0.5),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '잠시만 기다려주세요 :)',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  LoadingAnimationWidget.staggeredDotsWave(
+                      color: Colors.white, size: 60)
+                ],
+              ),
             ),
     );
   }

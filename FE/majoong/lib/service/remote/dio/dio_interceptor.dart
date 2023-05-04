@@ -13,16 +13,14 @@ class DioInterceptor extends Interceptor {
   @override
   void onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
-    logger.d('[REQ] [${options.method}] ${options.uri}');
+    logger.d('[REQ] [${options.method}] ${options.uri}, ${options.data}');
 
     /** auth API 호출 시 */
     if (options.headers[AUTHORIZATION] == AUTH) {
       options.headers.remove(ACCESS_TOKEN);
       final token = await secureStorage.read(key: ACCESS_TOKEN);
-      options.headers.addAll({
-        "Authorization":
-            'Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MiwiaWF0IjoxNjgyOTEzOTIwLCJleHAiOjE2ODM1MTg3MjB9.FKf7FXHLz0BLzBQ_0XF6rxiwhDneM22aGXnpbN44P54'
-      });
+      logger.d('header accessToken : $token');
+      options.headers.addAll({"Authorization": 'Bearer $token'});
     }
     super.onRequest(options, handler);
   }
@@ -49,10 +47,11 @@ class DioInterceptor extends Interceptor {
     final isPathRefresh = err.requestOptions.path == '/user/retoken';
 
     if (isStatus401 && !isPathRefresh) {
+      logger.d('401 에러 떳당');
       try {
         final resp = await dio.post('${BASE_URL}user/retoken',
             options:
-                Options(headers: {'Authorization': 'Bearer $refreshTorken'}));
+            Options(headers: {'Authorization': 'Bearer $refreshTorken'}));
         final accessToken = resp.data['data']['accessToken'];
         logger.d(accessToken);
 

@@ -1,35 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:majoong/common/const/size_value.dart';
+import 'package:majoong/common/layout/loading_layout.dart';
+import 'package:majoong/common/layout/loading_visibility_provider.dart';
 
-class DefaultLayout extends StatelessWidget {
+class DefaultLayout extends ConsumerWidget {
   final Color? backgroundColor;
   final String title;
   final Widget body;
-  final List<Widget> actions;
 
-  const DefaultLayout(
-      {
-        this.backgroundColor,
-        required this.title,
-        required this.body,
-        required this.actions,
-        Key? key})
+  const DefaultLayout({this.backgroundColor,
+    required this.title,
+    required this.body,
+    Key? key})
       : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final loadingVisibility = ref.watch(loadingVisibilityProvider);
     return Scaffold(
-      backgroundColor: backgroundColor ?? Colors.white,
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-        title: Text(title,),
-        actions: actions,
-      ),
-      body:
-      Padding(padding: EdgeInsets.symmetric(horizontal: 16.0), child: body),
+
+        resizeToAvoidBottomInset: false,
+        backgroundColor: backgroundColor ?? Colors.white,
+        appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 0,
+          title: Text(
+            title,
+          ),
+        ),
+        body: Stack(
+          children: [
+            Padding(
+                padding: const EdgeInsets.all(BASE_PADDING),
+                child: body),
+            Visibility(visible: loadingVisibility,
+                child: LoadingLayout())
+          ],
+        )
     );
   }
-
 }

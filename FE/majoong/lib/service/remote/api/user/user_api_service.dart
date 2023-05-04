@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart' hide Headers;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:majoong/common/const/key_value.dart';
-import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/request/user/login_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/user/login_response_dto.dart';
@@ -12,6 +11,9 @@ import 'package:retrofit/retrofit.dart';
 import 'package:retrofit/http.dart';
 
 import '../../../../common/const/path.dart';
+import '../../../../model/request/receive_number_request_dto.dart';
+import '../../../../model/request/user/sign_up_request_dto.dart';
+import '../../../../model/request/verify_number_request_dto.dart';
 
 part 'user_api_service.g.dart';
 
@@ -36,6 +38,19 @@ abstract class UserApiService {
   @Headers({AUTHORIZATION: AUTH})
   @POST('user/auto-login')
   Future<BaseResponse<LoginResponseDto>> autoLogin();
+
+  @Headers({AUTHORIZATION: NO_AUTH})
+  @POST('user/phone')
+  Future<BaseResponse> receiveVerificationNumber(
+      @Body() ReceiveNumberRequestDto request);
+
+  @Headers({AUTHORIZATION: NO_AUTH})
+  @POST('user/phone/verify')
+  Future<BaseResponse> verifyNumber(@Body() VerifyNumberRequestDto request);
+
+  @Headers({AUTHORIZATION: NO_AUTH})
+  @POST('user/signup')
+  Future<BaseResponse> signUp(@Body() SignUpRequestDto request);
 
   @Headers({AUTHORIZATION: AUTH})
   @GET('user')
