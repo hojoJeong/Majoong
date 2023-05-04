@@ -8,18 +8,14 @@ import 'package:majoong/view/login/splash_screen.dart';
 import 'package:majoong/common/util/provider_logger.dart';
 
 void main() {
-  KakaoSdk.init(
-    nativeAppKey: KAKAO_NATIVE_KEY
-  );
+  KakaoSdk.init(nativeAppKey: KAKAO_NATIVE_KEY);
   runApp(
     ProviderScope(
-      observers: [
-        ProviderLogger()
-      ],
+      observers: [ProviderLogger()],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         home: SplashScreen(),
       ),
     ),
   );
 }
-

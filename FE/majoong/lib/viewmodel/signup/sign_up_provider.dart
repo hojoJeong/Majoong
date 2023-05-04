@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:majoong/common/util/logger.dart';
-import 'package:majoong/model/request/sign_up_request_dto.dart';
-import 'package:majoong/service/remote/api/user_api_service.dart';
+
+import '../../model/request/user/sign_up_request_dto.dart';
+import '../../service/remote/api/user/user_api_service.dart';
 
 final signUpProvider = StateNotifierProvider<SignUpStateNotifier, bool>((ref) {
   final userApi = ref.read(userApiServiceProvider);

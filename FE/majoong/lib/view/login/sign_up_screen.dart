@@ -7,12 +7,12 @@ import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/layout/default_layout.dart';
 import 'package:majoong/common/layout/loading_visibility_provider.dart';
 import 'package:majoong/common/util/logger.dart';
-import 'package:majoong/model/request/sign_up_request_dto.dart';
 import 'package:majoong/model/request/verify_number_request_dto.dart';
 import 'package:majoong/view/login/pin_number_screen.dart';
 import 'package:majoong/viewmodel/signup/sign_up_request_dto_provider.dart';
 import 'package:majoong/viewmodel/signup/verify_number_provider.dart';
 
+import '../../model/request/user/sign_up_request_dto.dart';
 import '../../viewmodel/signup/receive_verification_number_provider.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
@@ -23,13 +23,11 @@ class SignUpScreen extends ConsumerStatefulWidget {
 }
 
 class _SignUpScreenState extends ConsumerState<SignUpScreen> {
-
   @override
   Widget build(BuildContext context) {
     final verifyNumberState = ref.watch(verifyNumberProvider);
     final signUpState = ref.read(signUpRequestDtoProvider);
     final receiveNumberState = ref.watch(receiveVerificationNumberProvide);
-
 
     Future.delayed(Duration.zero, () {
       if (receiveNumberState == 200) {
@@ -42,7 +40,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       if (verifyNumberState == 200) {
         ref.read(loadingVisibilityProvider.notifier).update((state) => false);
         showToast(context: context, '인증되었습니다.');
-      } else if (verifyNumberState != -1 && verifyNumberState != 200 ) {
+      } else if (verifyNumberState != -1 && verifyNumberState != 200) {
         ref.read(loadingVisibilityProvider.notifier).update((state) => false);
         showToast(
             textAlign: TextAlign.center,
@@ -52,18 +50,16 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     });
 
     TextEditingController nicknameController =
-    TextEditingController(text: signUpState.nickname);
-    TextEditingController phoneNumberController = TextEditingController(
-        text: signUpState.phoneNumber);
+        TextEditingController(text: signUpState.nickname);
+    TextEditingController phoneNumberController =
+        TextEditingController(text: signUpState.phoneNumber);
     TextEditingController verificationNumberController =
-    TextEditingController(text: signUpState.pinNumber);
+        TextEditingController(text: signUpState.pinNumber);
     logger.d(
-        'state next button : ${nicknameController.text}, ${phoneNumberController
-            .text}, $verifyNumberState');
+        'state next button : ${nicknameController.text}, ${phoneNumberController.text}, $verifyNumberState');
 
     logger.d(
-        'SignUpState : ${signUpState.socialPK}, ${signUpState
-            .profileImage}, ${signUpState.nickname}');
+        'SignUpState : ${signUpState.socialPK}, ${signUpState.profileImage}, ${signUpState.nickname}');
     return DefaultLayout(
       title: '회원가입',
       body: Center(
@@ -136,12 +132,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         fillColor: WHITE_SMOKE,
                         hintText: '-를 제외하고 입력하세요',
                         focusedBorder: OutlineInputBorder(
-                            borderRadius:
-                            BorderRadius.all(Radius.circular(4)),
+                            borderRadius: BorderRadius.all(Radius.circular(4)),
                             borderSide: BorderSide.none),
                         enabledBorder: OutlineInputBorder(
-                            borderRadius:
-                            BorderRadius.all(Radius.circular(4)),
+                            borderRadius: BorderRadius.all(Radius.circular(4)),
                             borderSide: BorderSide.none),
                       ),
                       keyboardType: TextInputType.number,
@@ -157,25 +151,21 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    final signUpRequestDto =
-                    ref.read(signUpRequestDtoProvider);
-                    ref
-                        .read(signUpRequestDtoProvider.notifier)
-                        .update((state) => SignUpRequestDto(
-                        nickname: nicknameController.text,
-                        phoneNumber: phoneNumberController.text,
-                        profileImage:
-                        signUpRequestDto.profileImage,
-                        pinNumber: "",
-                        socialPK: signUpRequestDto.socialPK));
+                    final signUpRequestDto = ref.read(signUpRequestDtoProvider);
+                    ref.read(signUpRequestDtoProvider.notifier).update(
+                        (state) => SignUpRequestDto(
+                            nickname: nicknameController.text,
+                            phoneNumber: phoneNumberController.text,
+                            profileImage: signUpRequestDto.profileImage,
+                            pinNumber: "",
+                            socialPK: signUpRequestDto.socialPK));
 
                     ref
                         .read(loadingVisibilityProvider.notifier)
                         .update((state) => true);
                     ref
                         .read(receiveVerificationNumberProvide.notifier)
-                        .receiveVerificationNumber(
-                        phoneNumberController.text);
+                        .receiveVerificationNumber(phoneNumberController.text);
                   },
                   child: Container(
                     decoration: BoxDecoration(
@@ -200,7 +190,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 ),
               ],
             ),
-
             SizedBox(
               height: BASE_MARGIN_CONTENTS_TO_CONTENTS,
             ),
@@ -230,12 +219,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         fillColor: WHITE_SMOKE,
                         hintText: '인증번호를 입력하세요',
                         focusedBorder: OutlineInputBorder(
-                            borderRadius:
-                            BorderRadius.all(Radius.circular(4)),
+                            borderRadius: BorderRadius.all(Radius.circular(4)),
                             borderSide: BorderSide.none),
                         enabledBorder: OutlineInputBorder(
-                            borderRadius:
-                            BorderRadius.all(Radius.circular(4)),
+                            borderRadius: BorderRadius.all(Radius.circular(4)),
                             borderSide: BorderSide.none),
                       ),
                       keyboardType: TextInputType.number,
@@ -252,17 +239,14 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 GestureDetector(
                   onTap: () {
                     /// 인증번호 확인 후 rebuild 시 인증번호 text field 없어지는 오류 방지를 위해 임시로 pinNumber에 인증번호 저장
-                    final signUpRequestDto =
-                    ref.read(signUpRequestDtoProvider);
-                    ref
-                        .read(signUpRequestDtoProvider.notifier)
-                        .update((state) => SignUpRequestDto(
-                        nickname: nicknameController.text,
-                        phoneNumber: phoneNumberController.text,
-                        profileImage:
-                        signUpRequestDto.profileImage,
-                        pinNumber: verificationNumberController.text,
-                        socialPK: signUpRequestDto.socialPK));
+                    final signUpRequestDto = ref.read(signUpRequestDtoProvider);
+                    ref.read(signUpRequestDtoProvider.notifier).update(
+                        (state) => SignUpRequestDto(
+                            nickname: nicknameController.text,
+                            phoneNumber: phoneNumberController.text,
+                            profileImage: signUpRequestDto.profileImage,
+                            pinNumber: verificationNumberController.text,
+                            socialPK: signUpRequestDto.socialPK));
 
                     ref
                         .read(loadingVisibilityProvider.notifier)
@@ -271,7 +255,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         VerifyNumberRequestDto(
                             phoneNumber: phoneNumberController.text,
                             verificationNumber:
-                            verificationNumberController.text));
+                                verificationNumberController.text));
                   },
                   child: Container(
                     decoration: BoxDecoration(
@@ -315,27 +299,24 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8))),
                     onPressed: (nicknameController.text.isNotEmpty &&
-                        phoneNumberController.text.length == 11 &&
-                        verifyNumberState == 200)
+                            phoneNumberController.text.length == 11 &&
+                            verifyNumberState == 200)
                         ? () {
-                      final signUpRequestDto =
-                      ref.read(signUpRequestDtoProvider);
-                      ref
-                          .read(signUpRequestDtoProvider.notifier)
-                          .update((state) =>
-                          SignUpRequestDto(
-                              nickname: nicknameController.text,
-                              phoneNumber: phoneNumberController.text,
-                              profileImage:
-                              signUpRequestDto.profileImage,
-                              pinNumber: "",
-                              socialPK: signUpRequestDto.socialPK));
+                            final signUpRequestDto =
+                                ref.read(signUpRequestDtoProvider);
+                            ref.read(signUpRequestDtoProvider.notifier).update(
+                                (state) => SignUpRequestDto(
+                                    nickname: nicknameController.text,
+                                    phoneNumber: phoneNumberController.text,
+                                    profileImage: signUpRequestDto.profileImage,
+                                    pinNumber: "",
+                                    socialPK: signUpRequestDto.socialPK));
 
-                      Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => PinNumberScreen()));
-                    }
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => PinNumberScreen()));
+                          }
                         : null,
                     child: Text(
                       '계속하기',

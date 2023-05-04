@@ -5,12 +5,12 @@ import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/layout/default_layout.dart';
-import 'package:majoong/common/layout/loading_visibility_provider.dart';
 import 'package:majoong/common/util/logger.dart';
-import 'package:majoong/model/request/sign_up_request_dto.dart';
 import 'package:majoong/view/login/login_screen.dart';
 import 'package:majoong/viewmodel/signup/sign_up_provider.dart';
 import 'package:majoong/viewmodel/signup/sign_up_request_dto_provider.dart';
+
+import '../../model/request/user/sign_up_request_dto.dart';
 
 class PinNumberScreen extends ConsumerStatefulWidget {
   const PinNumberScreen({Key? key}) : super(key: key);
@@ -81,7 +81,6 @@ class _PinNumberScreenState extends ConsumerState<PinNumberScreen> {
                     });
                     if (!_onEditing) FocusScope.of(context).unfocus();
                   });
-
                 },
               ),
               const Spacer(),

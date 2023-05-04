@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-
+<?xml version="1.0" encoding="utf-8" ?>
 <resources>
+    <string name="google_client_key">AIzaSyDbIZpeW54gmbL86FN3FZAGjB-GBuVwWD0</string>
     <string name="kakao_login_scheme">kakaof2554a6cc9cda4163e26915d2213a0a2</string>
 </resources>

@@ -8,16 +8,18 @@ import 'package:majoong/common/const/path.dart';
 import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/layout/loading_layout.dart';
 import 'package:majoong/common/util/logger.dart';
-import 'package:majoong/model/request/login_request_dto.dart';
-import 'package:majoong/model/request/sign_up_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/user/login_response_dto.dart';
-import 'package:majoong/view/main/main_screen.dart';
+
 import 'package:majoong/view/login/sign_up_screen.dart';
 import 'package:majoong/viewmodel/login/login_provider.dart';
 import 'package:majoong/viewmodel/login/login_request_state_provider.dart';
 import 'package:majoong/viewmodel/signup/sign_up_request_dto_provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+
+import '../../model/request/user/login_request_dto.dart';
+import '../../model/request/user/sign_up_request_dto.dart';
+import '../main/main_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -92,8 +94,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     switch (loginResponse.status) {
       case 200:
         {
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => const MainScreen()));
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => MainScreen()));
           break;
         }
       //미가입 회원
@@ -162,7 +164,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           .read(loginRequestStateProvider.notifier)
           .update((state) => LoginRequestDto(socialPK: socialPK));
 
-
       final nickname = user.kakaoAccount!.profile!.nickname!;
       final profileImage =
           user.kakaoAccount?.profile?.profileImageUrl ?? BASE_PROFILE_URL;
@@ -180,8 +181,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await ref.read(loginProvider.notifier).login(loginRequestState);
       final loginState = ref.read(loginProvider);
       logger.d(loginState);
-      if (loginState is BaseResponse<LoginResponseDto> && loginState.status >= 200) {
-          login(loginState);
+      if (loginState is BaseResponse<LoginResponseDto> &&
+          loginState.status >= 200) {
+        login(loginState);
       }
 
       return user;

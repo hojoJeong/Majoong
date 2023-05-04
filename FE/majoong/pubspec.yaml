@@ -46,6 +46,10 @@ dependencies:
 
   smooth_page_indicator: ^1.1.0
   checkbox_formfield: ^0.2.0
+  google_maps_flutter: ^2.2.5
+  google_maps_cluster_manager: ^3.0.0+1
+  location: ^4.4.0
+
 
   logger: ^1.3.0
   flutter_styled_toast: ^2.1.3
@@ -80,6 +84,13 @@ flutter:
     - res/onboarding1.png
     - res/onboarding2.png
     - res/onboarding3.png
+    - res/report.png
+    - res/call.png
+    - res/body_cam.png
+    - res/whistle.png
+    - res/profile_image.png
+    - res/cctv.png
+    - res/police.png
     - res/icon_favorite.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
