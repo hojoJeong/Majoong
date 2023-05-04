@@ -30,8 +30,8 @@ spring:
 jwt:
   token:
     secret: ${JWT_SECRET_KEY}
-  exclude-path: /user/login, /user/signup, /user/retoken, /user/phone, /user/phone/verify
-  add-path: /user/**, /map/review
+  exclude-path: /user/login, /user/signup, /user/phone, /user/phone/verify
+  add-path: /user/**, /map/review, /video/**
 
 naver:
   access-key : ${NAVER_ACCESS_KEY}
