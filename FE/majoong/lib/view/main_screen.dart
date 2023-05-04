@@ -9,6 +9,7 @@ import 'package:majoong/model/request/map/get_facility_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/map/get_facility_response_dto.dart';
 import 'package:majoong/viewmodel/main/facility_provider.dart';
+import 'package:majoong/viewmodel/main/marker_provider.dart';
 
 import '../common/util/logger.dart';
 import '../viewmodel/main/user_info_provider.dart';
@@ -22,7 +23,7 @@ class MainScreen extends ConsumerStatefulWidget {
 
 class _MainScreenState extends ConsumerState<MainScreen> {
   late GoogleMapController mapController;
-  Set<Marker> _markers = {};
+
   Location location = Location();
   late bool _serviceEnabled;
   late PermissionStatus _permissionGranted;
@@ -30,16 +31,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
-    setState(() async {
-      _markers.add(
-        Marker(
-          markerId: MarkerId("1"),
-          position: LatLng(36.109227765491326, 128.41661386191845),
-          icon: await _getMarkerImage(),
-          infoWindow: InfoWindow(title: "San Francisco"),
-        ),
-      );
-    });
   }
 
   Future<BitmapDescriptor> _getMarkerImage() async {
@@ -133,7 +124,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   Widget build(BuildContext context) {
     final userInfo = ref.watch(userInfoProvider);
-    final facilityInfo = ref.watch(facilityProvider);
+    final facilityInfo = ref.watch(facilityProvider.notifier);
+    final markerInfo = ref.watch(markerProvider.notifier);
 
     return Scaffold(
       drawer: Drawer(
@@ -224,7 +216,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 child: Stack(alignment: Alignment.topCenter, children: [
                   GoogleMap(
                     onMapCreated: _onMapCreated,
-                    markers: _markers,
+                    markers: markerInfo.state,
                     initialCameraPosition: CameraPosition(
                       target: LatLng(
                           _locationData!.latitude!, _locationData!.longitude!),
@@ -291,29 +283,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       onTap: () async {
                         final request =
                             ref.read(centerPositionProvider.notifier).state;
-                        ref
-                            .read(facilityProvider.notifier)
-                            .getFacility(request);
-                        if (facilityInfo
-                            is BaseResponse<GetFacilityResponseDto>) {
-                          final facilityResponse = facilityInfo;
-                          final cctvList = facilityResponse.data?.cctv ?? [];
-                          final policeList =
-                              facilityResponse.data?.police ?? [];
-                          final icon = await BitmapDescriptor.fromAssetImage(
-                              ImageConfiguration(), 'res/cctv.png');
-
-                          for (var cctv in cctvList) {
-                            _markers.add(
-                              Marker(
-                                markerId: MarkerId(cctv.cctvId.toString()),
-                                position: LatLng(cctv.lat, cctv.lng),
-                                icon: icon,
-                                infoWindow: InfoWindow(title: "San Francisco"),
-                              ),
-                            );
-                          }
-                        }
+                        facilityInfo.getFacility(request);
                       },
                       child: Container(
                         alignment: Alignment.center,
