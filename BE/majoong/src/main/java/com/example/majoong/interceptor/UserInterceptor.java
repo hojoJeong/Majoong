@@ -29,8 +29,6 @@ public class UserInterceptor implements HandlerInterceptor {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return false;
         }
-
         return true;
     }
-
 }

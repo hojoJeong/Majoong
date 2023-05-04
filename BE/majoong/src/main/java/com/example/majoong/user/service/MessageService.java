@@ -31,6 +31,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 @Service
@@ -38,10 +39,10 @@ import java.util.Random;
 public class MessageService {
 
     @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private final RedisTemplate redisTemplate;
 
     @Value("${naver.sms.service-id}")
     private String serviceId;
@@ -96,9 +97,6 @@ public class MessageService {
         restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
         MessageResponseDto response =  restTemplate.postForObject(new URI("https://sens.apigw.ntruss.com/sms/v2/services/"+ serviceId +"/messages"), httpBody, MessageResponseDto.class);
 
-        //기존 인증번호 있으면 삭제
-        redisTemplate.delete("phone:"+phoneNumber);
-
         //인증번호 저장 (만료시간 5분)
         redisTemplate.opsForValue().set("phone:"+phoneNumber,randomNumber,Duration.ofMinutes(5));
 
@@ -142,6 +140,40 @@ public class MessageService {
         return encodeBase64String;
     }
 
+    public MessageResponseDto sendContentMessage(String content) throws NoSuchAlgorithmException, InvalidKeyException, URISyntaxException, JsonProcessingException, UnsupportedEncodingException {
+        Long time = System.currentTimeMillis();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("x-ncp-apigw-timestamp", time.toString());
+        headers.set("x-ncp-iam-access-key", accessKey);
+        headers.set("x-ncp-apigw-signature-v2", makeSignature(time));
+
+
+        MessageDto message = new MessageDto();
+        message.setTo("01092424723");
+        message.setContent(content);
+        List<MessageDto> messages = new ArrayList<>();
+        messages.add(message);
+
+        MessageRequestDto messageRequest = MessageRequestDto.builder()
+                .type("SMS")
+                .contentType("COMM")
+                .countryCode("82")
+                .from(senderPhone)
+                .content(content)
+                .messages(messages)
+                .build();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String body = objectMapper.writeValueAsString(messageRequest);
+        HttpEntity<String> httpBody = new HttpEntity<>(body, headers);
+
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
+        MessageResponseDto response =  restTemplate.postForObject(new URI("https://sens.apigw.ntruss.com/sms/v2/services/"+ serviceId +"/messages"), httpBody, MessageResponseDto.class);
+
+        return response;
+    }
 
 
 }

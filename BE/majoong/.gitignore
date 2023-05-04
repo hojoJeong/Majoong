@@ -41,3 +41,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### fcm ###
+/src/main/resources/fcm

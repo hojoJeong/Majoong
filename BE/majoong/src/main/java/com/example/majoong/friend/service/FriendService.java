@@ -6,7 +6,6 @@ import com.example.majoong.exception.NotExistFriendRequestException;
 import com.example.majoong.exception.NotFriendException;
 import com.example.majoong.friend.domain.Friend;
 import com.example.majoong.friend.dto.FriendDto;
-import com.example.majoong.friend.dto.FriendRequestDto;
 import com.example.majoong.friend.repository.FriendRepository;
 import com.example.majoong.notification.domain.Notification;
 import com.example.majoong.notification.service.NotificationService;
