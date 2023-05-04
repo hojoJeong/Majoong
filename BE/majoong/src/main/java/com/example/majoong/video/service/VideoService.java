@@ -262,7 +262,15 @@ public class VideoService {
         return responseDtos;
     }
 
-    public void removeRecording(String recordingId) {
+    public void removeRecording(HttpServletRequest request, String recordingId) {
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+
+        //다른 사람이 세션을 종료하지 못하도록 예외 처리
+        String[] splitId = recordingId.split("-");
+        if (!splitId[0].equals(String.valueOf(userId))) {
+            throw new InsufficientPermissionException();
+        }
         String url = OPENVIDU_BASE_PATH + "recordings/" + recordingId;
 
         // OPENVIDU REST API 요청

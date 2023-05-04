@@ -106,8 +106,8 @@ public class VideoController {
     @DeleteMapping("/recordings/{recordingId}")
     @Operation(summary = "recording 삭제", description = "녹화파일을 삭제합니다.")
 
-    public ResponseEntity<?> removeRecording(@PathVariable("recordingId") String recordingId) {
-        videoService.removeRecording(recordingId);
+    public ResponseEntity<?> removeRecording(HttpServletRequest request, @PathVariable("recordingId") String recordingId) {
+        videoService.removeRecording(request, recordingId);
         ResponseData data = new ResponseData();
         data.setMessage("removeRecording 성공");
         return data.builder();
