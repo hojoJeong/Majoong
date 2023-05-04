@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:majoong/model/response/base_response.dart';
-import 'package:majoong/view/home_screen.dart';
-import 'package:majoong/view/login_screen.dart';
+import 'package:majoong/view/main/main_screen.dart';
+import 'package:majoong/view/login/login_screen.dart';
 import 'package:majoong/viewmodel/login/check_auto_login_provider.dart';
 import 'package:majoong/viewmodel/login/login_provider.dart';
-import '../common/const/colors.dart';
+import '../../common/const/colors.dart';
 
 class SplashScreen extends ConsumerWidget {
   const SplashScreen({super.key});
@@ -19,7 +19,7 @@ class SplashScreen extends ConsumerWidget {
       if (autoLoginState is BaseResponse && autoLoginState.status == 200) {
         Future.delayed(Duration.zero, () {
           Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => const HomeScreen()));
+              MaterialPageRoute(builder: (context) => const MainScreen()));
         });
       }
     } else {

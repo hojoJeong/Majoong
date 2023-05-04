@@ -12,8 +12,8 @@ import 'package:majoong/model/request/login_request_dto.dart';
 import 'package:majoong/model/request/sign_up_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/user/login_response_dto.dart';
-import 'package:majoong/view/home_screen.dart';
-import 'package:majoong/view/sign_up_screen.dart';
+import 'package:majoong/view/main/main_screen.dart';
+import 'package:majoong/view/login/sign_up_screen.dart';
 import 'package:majoong/viewmodel/login/login_provider.dart';
 import 'package:majoong/viewmodel/login/login_request_state_provider.dart';
 import 'package:majoong/viewmodel/signup/sign_up_request_dto_provider.dart';
@@ -93,7 +93,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       case 200:
         {
           Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => const HomeScreen()));
+              MaterialPageRoute(builder: (context) => const MainScreen()));
           break;
         }
       //미가입 회원

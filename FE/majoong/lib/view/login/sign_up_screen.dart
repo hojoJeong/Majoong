@@ -9,11 +9,11 @@ import 'package:majoong/common/layout/loading_visibility_provider.dart';
 import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/request/sign_up_request_dto.dart';
 import 'package:majoong/model/request/verify_number_request_dto.dart';
-import 'package:majoong/view/pin_number_screen.dart';
+import 'package:majoong/view/login/pin_number_screen.dart';
 import 'package:majoong/viewmodel/signup/sign_up_request_dto_provider.dart';
 import 'package:majoong/viewmodel/signup/verify_number_provider.dart';
 
-import '../viewmodel/signup/receive_verification_number_provider.dart';
+import '../../viewmodel/signup/receive_verification_number_provider.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);
