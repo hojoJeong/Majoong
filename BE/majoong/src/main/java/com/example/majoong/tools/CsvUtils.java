@@ -1,4 +1,4 @@
-package com.example.majoong.map.util;
+package com.example.majoong.tools;
 
 import com.example.majoong.map.dto.BellDto;
 import com.example.majoong.map.dto.CctvDto;
@@ -39,8 +39,8 @@ public class CsvUtils {
             List<String> rowList = csvList.get(index);
 
             return PoliceDto.builder()
-                    .longitude(Double.parseDouble(rowList.get(0)))
-                    .latitude(Double.parseDouble(rowList.get(1)))
+                    .lng(Double.parseDouble(rowList.get(0)))
+                    .lat(Double.parseDouble(rowList.get(1)))
                     .address(rowList.get(2))
                     .build();
         }).collect(Collectors.toList());
@@ -64,8 +64,8 @@ public class CsvUtils {
             List<String> rowList = csvList.get(index);
 
             return StoreDto.builder()
-                    .longitude(Double.parseDouble(rowList.get(0)))
-                    .latitude(Double.parseDouble(rowList.get(1)))
+                    .lng(Double.parseDouble(rowList.get(0)))
+                    .lat(Double.parseDouble(rowList.get(1)))
                     .address(rowList.get(2))
                     .build();
         }).collect(Collectors.toList());
@@ -89,8 +89,8 @@ public class CsvUtils {
             List<String> rowList = csvList.get(index);
 
             return CctvDto.builder()
-                    .longitude(Double.parseDouble(rowList.get(0)))
-                    .latitude(Double.parseDouble(rowList.get(1)))
+                    .lng(Double.parseDouble(rowList.get(0)))
+                    .lat(Double.parseDouble(rowList.get(1)))
                     .address(rowList.get(2))
                     .build();
         }).collect(Collectors.toList());
@@ -114,8 +114,8 @@ public class CsvUtils {
             List<String> rowList = csvList.get(index);
 
             return BellDto.builder()
-                    .longitude(Double.parseDouble(rowList.get(0)))
-                    .latitude(Double.parseDouble(rowList.get(1)))
+                    .lng(Double.parseDouble(rowList.get(0)))
+                    .lat(Double.parseDouble(rowList.get(1)))
                     .address(rowList.get(2))
                     .build();
         }).collect(Collectors.toList());
