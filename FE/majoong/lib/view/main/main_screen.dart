@@ -7,6 +7,8 @@ import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/model/request/map/get_facility_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/user/user_info_response_dto.dart';
+import 'package:majoong/view/search/favorite_widget.dart';
+import 'package:majoong/view/search/search_screen.dart';
 import 'package:majoong/viewmodel/main/facility_provider.dart';
 import 'package:majoong/viewmodel/main/marker_provider.dart';
 
@@ -357,12 +359,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         Expanded(
                           child: GestureDetector(
                             onTap: () {
-                              // Navigator.pushNamed(context, '/search');
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => SearchScreen()));
                             },
                             child: const Text(
                               '도착지를 입력해주세요',
                               style: TextStyle(
                                 color: Colors.grey,
+                                fontSize: 14
                               ),
                             ),
                           ),

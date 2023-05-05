@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:majoong/common/const/key_value.dart';
 import 'package:majoong/model/request/user/login_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
+import 'package:majoong/model/response/favorite/favorite_response_dto.dart';
 import 'package:majoong/model/response/user/login_response_dto.dart';
 import 'package:majoong/model/response/user/re_token_response_dto.dart';
 import 'package:majoong/model/response/user/user_info_response_dto.dart';
@@ -55,4 +56,8 @@ abstract class UserApiService {
   @Headers({AUTHORIZATION: AUTH})
   @GET('user')
   Future<BaseResponse<UserInfoResponseDto>> getUserInfo();
+
+  @Headers({AUTHORIZATION: AUTH})
+  @GET('user/favorite')
+  Future<BaseResponse<List<FavoriteResponseDto>>> getFavoriteList();
 }
