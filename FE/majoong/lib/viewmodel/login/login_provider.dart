@@ -7,10 +7,10 @@ import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/user/login_response_dto.dart';
 import 'package:majoong/service/local/secure_storage.dart';
-import 'package:majoong/viewmodel/login/login_request_state_provider.dart';
 
 import '../../model/request/user/login_request_dto.dart';
 import '../../service/remote/api/user/user_api_service.dart';
+import 'login_request_state_provider.dart';
 
 final loginProvider =
     StateNotifierProvider<LoginStateNotifier, BaseResponseState>((ref) {

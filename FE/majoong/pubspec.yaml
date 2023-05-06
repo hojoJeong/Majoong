@@ -94,6 +94,7 @@ flutter:
     - res/police.png
     - res/icon_star.png
     - res/icon_favorite.png
+    - res/icon_camera.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

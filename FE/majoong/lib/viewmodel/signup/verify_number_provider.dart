@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:majoong/model/request/verify_number_request_dto.dart';
-
+import '../../model/request/user/verify_number_request_dto.dart';
 import '../../service/remote/api/user/user_api_service.dart';
 
 final verifyNumberProvider =
