@@ -7,9 +7,10 @@ import 'package:majoong/common/layout/loading_layout.dart';
 import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/favorite/favorite_response_dto.dart';
-import 'package:majoong/service/local/get_storage.dart';
+import 'package:majoong/service/local/recent_keyword_storage.dart';
 import 'package:majoong/view/favorite/favorite_screen.dart';
 import 'package:majoong/view/search/favorite_widget.dart';
+import 'package:majoong/view/search/recent_keyword_widget.dart';
 import 'package:majoong/viewmodel/favorite/favorite_list_provider.dart';
 
 class SearchScreen extends ConsumerWidget {
@@ -19,7 +20,9 @@ class SearchScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // final favoriteListState = ref.watch(favoriteListStateProvider);
-    // final recentKeywordListState = ref.watch(recentKeywordProvider);
+    final recentKeywordListState = ref.watch(recentKeywordProvider);
+
+
     ///임시 데이터
     final List<FavoriteResponseDto> favoriteListState = [
       FavoriteResponseDto(
@@ -31,125 +34,122 @@ class SearchScreen extends ConsumerWidget {
       FavoriteResponseDto(
           favoriteId: 1, locationName: '사피', address: '경북 구미시 진평5길 23'),
     ];
-    final recentKeywordListState = ['임시'];
-    // if (favoriteListState is BaseResponse) {
-    return Scaffold(
-        body: SafeArea(
-      child: SingleChildScrollView(
-        child: Center(
-          child: Column(
-            children: [
-              Container(
-                margin: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.5),
-                      spreadRadius: 2,
-                      blurRadius: 5,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height / 14,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: const Icon(Icons.arrow_back),
-                    ),
-                    Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: '도착지를 입력해주세요',
-                          hintStyle:
-                              TextStyle(color: Colors.grey, fontSize: 14),
-                          enabledBorder:
-                              UnderlineInputBorder(borderSide: BorderSide.none),
-                          focusedBorder:
-                              UnderlineInputBorder(borderSide: BorderSide.none),
-                        ),
+    // if (favoriteListState is BaseResponse && recentKeywordListState is BaseResponse) {
+    if (recentKeywordListState is BaseResponse) {
+      return Scaffold(
+          body: SafeArea(
+            child: Column(
+        children: [
+            Container(
+              margin: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              width: double.infinity,
+              height: MediaQuery.of(context).size.height / 14,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(Icons.arrow_back),
+                  ),
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: '도착지를 입력해주세요',
+                        hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                        enabledBorder:
+                            UnderlineInputBorder(borderSide: BorderSide.none),
+                        focusedBorder:
+                            UnderlineInputBorder(borderSide: BorderSide.none),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              SizedBox(
-                height: BASE_MARGIN_CONTENTS_TO_CONTENTS,
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: BASE_PADDING),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '즐겨찾기 목록',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                            fontSize: BASE_TITLE_FONT_SIZE,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => FavoriteScreen()));
-                          },
-                          child: Text(
-                            '수정하기',
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.normal,
-                                decoration: TextDecoration.underline),
-                          ),
-                        ),
-                      ],
-                    ),
-                    favoriteListView(favoriteListState, context),
-                    // Expanded(child: makeFavoriteList(favoriteListState.data))
+            ),
 
-                    SizedBox(
-                      height: 50,
+            SizedBox(
+              height: BASE_MARGIN_CONTENTS_TO_CONTENTS,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: BASE_PADDING),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '즐겨찾기 목록',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      fontSize: BASE_TITLE_FONT_SIZE,
                     ),
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap : (){
-                            ref.read(recentKeywordProvider.notifier).addKeyword('임시');
-                          },
-                          child: Text(
-                            '최근 검색 기록',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                              fontSize: BASE_TITLE_FONT_SIZE,
-                            ),
-                          ),
-                        ),
-                      ],
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => FavoriteScreen()));
+                    },
+                    child: Text(
+                      '수정하기',
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                          decoration: TextDecoration.underline),
                     ),
-                    recentKeywordListView(recentKeywordListState, context),
-                  ],
-                ),
-              )
-            ],
-          ),
-        ),
+                  ),
+                ],
+              ),
+            ),
+            favoriteListView(favoriteListState, context),
+            // Expanded(child: makeFavoriteList(favoriteListState.data))
+
+            SizedBox(
+              height: 50,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: BASE_PADDING),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      ref.read(recentKeywordProvider.notifier).addKeyword('임시1');
+                    },
+                    child: Text(
+                      '최근 검색 기록',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        fontSize: BASE_TITLE_FONT_SIZE,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            recentKeywordListView(
+                (recentKeywordListState.data as List<dynamic>).cast<String>())
+        ],
       ),
-    ));
-    // } else {
-    //   return const LoadingLayout();
-    // }
+          ));
+    } else {
+      logger.d(recentKeywordListState);
+      return const LoadingLayout();
+    }
   }
 
   Widget favoriteListView(
@@ -166,7 +166,7 @@ class SearchScreen extends ConsumerWidget {
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: favoriteList.length,
-          padding: EdgeInsets.all(BASE_MARGIN_CONTENTS_TO_CONTENTS),
+          padding: EdgeInsets.all(BASE_PADDING),
           itemBuilder: (context, index) {
             logger.d(
                 'favorite item : ${favoriteList[index].locationName}, ${favoriteList[index].address}');
@@ -182,9 +182,8 @@ class SearchScreen extends ConsumerWidget {
     }
   }
 
-  Widget recentKeywordListView(
-      List<String> recentKeywordList, BuildContext context) {
-    logger.d('recentKeywordLength : ${recentKeywordList.length}');
+  Widget recentKeywordListView(List<String> recentKeywordList) {
+    logger.d('키워드 recentKeywordLength : ${recentKeywordList.length}');
     if (recentKeywordList.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(
@@ -192,38 +191,21 @@ class SearchScreen extends ConsumerWidget {
         child: Text('검색 기록이 없습니다'),
       );
     } else {
-      return Container(
-        height: MediaQuery.of(context).size.height,
+      return Expanded(
         child: ListView.separated(
           shrinkWrap: true,
           scrollDirection: Axis.vertical,
           itemCount: recentKeywordList.length,
-          padding: EdgeInsets.all(BASE_MARGIN_CONTENTS_TO_CONTENTS),
+          padding: EdgeInsets.all(BASE_PADDING),
           itemBuilder: (context, index) {
-            logger.d('키워드 : ${recentKeywordList[index]}');
-            Container(
-                height: 100,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    GestureDetector(
-                        onTap: () {
-                          //TODO 검색
-                          logger.d(recentKeywordList[index]);
-                        },
-                        child: Text(recentKeywordList[index])),
-                    GestureDetector(
-                      onTap: (){
-                        //TODO 삭제
-                        logger.d('delete keyword');
-                      },
-                      child: Icon(Icons.clear),
-                    )
-                  ],
-                ));
+            final keyword = recentKeywordList[index];
+            return RecentKeywordWidget(keyword: keyword);
           },
-          separatorBuilder: (context, index) => Divider(
-            thickness: 1,
+          separatorBuilder: (context, index) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Divider(
+              thickness: 1,
+            ),
           ),
         ),
       );
