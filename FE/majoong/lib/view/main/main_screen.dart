@@ -7,7 +7,8 @@ import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/model/request/map/get_facility_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/user/user_info_response_dto.dart';
-import 'package:majoong/view/edit_user_info_screen.dart';
+import 'package:majoong/view/edit/edit_pin_number_screen.dart';
+import 'package:majoong/view/edit/edit_user_info_screen.dart';
 import 'package:majoong/view/favorite/favorite_screen.dart';
 import 'package:majoong/view/search/favorite_widget.dart';
 import 'package:majoong/view/search/search_screen.dart';
@@ -212,7 +213,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         builder: (_) => EditUserInfoScreen()));
                   },
                   child: drawerMenu(title: '회원정보 수정')),
-              drawerMenu(title: 'PIN 변경'),
+              GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => EditPinNumberScreen()));
+                  },
+                  child: drawerMenu(title: 'PIN 변경')),
               drawerMenu(title: '알림 설정'),
               Expanded(
                 child: Container(

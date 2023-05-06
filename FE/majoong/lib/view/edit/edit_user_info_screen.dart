@@ -7,16 +7,16 @@ import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/viewmodel/main/user_info_provider.dart';
 import 'package:majoong/viewmodel/signup/verify_number_provider.dart';
 
-import '../common/component/signle_button_widget.dart';
-import '../common/const/colors.dart';
-import '../common/const/size_value.dart';
-import '../common/layout/default_layout.dart';
-import '../common/layout/loading_visibility_provider.dart';
-import '../common/util/logger.dart';
-import '../model/request/user/verify_number_request_dto.dart';
-import '../model/response/user/user_info_response_dto.dart';
-import '../viewmodel/signup/receive_verification_number_provider.dart';
-import '../viewmodel/signup/sign_up_request_dto_provider.dart';
+import '../../common/component/signle_button_widget.dart';
+import '../../common/const/colors.dart';
+import '../../common/const/size_value.dart';
+import '../../common/layout/default_layout.dart';
+import '../../common/layout/loading_visibility_provider.dart';
+import '../../common/util/logger.dart';
+import '../../model/request/user/verify_number_request_dto.dart';
+import '../../model/response/user/user_info_response_dto.dart';
+import '../../viewmodel/signup/receive_verification_number_provider.dart';
+import '../../viewmodel/signup/sign_up_request_dto_provider.dart';
 
 class EditUserInfoScreen extends ConsumerWidget {
   EditUserInfoScreen({Key? key}) : super(key: key);
