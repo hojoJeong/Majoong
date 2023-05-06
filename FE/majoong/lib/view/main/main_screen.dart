@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -431,7 +432,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                           bottomComponent(
                             image: AssetImage('res/whistle.png'),
                             text: '호루라기',
-                            onPressed: () {},
+                            onPressed: () async{
+                              AudioCache player = AudioCache();
+                              player.play('whistle.mp3');
+                              logger.d('whistle!!');
+                            },
                           ),
                           bottomComponent(
                             image: AssetImage('res/report.png'),
