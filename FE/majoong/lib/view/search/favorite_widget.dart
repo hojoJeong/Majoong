@@ -20,7 +20,7 @@ class FavoriteWidget extends StatelessWidget {
         child: Row(
           children: [
             Image(
-              image: AssetImage('res/icon_favorite.png'),
+              image: AssetImage('res/icon_star.png'),
               width: 30,
             ),
             SizedBox(

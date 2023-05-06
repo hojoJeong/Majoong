@@ -60,4 +60,8 @@ abstract class UserApiService {
   @Headers({AUTHORIZATION: AUTH})
   @GET('user/favorite')
   Future<BaseResponse<List<FavoriteResponseDto>>> getFavoriteList();
+
+  @Headers({AUTHORIZATION: AUTH})
+  @DELETE('user/favorite/{favoriteId}')
+  Future<BaseResponse<bool>> deleteFavorite(@Path('favoriteId') int favoriteId);
 }

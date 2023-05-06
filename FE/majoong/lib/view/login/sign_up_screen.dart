@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
+import 'package:majoong/common/component/signle_button_widget.dart';
 import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/layout/default_layout.dart';
@@ -289,47 +290,37 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               height: 10,
             ),
             Align(
-              alignment: Alignment.bottomCenter,
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: POLICE_MARKER_COLOR,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8))),
+                alignment: Alignment.bottomCenter,
+                child: SingleButtonWidget(
+                    content: '계속하기',
                     onPressed: (nicknameController.text.isNotEmpty &&
                             phoneNumberController.text.length == 11 &&
                             verifyNumberState == 200)
                         ? () {
-                            final signUpRequestDto =
-                                ref.read(signUpRequestDtoProvider);
-                            ref.read(signUpRequestDtoProvider.notifier).update(
-                                (state) => SignUpRequestDto(
-                                    nickname: nicknameController.text,
-                                    phoneNumber: phoneNumberController.text,
-                                    profileImage: signUpRequestDto.profileImage,
-                                    pinNumber: "",
-                                    socialPK: signUpRequestDto.socialPK));
-
-                            Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => PinNumberScreen()));
+                            addButtonClickListener(context, nicknameController,
+                                phoneNumberController);
                           }
-                        : null,
-                    child: Text(
-                      '계속하기',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: BASE_TITLE_FONT_SIZE),
-                    )),
-              ),
-            )
+                        : null))
           ],
         )),
       ),
     );
+  }
+
+  addButtonClickListener(
+      BuildContext context,
+      TextEditingController nicknameController,
+      TextEditingController phoneNumberController) {
+    final signUpRequestDto = ref.read(signUpRequestDtoProvider);
+    ref.read(signUpRequestDtoProvider.notifier).update((state) =>
+        SignUpRequestDto(
+            nickname: nicknameController.text,
+            phoneNumber: phoneNumberController.text,
+            profileImage: signUpRequestDto.profileImage,
+            pinNumber: "",
+            socialPK: signUpRequestDto.socialPK));
+
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => PinNumberScreen()));
   }
 }
