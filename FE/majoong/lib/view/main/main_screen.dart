@@ -7,6 +7,8 @@ import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/model/request/map/get_facility_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/user/user_info_response_dto.dart';
+import 'package:majoong/view/edit_user_info_screen.dart';
+import 'package:majoong/view/favorite/favorite_screen.dart';
 import 'package:majoong/view/search/favorite_widget.dart';
 import 'package:majoong/view/search/search_screen.dart';
 import 'package:majoong/viewmodel/main/facility_provider.dart';
@@ -196,10 +198,20 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               Divider(
                 thickness: 1,
               ),
-              drawerMenu(title: '즐겨찾기'),
+              GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => FavoriteScreen()));
+                  },
+                  child: drawerMenu(title: '즐겨찾기')),
               drawerMenu(title: '친구 관리'),
               drawerMenu(title: '녹화기록'),
-              drawerMenu(title: '회원정보 수정'),
+              GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => EditUserInfoScreen()));
+                  },
+                  child: drawerMenu(title: '회원정보 수정')),
               drawerMenu(title: 'PIN 변경'),
               drawerMenu(title: '알림 설정'),
               Expanded(
@@ -359,14 +371,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         Expanded(
                           child: GestureDetector(
                             onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => SearchScreen()));
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => SearchScreen()));
                             },
                             child: const Text(
                               '도착지를 입력해주세요',
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 14
-                              ),
+                              style:
+                                  TextStyle(color: Colors.grey, fontSize: 14),
                             ),
                           ),
                         ),
