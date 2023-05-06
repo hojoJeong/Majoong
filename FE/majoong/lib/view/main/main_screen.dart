@@ -4,11 +4,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:location/location.dart';
 import 'package:majoong/common/const/colors.dart';
+import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/request/map/get_facility_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/user/user_info_response_dto.dart';
 import 'package:majoong/viewmodel/main/facility_provider.dart';
 import 'package:majoong/viewmodel/main/marker_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../viewmodel/main/user_info_provider.dart';
 
@@ -93,22 +95,27 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   Widget bottomComponent(
       {image: AssetImage, text: String, onPressed: Function}) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        Image(
-          width: MediaQuery.of(context).size.width / 10,
-          height: MediaQuery.of(context).size.width / 10,
-          image: image,
-        ),
-        Text(
-          text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: () {
+        onPressed();
+      },
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Image(
+            width: MediaQuery.of(context).size.width / 10,
+            height: MediaQuery.of(context).size.width / 10,
+            image: image,
           ),
-        ),
-      ],
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -408,7 +415,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                           bottomComponent(
                             image: AssetImage('res/call.png'),
                             text: '보호자 통화',
-                            onPressed: () {},
+                            onPressed: (){
+                              logger.d('Tab!');
+                              canLaunchUrl(
+                                      Uri(scheme: 'tel', path: '010-2638-5713'))
+                                  .then((value) => launchUrl(Uri(
+                                      scheme: 'tel', path: '010-2638-5713')));
+                            },
                           ),
                           bottomComponent(
                             image: AssetImage('res/body_cam.png'),
