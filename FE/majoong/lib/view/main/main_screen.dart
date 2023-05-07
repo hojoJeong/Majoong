@@ -10,7 +10,7 @@ import 'package:majoong/model/response/user/user_info_response_dto.dart';
 import 'package:majoong/view/edit/edit_pin_number_screen.dart';
 import 'package:majoong/view/edit/edit_user_info_screen.dart';
 import 'package:majoong/view/favorite/favorite_screen.dart';
-import 'package:majoong/view/search/favorite_widget.dart';
+import 'package:majoong/view/friend/friend_list_screen.dart';
 import 'package:majoong/view/search/search_screen.dart';
 import 'package:majoong/viewmodel/main/facility_provider.dart';
 import 'package:majoong/viewmodel/main/marker_provider.dart';
@@ -205,7 +205,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         MaterialPageRoute(builder: (_) => FavoriteScreen()));
                   },
                   child: drawerMenu(title: '즐겨찾기')),
-              drawerMenu(title: '친구 관리'),
+              GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => FriendListScreen()));
+                  },
+                  child: drawerMenu(title: '친구 관리')),
               drawerMenu(title: '녹화기록'),
               GestureDetector(
                   onTap: () {

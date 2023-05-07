@@ -12,7 +12,7 @@ import '../../common/util/logger.dart';
 import '../../model/request/user/edit_user_info_request_dto.dart';
 import '../../model/response/user/user_info_response_dto.dart';
 
-final editUserInfoProvider = StateNotifierProvider.autoDispose((ref) {
+final editUserInfoProvider = StateNotifierProvider.autoDispose<EditUserInfoStateNotifier, BaseResponseState>((ref) {
   final userApi = ref.read(userApiServiceProvider);
   final userInfo = ref.read(userInfoProvider) as BaseResponse<UserInfoResponseDto>;
   final secureStorage = ref.read(secureStorageProvider);
