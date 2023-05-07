@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:location/location.dart';
+import 'package:majoong/common/const/app_key.dart';
 import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/request/map/get_facility_request_dto.dart';
@@ -14,6 +17,7 @@ import 'package:majoong/viewmodel/main/facility_provider.dart';
 import 'package:majoong/viewmodel/main/marker_provider.dart';
 import 'package:majoong/viewmodel/main/review_dialog_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
 
 import '../../viewmodel/main/user_info_provider.dart';
 
@@ -49,7 +53,19 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       });
     });
   }
-
+  Future<String?> getAddress() async{
+    final url =
+        'https://maps.googleapis.com/maps/api/geocode/json?latlng=${ref.read(currentLocationProvider)[0]},${ref.read(currentLocationProvider)[1]}&key=$GOOGLE_MAP_KEY&language=ko';
+    final response = await http.get(Uri.parse(url));
+    if(response.statusCode == 200){
+      final decodedJson = jsonDecode(response.body);
+      final results = decodedJson['results'] as List<dynamic>;
+      final formattedAddresses = results.map((result) => result['formatted_address'] as String).toList();
+      return formattedAddresses[0].replaceAll('대한민국', '');
+    }else{
+      return null;
+    }
+  }
   Future<void> _getLocation() async {
     _serviceEnabled = await location.serviceEnabled();
     if (!_serviceEnabled) {
@@ -389,8 +405,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     left: MediaQuery.of(context).size.width / 4,
                     bottom: MediaQuery.of(context).size.height / 7,
                     child: GestureDetector(
-                      onTap: () {
-
+                      onTap: () async{
+                        final address = await getAddress();
+                        if(address != null) reviewDialogInfo.setAddress(address);
                         reviewDialogInfo.setCurrentLocation();
                         showDialog(
                           context: context,
@@ -419,13 +436,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                           const Text(
                                             '현재 위치에 대해서 평가해주세요',
                                             style:
-                                                TextStyle(color: Colors.white),
+                                                TextStyle(color: Colors.white,
+                                                fontWeight: FontWeight.bold,),
                                           ),
                                           SizedBox(height: 5),
                                           Text(
-                                            '${ref.read(currentLocationProvider)[0]} ${ref.read(currentLocationProvider)[1]}',
+                                            reviewDialogInfo.state.address,
                                             style: TextStyle(
                                               color: Colors.white,
+                                              fontSize: 10,
                                             ),
                                           ),
                                           const SizedBox(height: 15),
