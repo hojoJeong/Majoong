@@ -9,7 +9,7 @@ class EditUserInfoRequestDto {
   final String nickname;
   final String phoneNumber;
   @JsonKey(name: 'profileImage', fromJson: _fileFromJson, toJson: _fileToJson)
-  final File profileImage;
+  final File? profileImage;
 
   EditUserInfoRequestDto({
     required this.nickname,
@@ -22,7 +22,7 @@ class EditUserInfoRequestDto {
 
   Map<String, dynamic> toJson() => _$EditUserInfoRequestDtoToJson(this);
 
-  static File _fileFromJson(String filePath) => File(filePath);
+  static File? _fileFromJson(String filePath) => File(filePath);
 
-  static String _fileToJson(File file) => file.path;
+  static String? _fileToJson(File? file) => file?.path;
 }
