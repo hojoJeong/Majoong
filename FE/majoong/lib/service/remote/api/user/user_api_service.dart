@@ -5,10 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:majoong/common/const/key_value.dart';
 import 'package:majoong/model/request/user/edit_user_info_request_dto.dart';
 import 'package:majoong/model/request/user/login_request_dto.dart';
+import 'package:majoong/model/request/user/pin_number_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/favorite/favorite_response_dto.dart';
 import 'package:majoong/model/response/user/edit_user_info_response_dto.dart';
 import 'package:majoong/model/response/user/login_response_dto.dart';
+import 'package:majoong/model/response/user/pin_number_response_dto.dart';
 import 'package:majoong/model/response/user/re_token_response_dto.dart';
 import 'package:majoong/model/response/user/user_info_response_dto.dart';
 import 'package:majoong/service/remote/dio/dio_provider.dart';
@@ -72,5 +74,11 @@ abstract class UserApiService {
   @Headers({AUTHORIZATION: AUTH})
   @PUT('user/profile')
   @MultiPart()
-  Future<BaseResponse<EditUserInfoResponseDto>> editUserInfo(@Body() EditUserInfoRequestDto request);
+  Future<BaseResponse<EditUserInfoResponseDto>> editUserInfo(
+      @Body() EditUserInfoRequestDto request);
+
+  @Headers({AUTHORIZATION: AUTH})
+  @PUT('user/pin')
+  Future<BaseResponse<PinNumberResponseDto>> editPinNumber(
+      @Body() PinNumberRequestDto request);
 }

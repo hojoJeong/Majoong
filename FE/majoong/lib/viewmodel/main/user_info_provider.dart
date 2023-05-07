@@ -30,13 +30,4 @@ class UserInfoNotifier extends StateNotifier<BaseResponseState> {
       state = BaseResponseError(message: response.message);
     }
   }
-
-  editUserInfo(EditUserInfoRequestDto request) async {
-    final response = await service.editUserInfo(request);
-    logger.d('edit user info : ${response.status}');
-    state = response;
-    if(response.status == 200){
-      logger.d('회원정보 수정 성공');
-    }
-  }
 }

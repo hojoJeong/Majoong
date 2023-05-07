@@ -68,7 +68,7 @@ class LoginStateNotifier extends StateNotifier<BaseResponseState> {
       await secureStorage.write(key: ACCESS_TOKEN, value: userInfo.accessToken);
       await secureStorage.write(
           key: REFRESH_TOKEN, value: userInfo.refreshToken);
-
+      await secureStorage.write(key: PIN_NUM, value: userInfo.pinNumber);
       final token = await secureStorage.read(key: ACCESS_TOKEN);
       print('Save AUTO_LOGIN into SecureStorage : $token');
     }

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:majoong/common/component/signle_button_widget.dart';
+import 'package:majoong/model/response/base_response.dart';
+import 'package:majoong/viewmodel/edit/edit_user_info_provider.dart';
 
 import '../../common/const/size_value.dart';
 import '../../common/layout/default_layout.dart';
@@ -25,13 +27,13 @@ class _EditPinNumberState extends ConsumerState<EditPinNumberScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // final signUpState = ref.watch(signUpProvider);
-    // if (signUpState) {
-    //   WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-    //     showToast(context: context, 'PIN 번호가 수정되었습니다.');
-    //     Navigator.pop(context);
-    //   });
-    // }
+    final editPinNumberState = ref.watch(editUserInfoProvider);
+    if (editPinNumberState is BaseResponse && editPinNumberState.status == 200) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        showToast(context: context, 'PIN 번호가 수정되었습니다.');
+        Navigator.pop(context);
+      });
+    }
     return DefaultLayout(
       title: 'PIN 번호 수정',
       body: Padding(
@@ -76,7 +78,7 @@ class _EditPinNumberState extends ConsumerState<EditPinNumberScreen> {
               SingleButtonWidget(
                 content: '수정하기',
                 onPressed: _code != "" ? () {
-                  //TODO PIN 번호 수정
+                  ref.read(editUserInfoProvider.notifier).editPinNumber(_code.toString());
                 } : null,
               )
             ],
