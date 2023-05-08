@@ -29,26 +29,28 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
-	//jwt
+	// jwt
 	implementation 'io.jsonwebtoken:jjwt:0.9.1'
 	implementation 'jakarta.xml.bind:jakarta.xml.bind-api:2.3.3'
 	implementation 'javax.xml.bind:jaxb-api:2.3.1'
-	//http
+	// http
 	implementation("org.apache.httpcomponents:httpclient:4.5")
 	// redis
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'com.opencsv:opencsv:5.5.2'
-	//swagger
+	// swagger
 	implementation 'org.springdoc:springdoc-openapi-ui:1.6.12'
-	//rabbitmq
+	// rabbitmq
 	implementation 'org.springframework.boot:spring-boot-starter-amqp'
-	//gson
+	// gson
 	implementation 'com.google.code.gson:gson:2.9.0'
-	//s3
+	// s3
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 	// FCM
 	implementation 'com.google.firebase:firebase-admin:8.1.0'
 	implementation 'com.squareup.okhttp3:okhttp:4.9.2'
+	// google maps
+	implementation 'com.google.maps:google-maps-services:0.9.1'
 }
 
 tasks.named('test') {

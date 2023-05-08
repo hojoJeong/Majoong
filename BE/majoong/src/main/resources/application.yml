@@ -65,3 +65,8 @@ cloud:
       static: ap-northeast-2
     stack:
       auto: false
+
+google:
+  maps:
+    api:
+      key: ${GOOGLE_MAPS_DIRECTION_API_KEY}
