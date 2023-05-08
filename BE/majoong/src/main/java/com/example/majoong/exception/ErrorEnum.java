@@ -19,7 +19,9 @@ public enum ErrorEnum {
     NOT_EXIST_FRIEND_REQUEST("해당 친구요청이 없습니다.", 604),
     NOT_FRIEND("친구가 아닙니다.", 605),
     WRONG_NUMBER("인증번호가 틀립니다.", 700),
-    EXPIRED_NUMBER("인증번호 유효기간 만료", 701);
+    EXPIRED_NUMBER("인증번호 유효기간 만료", 701),
+    NO_FILE("파일이 존재하지 않습니다.", 404);
+
 
 
     public String message;

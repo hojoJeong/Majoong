@@ -37,5 +37,6 @@ public class Review {
     private String content;
     private String reviewImage;
     @CreatedDate
+    @Column(name = "created_at")
     private Date createdAt;
 }

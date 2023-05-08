@@ -7,6 +7,7 @@ import com.example.majoong.user.domain.User;
 import com.example.majoong.user.dto.*;
 import com.example.majoong.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Optional;
@@ -21,6 +23,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
     @Autowired
     private UserRepository userRepository;
@@ -179,8 +182,7 @@ public class UserService {
 
         return pin;
     }
-
-    public UserProfileResponseDto changeProfile(HttpServletRequest request, UserProfileRequestrDto userProfileRequestrDto, MultipartFile profileImage) throws IOException {
+    public UserProfileResponseDto changeProfile(HttpServletRequest request, UserProfileRequestrDto userProfileRequestrDto, @Nullable MultipartFile profileImage) throws IOException {
         //토큰으로 유저 식별
         String token = request.getHeader("Authorization").split(" ")[1];
         int userId = jwtTool.getUserIdFromToken(token);
@@ -191,16 +193,19 @@ public class UserService {
         }
 
         // phoneNumber 중복확인
-        User existingUser = userRepository.findByPhoneNumber(userProfileRequestrDto.getPhoneNumber());
-        if (existingUser != null && user.get().getPhoneNumber() != userProfileRequestrDto.getPhoneNumber()) {
-            throw new DuplicatePhoneNumberException();
-        }
-        String fileType = "profile";
-        String profileImageUrl = s3Upload.uploadFile(userId, fileType, profileImage);
-
+//        User existingUser = userRepository.findByPhoneNumber(userProfileRequestrDto.getPhoneNumber());
+//        if (existingUser != null && user.get().getPhoneNumber() != userProfileRequestrDto.getPhoneNumber()) {
+//            throw new DuplicatePhoneNumberException();
+//        }
         user.get().setPhoneNumber(userProfileRequestrDto.getPhoneNumber());
         user.get().setNickname(userProfileRequestrDto.getNickname());
-        user.get().setProfileImage(profileImageUrl);
+
+        if (profileImage!=null) {
+            String fileType = "profile";
+            String profileImageUrl = s3Upload.uploadFile(userId, fileType, profileImage);
+            user.get().setProfileImage(profileImageUrl);
+        }
+
         userRepository.save(user.get());
 
         UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto();
@@ -209,5 +214,38 @@ public class UserService {
         userProfileResponseDto.setProfileImage(user.get().getProfileImage());
 
         return userProfileResponseDto;
+    }
+
+    public SimpleUserResponseDto searchPhoneNumber(String phoneNumber){
+        User userInfo = userRepository.findByPhoneNumber(phoneNumber);
+        if (userInfo == null ){
+            throw new NoUserException();
+        }
+        SimpleUserResponseDto user = new SimpleUserResponseDto();
+
+        user.setUserId(userInfo.getId());
+        user.setPhoneNumber(userInfo.getPhoneNumber());
+        user.setNickname(userInfo.getNickname());
+        user.setProfileImage(userInfo.getProfileImage());
+        return user;
+    }
+
+    public pushAlarmDto setPushAlarm(HttpServletRequest request, boolean push){
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+        User user = userRepository.findById(userId).get();
+        user.setPushAlarm(push);
+        pushAlarmDto pushDto = new pushAlarmDto();
+        pushDto.setPushAlarm(user.isPushAlarm());
+        return pushDto;
+    }
+
+    public pushAlarmDto getPushAlarm(HttpServletRequest request){
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+        User user = userRepository.findById(userId).get();
+        pushAlarmDto pushDto = new pushAlarmDto();
+        pushDto.setPushAlarm(user.isPushAlarm());
+        return pushDto;
     }
 }

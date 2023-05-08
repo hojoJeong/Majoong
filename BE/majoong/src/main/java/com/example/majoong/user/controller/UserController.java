@@ -2,6 +2,7 @@ package com.example.majoong.user.controller;
 
 import com.example.majoong.response.ResponseData;
 import com.example.majoong.user.dto.*;
+import com.example.majoong.user.service.FavoriteService;
 import com.example.majoong.user.service.MessageService;
 import com.example.majoong.user.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,7 +20,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 
 import static java.rmi.server.LogStream.log;
@@ -31,6 +35,8 @@ import static java.rmi.server.LogStream.log;
 public class UserController {
     private final UserService userService;
     private final MessageService messageService;
+
+    private final FavoriteService favoriteService;
 
 
     @GetMapping
@@ -163,11 +169,11 @@ public class UserController {
         return data.builder();
     }
 
-    @PutMapping("/profile")
+    @PutMapping(value = "/profile")
     public ResponseEntity<?> changeProfile(HttpServletRequest request,
                                            @RequestPart("nickname") String nickname,
                                            @RequestPart("phoneNumber") String phoneNumber,
-                                           @RequestPart("profileImage") MultipartFile profileImage) throws IOException {
+                                           @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) throws IOException {
         log.info("/user/profile @Put start");
         ResponseData data = new ResponseData();
         UserProfileRequestrDto userProfileRequestrDto = new UserProfileRequestrDto();
@@ -182,5 +188,78 @@ public class UserController {
         return data.builder();
     }
 
+    @Operation(summary = "회원 검색", description = "휴대폰 번호로 회원 검색")
+    @PostMapping("/search")
+    public ResponseEntity searchPhonenumber(@RequestBody PhoneNumberDto info) {
+        log.info("/user/search @Post start");
+        ResponseData data = new ResponseData();
+        data.setData(userService.searchPhoneNumber(info.getPhoneNumber()));
+        log.info(data.toString());
+        log.info("/user/search end\n");
+        log.info("");
+        return data.builder();
+    }
 
+    @Operation(summary = "푸쉬알람 설정")
+    @PutMapping("/push")
+    public ResponseEntity setPushAlarm(HttpServletRequest request, @RequestBody pushAlarmDto push) {
+        log.info("/user/push @Put start");
+        pushAlarmDto pushAlarm= userService.setPushAlarm(request, push.isPushAlarm());
+        ResponseData data = new ResponseData();
+        data.setData(pushAlarm);
+        log.info(data.toString());
+        log.info("/user/push end\n");
+        log.info("");
+        return data.builder();
+    }
+
+    @Operation(summary = "푸쉬알람 조회")
+    @GetMapping("/push")
+    public ResponseEntity getPushAlarm(HttpServletRequest request) {
+        log.info("/user/push @Get start");
+        pushAlarmDto pushAlarm= userService.getPushAlarm(request);
+        ResponseData data = new ResponseData();
+        data.setData(pushAlarm);
+        log.info(data.toString());
+        log.info("/user/push end\n");
+        log.info("");
+        return data.builder();
+    }
+
+    @Operation(summary = "즐겨찾기 설정")
+    @PostMapping("/favorite")
+    public ResponseEntity addFavorite(HttpServletRequest request, @RequestBody FavoriteDto favoriteDto) {
+        log.info("/user/favorite @Post start");
+        favoriteService.addFavorite(request, favoriteDto);
+        ResponseData data = new ResponseData();
+        log.info(data.toString());
+        log.info("/user/favorite end\n");
+        log.info("");
+        return data.builder();
+    }
+
+    @Operation(summary = "즐겨찾기 조회")
+    @GetMapping("/favorite")
+    public ResponseEntity addFavorite(HttpServletRequest request) {
+        log.info("/user/favorite @Get start");
+        ResponseData data = new ResponseData();
+        List<FavoriteResponseDto> result = favoriteService.getFavorites(request);
+        data.setData(result);
+        log.info(data.toString());
+        log.info("/user/favorite end\n");
+        log.info("");
+        return data.builder();
+    }
+
+    @Operation(summary = "즐겨찾기 삭제")
+    @DeleteMapping("/favorite/{favoriteId}")
+    public ResponseEntity addFavorite(@PathVariable("favoriteId") int id) {
+        log.info("/user/favorite @Delete start");
+        ResponseData data = new ResponseData();
+        favoriteService.deleteFavorite(id);
+        log.info(data.toString());
+        log.info("/user/favorite end\n");
+        log.info("");
+        return data.builder();
+    }
 }
