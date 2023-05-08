@@ -248,4 +248,16 @@ public class UserController {
         log.info("");
         return data.builder();
     }
+
+    @Operation(summary = "즐겨찾기 삭제")
+    @DeleteMapping("/favorite/{favoriteId}")
+    public ResponseEntity addFavorite(@PathVariable("favoriteId") int id) {
+        log.info("/user/favorite @Delete start");
+        ResponseData data = new ResponseData();
+        favoriteService.deleteFavorite(id);
+        log.info(data.toString());
+        log.info("/user/favorite end\n");
+        log.info("");
+        return data.builder();
+    }
 }
