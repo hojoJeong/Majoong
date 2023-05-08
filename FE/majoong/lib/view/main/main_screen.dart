@@ -173,7 +173,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final reviewDialogInfo = ref.watch(reviewDialogProvider.notifier);
     final cameraMovedInfo = ref.watch(cameraMovedProvider);
     accelerometerEvents.listen((event) {
-      if ((event.x.abs() > 50 || event.y.abs() > 50 || event.z.abs() > 50) &&
+      if ((event.x.abs() > 75 || event.y.abs() > 75 || event.z.abs() > 75) &&
           !isReporting) {
         isReporting = true;
         reportDialog(setState);
