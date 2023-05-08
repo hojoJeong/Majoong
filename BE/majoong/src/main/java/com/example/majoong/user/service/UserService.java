@@ -210,4 +210,14 @@ public class UserService {
 
         return userProfileResponseDto;
     }
+
+    public SimpleUserResponseDto searchPhoneNumber(String phoneNumber){
+        User userInfo = userRepository.findByPhoneNumber(phoneNumber);
+        SimpleUserResponseDto user = new SimpleUserResponseDto();
+        user.setUserId(userInfo.getId());
+        user.setPhoneNumber(userInfo.getPhoneNumber());
+        user.setNickname(userInfo.getNickname());
+        user.setProfileImage(userInfo.getProfileImage());
+        return user;
+    }
 }

@@ -182,5 +182,16 @@ public class UserController {
         return data.builder();
     }
 
+    @Operation(summary = "회원 검색", description = "휴대폰 번호로 회원 검색")
+    @PostMapping("/search")
+    public ResponseEntity searchPhonenumber(@RequestBody PhoneNumberDto info) {
+        log.info("/user/search @Post start");
+        ResponseData data = new ResponseData();
+        data.setData(userService.searchPhoneNumber(info.getPhoneNumber()));
+        log.info(data.toString());
+        log.info("/user/search end\n");
+        log.info("");
+        return data.builder();
+    }
 
 }
