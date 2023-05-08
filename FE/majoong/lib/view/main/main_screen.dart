@@ -53,19 +53,23 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       });
     });
   }
-  Future<String?> getAddress() async{
+
+  Future<String?> getAddress() async {
     final url =
         'https://maps.googleapis.com/maps/api/geocode/json?latlng=${ref.read(currentLocationProvider)[0]},${ref.read(currentLocationProvider)[1]}&key=$GOOGLE_MAP_KEY&language=ko';
     final response = await http.get(Uri.parse(url));
-    if(response.statusCode == 200){
+    if (response.statusCode == 200) {
       final decodedJson = jsonDecode(response.body);
       final results = decodedJson['results'] as List<dynamic>;
-      final formattedAddresses = results.map((result) => result['formatted_address'] as String).toList();
+      final formattedAddresses = results
+          .map((result) => result['formatted_address'] as String)
+          .toList();
       return formattedAddresses[0].replaceAll('대한민국', '');
-    }else{
+    } else {
       return null;
     }
   }
+
   Future<void> _getLocation() async {
     _serviceEnabled = await location.serviceEnabled();
     if (!_serviceEnabled) {
@@ -150,7 +154,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     '도로 리뷰',
     '위험 지역',
   ];
-
 
   @override
   Widget build(BuildContext context) {
@@ -405,9 +408,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     left: MediaQuery.of(context).size.width / 4,
                     bottom: MediaQuery.of(context).size.height / 7,
                     child: GestureDetector(
-                      onTap: () async{
+                      onTap: () async {
                         final address = await getAddress();
-                        if(address != null) reviewDialogInfo.setAddress(address);
+                        if (address != null)
+                          reviewDialogInfo.setAddress(address);
                         reviewDialogInfo.setCurrentLocation();
                         showDialog(
                           context: context,
@@ -421,23 +425,22 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                   ),
                                   child: Padding(
                                     padding: EdgeInsets.symmetric(
-                                        horizontal:
-                                            30,
-                                        vertical:
-                                            5,),
+                                      horizontal: 30,
+                                      vertical: 5,
+                                    ),
                                     child: Container(
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: <Widget>[
-
                                           SizedBox(height: 10),
                                           const Text(
                                             '현재 위치에 대해서 평가해주세요',
-                                            style:
-                                                TextStyle(color: Colors.white,
-                                                fontWeight: FontWeight.bold,),
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                           SizedBox(height: 5),
                                           Text(
@@ -499,11 +502,14 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                           ),
                                           SizedBox(height: 15),
                                           TextField(
-                                            onChanged: (content){
-                                              reviewDialogInfo.setContent(content);
+                                            onChanged: (content) {
+                                              reviewDialogInfo
+                                                  .setContent(content);
                                             },
-                                            maxLength: 50, // 글자 제한 설정
-                                            maxLines: 6, // 멀티라인 설정
+                                            maxLength: 50,
+                                            // 글자 제한 설정
+                                            maxLines: 6,
+                                            // 멀티라인 설정
                                             style: TextStyle(
                                               color: Colors.black,
                                               fontSize: 10,
@@ -513,12 +519,19 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                                 color: Colors.white,
                                               ),
                                               contentPadding: EdgeInsets.all(4),
-                                              hintText: '의견을 남겨주세요', // 힌트 설정
-                                              filled: true, // 배경색 적용
-                                              fillColor: Colors.white, // 배경색 설정
-                                              border: OutlineInputBorder( // 외곽선 설정
-                                                borderSide: BorderSide.none, // 외곽선 없음
-                                                borderRadius: BorderRadius.circular(10), // 둥근 모서리 설정
+                                              hintText: '의견을 남겨주세요',
+                                              // 힌트 설정
+                                              filled: true,
+                                              // 배경색 적용
+                                              fillColor: Colors.white,
+                                              // 배경색 설정
+                                              border: OutlineInputBorder(
+                                                // 외곽선 설정
+                                                borderSide:
+                                                    BorderSide.none, // 외곽선 없음
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        10), // 둥근 모서리 설정
                                               ),
                                             ),
                                           ),
@@ -528,7 +541,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                           TextButton(
                                             onPressed: () {
                                               //TODO: 리뷰 등록 API 호출
-
+                                              facilityInfo.postReview();
+                                              logger.d('call');
                                               reviewDialogInfo.clearData();
                                               Navigator.pop(context);
                                             },

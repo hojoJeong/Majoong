@@ -1,12 +1,14 @@
 import 'dart:ui';
 
-import 'package:flutter/cupertino.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:majoong/model/response/map/get_facility_response_dto.dart';
 import 'package:majoong/service/remote/api/map/map_api_service.dart';
+import 'package:majoong/service/remote/dio/dio_provider.dart';
 import 'package:majoong/viewmodel/main/marker_provider.dart';
+import 'package:majoong/viewmodel/main/review_dialog_provider.dart';
 
 import '../../common/util/logger.dart';
 import '../../model/request/map/get_facility_request_dto.dart';
@@ -26,12 +28,17 @@ final facilityProvider =
   final mapService = ref.watch(mapApiServiceProvider);
   final markerInfo = ref.watch(markerProvider.notifier);
   final chipInfo = ref.watch(chipProvider.notifier);
+  final reviewDialogInfo = ref.watch(reviewDialogProvider.notifier);
   final centerPositionInfo = ref.watch(centerPositionProvider.notifier);
+  final dio = ref.watch(dioProvider);
   final facilityNotifier = FacilityNotifier(
-      service: mapService,
-      markerNotifier: markerInfo,
-      chipNotifier: chipInfo,
-      centerPositionNotifier: centerPositionInfo);
+    dio,
+    service: mapService,
+    markerNotifier: markerInfo,
+    chipNotifier: chipInfo,
+    centerPositionNotifier: centerPositionInfo,
+    reviewDialogNotifier: reviewDialogInfo,
+  );
   return facilityNotifier;
 });
 
@@ -40,12 +47,15 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
   final MarkerNotifier markerNotifier;
   final ChipNotifier chipNotifier;
   final StateNotifier centerPositionNotifier;
+  final ReviewDialogNotifier reviewDialogNotifier;
+  final Dio dio;
 
-  FacilityNotifier(
+  FacilityNotifier(this.dio,
       {required this.service,
       required this.markerNotifier,
       required this.chipNotifier,
-      required this.centerPositionNotifier})
+      required this.centerPositionNotifier,
+      required this.reviewDialogNotifier})
       : super(BaseResponseLoading()) {}
 
   getFacility() async {
@@ -93,6 +103,27 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
       }
       markerNotifier.renderMarker();
     }
+  }
+
+  postReview() async {
+    final request = reviewDialogNotifier.state;
+    // final file = await MultipartFile.fromFile('path/to/file',
+    //     filename: 'reviewImage.jpg');
+    final formData = FormData.fromMap({
+      'reviewImage': null,
+    });
+    final data = {
+      'isBright': request.isBright,
+      'isCrowded': request.isCrowded,
+      'lng': request.lng,
+      'lat': request.lat,
+      'score': request.score,
+      'content': request.content,
+      'address': request.address,
+    };
+    final response = await service.postReview(formData, data);
+    logger.d(response.message);
+    return response.message;
   }
 
   Future<BitmapDescriptor> getCustomMarkerIcon() async {
