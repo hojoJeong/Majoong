@@ -60,6 +60,10 @@ dependencies:
   flutter_styled_toast: ^2.1.3
   flutter_verification_code: ^1.1.6
   loading_animation_widget: ^1.2.0+4
+  get_storage: ^2.1.1
+  image_picker: ^0.8.7+4
+  flutter_slidable: ^3.0.0
+  ndialog: ^4.3.0
 
 dev_dependencies:
   flutter_test:
@@ -96,7 +100,9 @@ flutter:
     - res/profile_image.png
     - res/cctv.png
     - res/police.png
+    - res/icon_star.png
     - res/icon_favorite.png
+    - res/icon_camera.png
     - assets/whistle.mp3
 
   # The following line ensures that the Material Icons font is

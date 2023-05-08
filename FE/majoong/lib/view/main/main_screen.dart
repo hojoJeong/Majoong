@@ -1,12 +1,5 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_styled_toast/flutter_styled_toast.dart';
-import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:location/location.dart';
@@ -19,6 +12,11 @@ import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/user/user_info_response_dto.dart';
 import 'package:majoong/service/local/secure_storage.dart';
 import 'package:majoong/service/remote/api/user/user_api_service.dart';
+import 'package:majoong/view/edit/edit_pin_number_screen.dart';
+import 'package:majoong/view/edit/edit_user_info_screen.dart';
+import 'package:majoong/view/favorite/favorite_screen.dart';
+import 'package:majoong/view/friend/friend_list_screen.dart';
+import 'package:majoong/view/search/search_screen.dart';
 import 'package:majoong/viewmodel/main/facility_provider.dart';
 import 'package:majoong/viewmodel/main/marker_provider.dart';
 import 'package:majoong/viewmodel/main/review_dialog_provider.dart';
@@ -243,11 +241,31 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               Divider(
                 thickness: 1,
               ),
-              drawerMenu(title: '즐겨찾기'),
-              drawerMenu(title: '친구 관리'),
+              GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => FavoriteScreen()));
+                  },
+                  child: drawerMenu(title: '즐겨찾기')),
+              GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => FriendListScreen()));
+                  },
+                  child: drawerMenu(title: '친구 관리')),
               drawerMenu(title: '녹화기록'),
-              drawerMenu(title: '회원정보 수정'),
-              drawerMenu(title: 'PIN 변경'),
+              GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => EditUserInfoScreen()));
+                  },
+                  child: drawerMenu(title: '회원정보 수정')),
+              GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => EditPinNumberScreen()));
+                  },
+                  child: drawerMenu(title: 'PIN 변경')),
               drawerMenu(title: '알림 설정'),
               Expanded(
                 child: Container(
@@ -406,13 +424,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         Expanded(
                           child: GestureDetector(
                             onTap: () {
-                              // Navigator.pushNamed(context, '/search');
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => SearchScreen()));
                             },
                             child: const Text(
                               '도착지를 입력해주세요',
-                              style: TextStyle(
-                                color: Colors.grey,
-                              ),
+                              style:
+                                  TextStyle(color: Colors.grey, fontSize: 14),
                             ),
                           ),
                         ),

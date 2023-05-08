@@ -34,7 +34,7 @@ class DefaultLayout extends ConsumerWidget {
         body: Stack(
           children: [
             Padding(
-                padding: const EdgeInsets.all(BASE_PADDING),
+                padding: const EdgeInsets.symmetric(horizontal: BASE_PADDING),
                 child: body),
             Visibility(visible: loadingVisibility,
                 child: LoadingLayout())
