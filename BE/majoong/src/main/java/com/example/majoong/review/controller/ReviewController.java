@@ -61,7 +61,7 @@ public class ReviewController {
             data.setMessage("리뷰 생성 성공");
             return data.builder();
         } catch (Exception e) {
-            log.error("리뷰 생성 실패", e.getMessage());
+            log.error("리뷰 생성 실패 : {}", e.getMessage());
             data.setStatus(400);
             data.setMessage("리뷰 생성 실패");
             return data.builder();

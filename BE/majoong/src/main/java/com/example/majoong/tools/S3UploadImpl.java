@@ -25,7 +25,7 @@ public class S3UploadImpl implements S3Upload{
     @Override
     public String uploadFile(int userId, String fileType, MultipartFile multipartFile) throws IOException {
         if (multipartFile == null) {
-            log.error("파일이 비었습니다.", multipartFile);
+            log.error("파일이 비었습니다. : {}", multipartFile);
             throw new NoFileException();
         }
 
@@ -45,9 +45,9 @@ public class S3UploadImpl implements S3Upload{
         try {
             String keyName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
             amazonS3Client.deleteObject(bucket, keyName);
-            log.info("s3삭제 성공, fileName : ", imageUrl);
+            log.info("s3삭제 성공, fileName : {}", imageUrl);
         } catch (Exception e) {
-            log.error("s3삭제 실패", e.getMessage());
+            log.error("s3삭제 실패 : {}", e.getMessage());
         }
     }
 }

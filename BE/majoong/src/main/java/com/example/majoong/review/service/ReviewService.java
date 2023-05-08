@@ -44,12 +44,12 @@ public class ReviewService {
 
         Optional<User> optionalUser = userRepository.findById(userId);
         if (!optionalUser.isPresent()) {
-            log.error("존재하지 않는 유저 입니다.", userId);
+            log.error("존재하지 않는 유저 입니다. : {}", userId);
             throw new NoUserException();
         }
         Optional<Review> optionalReview = reviewRepository.findById(reviewId);
         if (!optionalReview.isPresent()) {
-            log.error("존재하지 않는 리뷰 입니다.", reviewId);
+            log.error("존재하지 않는 리뷰 입니다. : {}", reviewId);
             throw new NoReviewException();
         }
 
@@ -70,7 +70,7 @@ public class ReviewService {
                              CreateReviewDto createReviewDto,
                              MultipartFile reviewImage) throws IOException {
         log.info("서비스 진입 : {}", createReviewDto);
-        log.info("멀티파트 확인 : {}", reviewImage.getName(), reviewImage.getContentType());
+        log.info("멀티파트 확인 : {}", reviewImage);
 
         String token = request.getHeader("Authorization").split(" ")[1];
         int userId = jwtTool.getUserIdFromToken(token);
@@ -134,9 +134,9 @@ public class ReviewService {
         try {
             GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
             geoOperations.add(key, new Point(longitude, latitude), member);
-            log.info("저장성공", member);
+            log.info("저장성공 : {}", member);
         } catch (Exception e) {
-            log.error("저장실패", e.getMessage());
+            log.error("저장실패 : {}", e.getMessage());
         }
     }
 
@@ -147,9 +147,9 @@ public class ReviewService {
         try {
             GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
             geoOperations.remove(key, member);
-            log.info("삭제 성공", reviewId);
+            log.info("삭제 성공 : {]", reviewId);
         } catch (Exception e) {
-            log.error("삭제 실패", e.getMessage());
+            log.error("삭제 실패 : {]", e.getMessage());
         }
     }
 }
