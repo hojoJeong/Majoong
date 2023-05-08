@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/common/const/size_value.dart';
-import 'package:majoong/common/util/logger.dart';
+import 'package:majoong/viewmodel/friend/friend_provider.dart';
 
 class FriendItemWidget extends ConsumerWidget {
   final bool isRequest;
@@ -11,6 +11,7 @@ class FriendItemWidget extends ConsumerWidget {
   final String nickname;
   final String phoneNumber;
   final bool isGuardian;
+  final int friendId;
 
   const FriendItemWidget(
       {Key? key,
@@ -18,7 +19,8 @@ class FriendItemWidget extends ConsumerWidget {
       required this.profileImage,
       required this.nickname,
       required this.phoneNumber,
-      required this.isGuardian})
+      required this.isGuardian,
+      required this.friendId})
       : super(key: key);
 
   @override
@@ -28,20 +30,29 @@ class FriendItemWidget extends ConsumerWidget {
         motion: ScrollMotion(),
         children: [
           SlidableAction(
-            onPressed: (context){
-              //TODO 삭제 API 호출
+            onPressed: (context) {
+              if (isRequest) {
+                ref.read(friendRequestListProvider.notifier).denyFriend(friendId);
+              } else if (isGuardian) {
+                ref.read(guardianListProvider.notifier).editGuardian(friendId);
+              } else {
+                ref.read(friendListProvider.notifier).deleteFriend(friendId);
+              }
             },
             backgroundColor: Colors.redAccent,
             foregroundColor: Colors.white,
             icon: Icons.delete,
           ),
-          SlidableAction(
-            onPressed: (context){
-              //TODO 수락 or 보호자 등록 API 호출
-            },
-            backgroundColor: POLICE_MARKER_COLOR,
-            foregroundColor: Colors.white,
-            icon: isRequest ? Icons.person_add_rounded : Icons.people_alt,
+          Visibility(
+            visible: !isRequest,
+            child: SlidableAction(
+              onPressed: (context) {
+                ref.read(guardianListProvider.notifier).editGuardian(friendId);
+              },
+              backgroundColor: POLICE_MARKER_COLOR,
+              foregroundColor: Colors.white,
+              icon: isGuardian ? Icons.group_off : Icons.people_alt,
+            ),
           ),
         ],
       ),
@@ -52,19 +63,37 @@ class FriendItemWidget extends ConsumerWidget {
             radius: 30,
             backgroundImage: NetworkImage(profileImage),
           ),
-          SizedBox(width: 10,),
+          SizedBox(
+            width: 10,
+          ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [Text(nickname, style: TextStyle(
-              fontSize: BASE_TITLE_FONT_SIZE,
-              fontWeight: FontWeight.bold
-            ),), Text(phoneNumber, style: TextStyle(
-              fontWeight: FontWeight.normal,
-              fontSize: 14,
-            ),)],
+            children: [
+              Text(
+                nickname,
+                style: TextStyle(
+                    fontSize: BASE_TITLE_FONT_SIZE,
+                    fontWeight: FontWeight.bold),
+              ),
+              Text(
+                phoneNumber,
+                style: TextStyle(
+                  fontWeight: FontWeight.normal,
+                  fontSize: 14,
+                ),
+              )
+            ],
           ),
           Spacer(),
-          Visibility(visible: isRequest, child: Icon(Icons.person_add_rounded))
+          Visibility(
+              visible: isRequest,
+              child: GestureDetector(
+                  onTap: () {
+                    ref
+                        .read(friendRequestListProvider.notifier)
+                        .acceptFriend(friendId);
+                  },
+                  child: Icon(Icons.person_add_rounded)))
         ],
       ),
     );
