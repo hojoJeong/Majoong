@@ -35,19 +35,26 @@ public class ReviewController {
     @PostMapping(value="")
     public ResponseEntity createMapReview(HttpServletRequest request,
 //                                          @RequestBody CreateReviewDto createReviewDto,
-                                          @RequestPart("lng") double longitude,
-                                          @RequestPart("lat") double latitude,
+                                          @RequestPart("lng") String longitude,
+                                          @RequestPart("lat") String latitude,
                                           @RequestPart("address") String address,
-                                          @RequestPart("score") int score,
-                                          @RequestPart("isBright") boolean isBright,
-                                          @RequestPart("isCrowded") boolean isCrowded,
+                                          @RequestPart("score") String score,
+                                          @RequestPart("isBright") String isBright,
+                                          @RequestPart("isCrowded") String isCrowded,
                                           @RequestPart("content") String content,
                                           @Nullable @RequestPart("reviewImage") MultipartFile reviewImage) {
 
         ResponseData data = new ResponseData();
 //        log.info("requestPart 전달 확인 : {}", createReviewDto.getLongitude());
         log.info("requestPart 전달 확인 : {}", longitude);
-        CreateReviewDto createReviewDto = new CreateReviewDto(longitude, latitude, address, score, isBright, isCrowded, content);
+        CreateReviewDto createReviewDto = new CreateReviewDto(
+                Double.parseDouble(longitude),
+                Double.parseDouble(latitude),
+                address,
+                Integer.parseInt(score) ,
+                Boolean.parseBoolean(isBright),
+                Boolean.parseBoolean(isCrowded),
+                content);
         try {
             reviewService.createReview(request, createReviewDto, reviewImage);
             data.setStatus(200);
