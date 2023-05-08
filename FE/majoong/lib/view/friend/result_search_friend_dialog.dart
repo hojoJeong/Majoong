@@ -56,6 +56,7 @@ class ResultSearchFriendDialog extends ConsumerWidget {
                 ref
                     .read(loadingVisibilityProvider.notifier)
                     .update((state) => true);
+                Navigator.pop(context);
               },
               child: const Text(
                 '친구 요청',

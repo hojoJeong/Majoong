@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/layout/default_layout.dart';
@@ -21,6 +22,18 @@ class FriendListScreen extends ConsumerWidget {
     final searchTextFieldController = TextEditingController();
     final friendState = ref.watch(friendProvider);
     final requestFriendState = ref.watch(requestFriendProvider);
+    if(requestFriendState is BaseResponse){
+      if(requestFriendState.status == 200){
+        Future.delayed(Duration.zero, (){
+          showToast(context: context, '요청이 완료되었습니다.');
+        });
+      } else if(requestFriendState.status == 603){
+        Future.delayed(Duration.zero, (){
+          showToast(context: context, '이미 친구입니다.');
+        });
+      }
+      ref.read(loadingVisibilityProvider.notifier).update((state) => false);
+    }
 
     ref.listen(friendRequestListProvider, (previous, next) {
       ref.read(friendProvider.notifier).refreshFriendList();
