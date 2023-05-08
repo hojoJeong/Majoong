@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 
 @Slf4j
@@ -31,13 +32,9 @@ public class ReviewController {
         return data.builder();
     }
 
-    @PostMapping(value="",
-            consumes = {
-                    MediaType.MULTIPART_FORM_DATA_VALUE,
-                    MediaType.APPLICATION_JSON_VALUE
-            })
+    @PostMapping(value="")
     public ResponseEntity createMapReview(HttpServletRequest request,
-//                                          @RequestPart("createReviewDto") CreateReviewDto createReviewDto,
+//                                          @RequestBody CreateReviewDto createReviewDto,
                                           @RequestPart("lng") double longitude,
                                           @RequestPart("lat") double latitude,
                                           @RequestPart("address") String address,
@@ -45,9 +42,10 @@ public class ReviewController {
                                           @RequestPart("isBright") boolean isBright,
                                           @RequestPart("isCrowded") boolean isCrowded,
                                           @RequestPart("content") String content,
-                                          @RequestPart("reviewImage") MultipartFile reviewImage) {
+                                          @Nullable @RequestPart("reviewImage") MultipartFile reviewImage) {
 
         ResponseData data = new ResponseData();
+//        log.info("requestPart 전달 확인 : {}", createReviewDto.getLongitude());
         log.info("requestPart 전달 확인 : {}", longitude);
         CreateReviewDto createReviewDto = new CreateReviewDto(longitude, latitude, address, score, isBright, isCrowded, content);
         try {
