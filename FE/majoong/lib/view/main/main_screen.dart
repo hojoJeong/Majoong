@@ -11,6 +11,7 @@ import 'package:majoong/view/edit/edit_pin_number_screen.dart';
 import 'package:majoong/view/edit/edit_user_info_screen.dart';
 import 'package:majoong/view/favorite/favorite_screen.dart';
 import 'package:majoong/view/friend/friend_list_screen.dart';
+import 'package:majoong/view/notification/notification_screen.dart';
 import 'package:majoong/view/search/search_screen.dart';
 import 'package:majoong/viewmodel/main/facility_provider.dart';
 import 'package:majoong/viewmodel/main/marker_provider.dart';
@@ -146,7 +147,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 child: IconButton(
                   alignment: Alignment.topRight,
                   icon: Icon(Icons.notifications_none_rounded),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => NotificationScreen()));
+                  },
                 ),
               ),
               userInfo is BaseResponseLoading
