@@ -18,6 +18,24 @@ final friendProvider =
   return notifier;
 });
 
+final searchFriendProvider =
+    StateNotifierProvider<FriendStateNotifier, BaseResponseState>((ref) {
+  final userApi = ref.read(userApiServiceProvider);
+  final secureStorage = ref.read(secureStorageProvider);
+  final notifier = FriendStateNotifier(
+      userApi: userApi, secureStorage: secureStorage, isController: false);
+  return notifier;
+});
+
+final requestFriendProvider =
+    StateNotifierProvider<FriendStateNotifier, BaseResponseState>((ref) {
+      final userApi = ref.read(userApiServiceProvider);
+      final secureStorage = ref.read(secureStorageProvider);
+      final notifier = FriendStateNotifier(
+          userApi: userApi, secureStorage: secureStorage, isController: false);
+      return notifier;
+    });
+
 final friendRequestListProvider =
     StateNotifierProvider<FriendStateNotifier, BaseResponseState>((ref) {
   final userApi = ref.read(userApiServiceProvider);
@@ -115,9 +133,7 @@ class FriendStateNotifier extends StateNotifier<BaseResponseState> {
         int.parse(await secureStorage.read(key: USER_ID).toString());
     final response = await userApi.requestFriend(
         FriendRequestRequestDto(userId: userId, friendId: friendId));
-    if (response.status == 200) {
-      state = response;
-    }
+    state = response;
   }
 
   acceptFriend(int friendId) async {
