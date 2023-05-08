@@ -1,9 +1,7 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart' hide Headers;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:majoong/common/const/key_value.dart';
-import 'package:majoong/model/request/user/edit_user_info_request_dto.dart';
+
 import 'package:majoong/model/request/user/friend_request_request_dto.dart';
 import 'package:majoong/model/request/user/login_request_dto.dart';
 import 'package:majoong/model/request/user/pin_number_request_dto.dart';
@@ -21,6 +19,7 @@ import 'package:retrofit/retrofit.dart';
 import 'package:retrofit/http.dart';
 
 import '../../../../common/const/path.dart';
+import '../../../../model/request/user/ReportRequestDto.dart';
 import '../../../../model/request/user/receive_number_request_dto.dart';
 import '../../../../model/request/user/sign_up_request_dto.dart';
 import '../../../../model/request/user/verify_number_request_dto.dart';
