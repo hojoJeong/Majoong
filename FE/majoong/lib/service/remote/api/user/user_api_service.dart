@@ -76,9 +76,10 @@ abstract class UserApiService {
 
   @Headers({AUTHORIZATION: AUTH})
   @PUT('user/profile')
-  @MultiPart()
   Future<BaseResponse<EditUserInfoResponseDto>> editUserInfo(
-      @Body() EditUserInfoRequestDto request);
+      @Field() String nickname,
+      @Field() String phoneNumber,
+      @Part() MultipartFile? profileImage);
 
   @Headers({AUTHORIZATION: AUTH})
   @PUT('user/pin')
@@ -91,7 +92,8 @@ abstract class UserApiService {
 
   @Headers({AUTHORIZATION: AUTH})
   @GET('user/friends/{isGuardian}')
-  Future<BaseResponse<List<FriendResponseDto>>> getFriendList(@Path('isGuardian') int isGuardian);
+  Future<BaseResponse<List<FriendResponseDto>>> getFriendList(
+      @Path('isGuardian') int isGuardian);
 
   @Headers({AUTHORIZATION: AUTH})
   @GET('user/search')

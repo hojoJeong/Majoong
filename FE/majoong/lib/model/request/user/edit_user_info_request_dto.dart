@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:json_annotation/json_annotation.dart';
+import 'package:retrofit/http.dart';
 
 part 'edit_user_info_request_dto.g.dart';
 

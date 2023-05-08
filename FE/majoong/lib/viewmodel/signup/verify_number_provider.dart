@@ -3,7 +3,7 @@ import '../../model/request/user/verify_number_request_dto.dart';
 import '../../service/remote/api/user/user_api_service.dart';
 
 final verifyNumberProvider =
-    StateNotifierProvider<VerifyNumberStateNotifier, int>((ref) {
+    StateNotifierProvider.autoDispose<VerifyNumberStateNotifier, int>((ref) {
   final userApi = ref.read(userApiServiceProvider);
   final notifier = VerifyNumberStateNotifier(userApi: userApi);
 

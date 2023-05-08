@@ -4,7 +4,7 @@ import 'package:majoong/model/request/user/receive_number_request_dto.dart';
 import '../../service/remote/api/user/user_api_service.dart';
 
 final receiveVerificationNumberProvide =
-    StateNotifierProvider<ReceiveVerificationNumberStateNotifier, int>((ref) {
+    StateNotifierProvider.autoDispose<ReceiveVerificationNumberStateNotifier, int>((ref) {
   final userApi = ref.read(userApiServiceProvider);
   final notifier = ReceiveVerificationNumberStateNotifier(userApi: userApi);
 

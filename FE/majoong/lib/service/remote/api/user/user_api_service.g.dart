@@ -271,19 +271,25 @@ class _UserApiService implements UserApiService {
   }
 
   @override
-  Future<BaseResponse<EditUserInfoResponseDto>> editUserInfo(request) async {
+  Future<BaseResponse<EditUserInfoResponseDto>> editUserInfo(
+    nickname,
+    phoneNumber,
+    profileImage,
+  ) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{r'Authorization': 'auth'};
     _headers.removeWhere((k, v) => v == null);
-    final _data = <String, dynamic>{};
-    _data.addAll(request.toJson());
+    final _data = {
+      'nickname': nickname,
+      'phoneNumber': phoneNumber,
+    };
     final _result = await _dio.fetch<Map<String, dynamic>>(
         _setStreamType<BaseResponse<EditUserInfoResponseDto>>(Options(
       method: 'PUT',
       headers: _headers,
       extra: _extra,
-      contentType: 'multipart/form-data',
     )
             .compose(
               _dio.options,
