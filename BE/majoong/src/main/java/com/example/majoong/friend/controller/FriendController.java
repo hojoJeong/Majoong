@@ -132,13 +132,6 @@ public class FriendController {
         User friend = userRepository.findById(friendInfo.getFriendId()).orElseThrow(() -> new NoUserException());
         friendService.changeIsGuardian(user,friend);
         ResponseData data = new ResponseData();
-        Map<String, Object> allFriendsList = new HashMap<>();
-        List<FriendDto> friendsNotGuardian = friendService.getFriendsList(user.getId(), false);
-        List<FriendDto> guardians = friendService.getFriendsList(user.getId(), true);
-        allFriendsList.put("friends",friendsNotGuardian);
-        allFriendsList.put("guardians", guardians);
-        data.setData(allFriendsList);
-        log.info(data.toString());
         log.info("/user/guardian end\n");
         log.info("");
         return data.builder();
