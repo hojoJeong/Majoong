@@ -194,4 +194,30 @@ public class UserController {
         return data.builder();
     }
 
+    @Operation(summary = "푸쉬알람 설정")
+    @PutMapping("/push")
+    public ResponseEntity setPushAlarm(HttpServletRequest request, @RequestBody pushAlarmDto push) {
+        log.info("/user/push @Put start");
+        pushAlarmDto pushAlarm= userService.setPushAlarm(request, push.isPushAlarm());
+        ResponseData data = new ResponseData();
+        data.setData(pushAlarm);
+        log.info(data.toString());
+        log.info("/user/push end\n");
+        log.info("");
+        return data.builder();
+    }
+
+    @Operation(summary = "푸쉬알람 조회")
+    @GetMapping("/push")
+    public ResponseEntity getPushAlarm(HttpServletRequest request) {
+        log.info("/user/push @Get start");
+        pushAlarmDto pushAlarm= userService.getPushAlarm(request);
+        ResponseData data = new ResponseData();
+        data.setData(pushAlarm);
+        log.info(data.toString());
+        log.info("/user/push end\n");
+        log.info("");
+        return data.builder();
+    }
+
 }

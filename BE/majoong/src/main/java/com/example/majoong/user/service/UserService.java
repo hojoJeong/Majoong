@@ -213,11 +213,34 @@ public class UserService {
 
     public SimpleUserResponseDto searchPhoneNumber(String phoneNumber){
         User userInfo = userRepository.findByPhoneNumber(phoneNumber);
+        if (userInfo == null ){
+            throw new NoUserException();
+        }
         SimpleUserResponseDto user = new SimpleUserResponseDto();
+
         user.setUserId(userInfo.getId());
         user.setPhoneNumber(userInfo.getPhoneNumber());
         user.setNickname(userInfo.getNickname());
         user.setProfileImage(userInfo.getProfileImage());
         return user;
+    }
+
+    public pushAlarmDto setPushAlarm(HttpServletRequest request, boolean push){
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+        User user = userRepository.findById(userId).get();
+        user.setPushAlarm(push);
+        pushAlarmDto pushDto = new pushAlarmDto();
+        pushDto.setPushAlarm(user.isPushAlarm());
+        return pushDto;
+    }
+
+    public pushAlarmDto getPushAlarm(HttpServletRequest request){
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+        User user = userRepository.findById(userId).get();
+        pushAlarmDto pushDto = new pushAlarmDto();
+        pushDto.setPushAlarm(user.isPushAlarm());
+        return pushDto;
     }
 }
