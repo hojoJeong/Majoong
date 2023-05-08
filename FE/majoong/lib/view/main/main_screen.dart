@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-
+import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -22,6 +22,7 @@ import 'package:majoong/service/remote/api/user/user_api_service.dart';
 import 'package:majoong/viewmodel/main/facility_provider.dart';
 import 'package:majoong/viewmodel/main/marker_provider.dart';
 import 'package:majoong/viewmodel/main/review_dialog_provider.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 
@@ -161,6 +162,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     '도로 리뷰',
     '위험 지역',
   ];
+  bool isReporting = false;
 
   @override
   Widget build(BuildContext context) {
@@ -170,7 +172,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final chipInfo = ref.watch(chipProvider.notifier);
     final reviewDialogInfo = ref.watch(reviewDialogProvider.notifier);
     final cameraMovedInfo = ref.watch(cameraMovedProvider);
-
+    accelerometerEvents.listen((event) {
+      if ((event.x.abs() > 50 || event.y.abs() > 50 || event.z.abs() > 50) &&
+          !isReporting) {
+        isReporting = true;
+        reportDialog(setState);
+      }
+    });
     return Scaffold(
       drawer: Drawer(
         width: MediaQuery.of(context).size.width / 1.5,
@@ -747,139 +755,146 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     Timer timer;
 
     showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            timer = Timer(Duration(seconds: 1), () {
-              if (_count == 0) {
-                final user = ref.read(userInfoProvider.notifier).state
-                    as BaseResponse<UserInfoResponseDto>;
-                final currentLocation =
-                    ref.read(currentLocationProvider.notifier).state;
-                final request = ReportRequestDto(
-                    '[Majoong]\n도움이 필요합니다.\n신고자 연락처: ${user.data?.phoneNumber ?? '알수없음'}\n위도: ${currentLocation[0]} 경도: ${currentLocation[1]}');
-                ref.read(userApiServiceProvider).sendPhone112(request);
-
-                Navigator.pop(context);
-              } else {
-                setState(() {
-                  _count--;
-                });
-              }
-            });
-            return Dialog(
-              insetPadding: EdgeInsets.all(20),
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Text(
-                        '🚨 비상 신고 알림 🚨',
-                        style: TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20),
-                      ),
-                      Divider(
-                        color: Colors.grey,
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
+        return WillPopScope(
+          onWillPop: () async {
+            return false;
+          },
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              timer = Timer(Duration(seconds: 1), () {
+                if (_count == 0) {
+                  final user = ref.read(userInfoProvider.notifier).state
+                      as BaseResponse<UserInfoResponseDto>;
+                  final currentLocation =
+                      ref.read(currentLocationProvider.notifier).state;
+                  final request = ReportRequestDto(
+                      '[Majoong]\n도움이 필요합니다.\n신고자 연락처: ${user.data?.phoneNumber ?? '알수없음'}\n위도: ${currentLocation[0]} 경도: ${currentLocation[1]}');
+                  ref.read(userApiServiceProvider).sendPhone112(request);
+                  isReporting = false;
+                  Navigator.pop(context);
+                } else {
+                  setState(() {
+                    _count--;
+                  });
+                }
+              });
+              return Dialog(
+                insetPadding: EdgeInsets.all(20),
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        Text(
+                          '🚨 비상 신고 알림 🚨',
                           style: TextStyle(
-                            decoration: TextDecoration.none,
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20),
+                        ),
+                        Divider(
+                          color: Colors.grey,
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            style: TextStyle(
+                              decoration: TextDecoration.none,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                            children: <TextSpan>[
+                              TextSpan(
+                                  text: _count.toString(),
+                                  style: TextStyle(
+                                    fontSize: 40.0,
+                                  )),
+                              TextSpan(
+                                text: '초후\n 현재 위치와 함께\n 경찰에 문자 신고가 접수됩니다.',
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        Text(
+                          '현재위치: 경북 구미시 인의동',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
-                            fontSize: 20,
+                            fontSize: 15,
+                            decoration: TextDecoration.underline,
                           ),
-                          children: <TextSpan>[
-                            TextSpan(
-                                text: _count.toString(),
-                                style: TextStyle(
-                                  fontSize: 40.0,
-                                )),
-                            TextSpan(
-                              text: '초후\n 현재 위치와 함께\n 경찰에 문자 신고가 접수됩니다.',
+                        ),
+                        Text(
+                          '취소하시려면 PIN번호를 입력하세요',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        VerificationCode(
+                          isSecure: true,
+                          autofocus: true,
+                          clearAll: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              '초기화',
+                              style: TextStyle(
+                                  fontSize: 14.0,
+                                  decoration: TextDecoration.underline,
+                                  color: PRIMARY_COLOR),
                             ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      Text(
-                        '현재위치: 경북 구미시 인의동',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                      Text(
-                        '취소하시려면 PIN번호를 입력하세요',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      VerificationCode(
-                        isSecure: true,
-                        autofocus: true,
-                        clearAll: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            '초기화',
-                            style: TextStyle(
-                                fontSize: 14.0,
-                                decoration: TextDecoration.underline,
-                                color: PRIMARY_COLOR),
                           ),
-                        ),
-                        underlineColor: Colors.black,
-                        length: 4,
-                        onCompleted: (String value) {
-                          Future.delayed(Duration.zero, () async {
-                            final pinNum = await ref
-                                .read(secureStorageProvider)
-                                .read(key: PIN_NUM);
-                            logger.d(pinNum);
-                            if (value == pinNum) {
-                              showToast(
-                                  context: this.context, '신고 접수가 취소되었습니다');
-                              timer.cancel();
-                              Navigator.pop(context);
-                            } else {
-                              setState(() {
-                                value = "";
+                          underlineColor: Colors.black,
+                          length: 4,
+                          onCompleted: (String value) {
+                            Future.delayed(Duration.zero, () async {
+                              final pinNum = await ref
+                                  .read(secureStorageProvider)
+                                  .read(key: PIN_NUM);
+                              logger.d(pinNum);
+                              if (value == pinNum) {
                                 showToast(
-                                    isHideKeyboard: true,
-                                    context: this.context,
-                                    'PIN번호가 틀렸습니다');
-                              });
-                            }
-                          });
-                        },
-                        onEditing: (bool value) {
-                          Future.delayed(Duration.zero, () {});
-                        },
-                      ),
-                    ],
+                                    context: this.context, '신고 접수가 취소되었습니다');
+                                timer.cancel();
+                                isReporting = false;
+                                Navigator.pop(context);
+                              } else {
+                                setState(() {
+                                  value = "";
+                                  showToast(
+                                      isHideKeyboard: true,
+                                      context: this.context,
+                                      'PIN번호가 틀렸습니다');
+                                });
+                              }
+                            });
+                          },
+                          onEditing: (bool value) {
+                            Future.delayed(Duration.zero, () {});
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         );
       },
     );
