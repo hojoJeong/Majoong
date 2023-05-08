@@ -2,6 +2,7 @@ package com.example.majoong.user.controller;
 
 import com.example.majoong.response.ResponseData;
 import com.example.majoong.user.dto.*;
+import com.example.majoong.user.service.FavoriteService;
 import com.example.majoong.user.service.MessageService;
 import com.example.majoong.user.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -18,6 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
@@ -31,6 +33,8 @@ import static java.rmi.server.LogStream.log;
 public class UserController {
     private final UserService userService;
     private final MessageService messageService;
+
+    private final FavoriteService favoriteService;
 
 
     @GetMapping
@@ -220,4 +224,28 @@ public class UserController {
         return data.builder();
     }
 
+    @Operation(summary = "즐겨찾기 설정")
+    @PostMapping("/favorite")
+    public ResponseEntity addFavorite(HttpServletRequest request, @RequestBody FavoriteDto favoriteDto) {
+        log.info("/user/favorite @Post start");
+        favoriteService.addFavorite(request, favoriteDto);
+        ResponseData data = new ResponseData();
+        log.info(data.toString());
+        log.info("/user/favorite end\n");
+        log.info("");
+        return data.builder();
+    }
+
+    @Operation(summary = "즐겨찾기 조회")
+    @GetMapping("/favorite")
+    public ResponseEntity addFavorite(HttpServletRequest request) {
+        log.info("/user/favorite @Get start");
+        ResponseData data = new ResponseData();
+        List<FavoriteResponseDto> result = favoriteService.getFavorites(request);
+        data.setData(result);
+        log.info(data.toString());
+        log.info("/user/favorite end\n");
+        log.info("");
+        return data.builder();
+    }
 }
