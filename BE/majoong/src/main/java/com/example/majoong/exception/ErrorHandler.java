@@ -121,4 +121,10 @@ public class ErrorHandler {
         ResponseData data = new ResponseData(ErrorEnum.RECORDING_NOT_STARTED);
         return data.builder();
     }
+
+    @ExceptionHandler(NoFileException.class)
+    public ResponseEntity<?> NoFileException() {
+        ResponseData data = new ResponseData(ErrorEnum.NO_USER);
+        return data.builder();
+    }
 }

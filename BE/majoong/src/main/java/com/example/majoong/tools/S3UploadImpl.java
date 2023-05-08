@@ -2,6 +2,7 @@ package com.example.majoong.tools;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.example.majoong.exception.NoFileException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,11 @@ public class S3UploadImpl implements S3Upload{
 
     @Override
     public String uploadFile(int userId, String fileType, MultipartFile multipartFile) throws IOException {
+        if (multipartFile == null) {
+            log.error("파일이 비었습니다.", multipartFile);
+            throw new NoFileException();
+        }
+
         String originalFilename = multipartFile.getOriginalFilename();
         String fileExtension = originalFilename.substring(originalFilename.lastIndexOf('.') + 1);
         String keyName = userId + "-" + fileType + "-" + System.currentTimeMillis() + "." + fileExtension; // 3-profile-1698273.jpg
