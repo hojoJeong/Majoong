@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:location/location.dart';
@@ -7,10 +8,12 @@ import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/model/request/map/get_facility_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/user/user_info_response_dto.dart';
+import 'package:majoong/service/local/secure_storage.dart';
 import 'package:majoong/view/edit/edit_pin_number_screen.dart';
 import 'package:majoong/view/edit/edit_user_info_screen.dart';
 import 'package:majoong/view/favorite/favorite_screen.dart';
 import 'package:majoong/view/friend/friend_list_screen.dart';
+import 'package:majoong/view/login/login_screen.dart';
 import 'package:majoong/view/notification/notification_screen.dart';
 import 'package:majoong/view/search/search_screen.dart';
 import 'package:majoong/viewmodel/main/facility_provider.dart';
@@ -238,15 +241,22 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       onTap: () {
                         print('tab!!!!!!!');
                       },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text('로그아웃'),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          Icon(Icons.logout),
-                        ],
+                      child: GestureDetector(
+                        onTap: (){
+                          showToast(context: context, '로그아웃 되었습니다.');
+                          ref.read(secureStorageProvider).deleteAll();
+                          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => LoginScreen()));
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text('로그아웃'),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Icon(Icons.logout),
+                          ],
+                        ),
                       ),
                     ),
                   ),
