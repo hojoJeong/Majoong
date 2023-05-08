@@ -91,13 +91,17 @@ public class UserService {
         return user;
     }
 
-    public UserResponseDto login(String socialPK) {
+    public UserResponseDto login(String socialPK,String fcmToken) {
         User findUser = userRepository.findBySocialPK(socialPK);
         if (findUser == null) {
             throw new NoUserException();
         }
         if (findUser.getState() == 0) {
             throw new DeletedUserException();
+        }
+        if (fcmToken!=null){
+            findUser.setFcmToken(fcmToken);
+            userRepository.save(findUser);
         }
         TokenDto token = generateUser(findUser.getId());
         UserResponseDto user = new UserResponseDto();
@@ -113,7 +117,7 @@ public class UserService {
         String token = request.getHeader("Authorization").split(" ")[1];
         int userId = jwtTool.getUserIdFromToken(token);
         User user = userRepository.findById(userId).get();
-        return login(user.getSocialPK());
+        return login(user.getSocialPK(), null);
     }
 
     public TokenDto reToken(HttpServletRequest request) {
