@@ -19,6 +19,7 @@ import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 
 import static java.rmi.server.LogStream.log;
@@ -167,7 +168,7 @@ public class UserController {
     public ResponseEntity<?> changeProfile(HttpServletRequest request,
                                            @RequestPart("nickname") String nickname,
                                            @RequestPart("phoneNumber") String phoneNumber,
-                                           @RequestPart("profileImage") MultipartFile profileImage) throws IOException {
+                                           @Nullable @RequestPart("profileImage") MultipartFile profileImage) throws IOException {
         log.info("/user/profile @Put start");
         ResponseData data = new ResponseData();
         UserProfileRequestrDto userProfileRequestrDto = new UserProfileRequestrDto();

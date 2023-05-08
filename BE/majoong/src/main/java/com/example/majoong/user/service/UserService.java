@@ -14,6 +14,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Optional;
@@ -180,7 +181,7 @@ public class UserService {
         return pin;
     }
 
-    public UserProfileResponseDto changeProfile(HttpServletRequest request, UserProfileRequestrDto userProfileRequestrDto, MultipartFile profileImage) throws IOException {
+    public UserProfileResponseDto changeProfile(HttpServletRequest request, UserProfileRequestrDto userProfileRequestrDto, @Nullable MultipartFile profileImage) throws IOException {
         //토큰으로 유저 식별
         String token = request.getHeader("Authorization").split(" ")[1];
         int userId = jwtTool.getUserIdFromToken(token);
@@ -195,12 +196,15 @@ public class UserService {
         if (existingUser != null && user.get().getPhoneNumber() != userProfileRequestrDto.getPhoneNumber()) {
             throw new DuplicatePhoneNumberException();
         }
-        String fileType = "profile";
-        String profileImageUrl = s3Upload.uploadFile(userId, fileType, profileImage);
 
         user.get().setPhoneNumber(userProfileRequestrDto.getPhoneNumber());
         user.get().setNickname(userProfileRequestrDto.getNickname());
-        user.get().setProfileImage(profileImageUrl);
+
+        if (!profileImage.isEmpty()) {
+            String fileType = "profile";
+            String profileImageUrl = s3Upload.uploadFile(userId, fileType, profileImage);
+            user.get().setProfileImage(profileImageUrl);
+        }
         userRepository.save(user.get());
 
         UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto();
