@@ -69,6 +69,7 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
       final cctvList = response.data?.cctv ?? [];
       final policeList = response.data?.police ?? [];
       final lampList = response.data?.lamp ?? [];
+      final storeList = response.data?.store ?? [];
       final cctvIcon = await BitmapDescriptor.fromAssetImage(
           ImageConfiguration(), 'res/cctv.png');
 

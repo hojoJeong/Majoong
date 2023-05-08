@@ -30,6 +30,9 @@ GetFacilityResponseDto _$GetFacilityResponseDtoFromJson(
       (json['review'] as List<dynamic>?)
           ?.map((e) => Review.fromJson(e as Map<String, dynamic>))
           .toList(),
+      (json['store'] as List<dynamic>?)
+          ?.map((e) => Store.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$GetFacilityResponseDtoToJson(
@@ -38,6 +41,7 @@ Map<String, dynamic> _$GetFacilityResponseDtoToJson(
       'cctv': instance.cctv,
       'police': instance.police,
       'lamp': instance.lamp,
+      'store': instance.store,
       'bell': instance.bell,
       'safeRoad': instance.safeRoad,
       'dangerZone': instance.dangerZone,

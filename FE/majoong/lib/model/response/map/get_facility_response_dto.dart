@@ -7,13 +7,14 @@ class GetFacilityResponseDto {
   final List<CCTV>? cctv;
   final List<Police>? police;
   final List<Lamp>? lamp;
+  final List<Store>? store;
   final List<Bell>? bell;
   final List<SafeRoad>? safeRoad;
   final List<DangerZone>? dangerZone;
   final List<Review>? review;
 
   GetFacilityResponseDto(this.cctv, this.police, this.lamp, this.bell,
-      this.safeRoad, this.dangerZone, this.review);
+      this.safeRoad, this.dangerZone, this.review, this.store);
 
   factory GetFacilityResponseDto.fromJson(Map<String, dynamic> json) =>
       _$GetFacilityResponseDtoFromJson(json);
