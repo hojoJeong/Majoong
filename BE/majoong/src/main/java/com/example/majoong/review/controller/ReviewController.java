@@ -48,6 +48,7 @@ public class ReviewController {
                                           @RequestPart("reviewImage") MultipartFile reviewImage) {
 
         ResponseData data = new ResponseData();
+        log.info("requestPart 전달 확인", longitude);
         CreateReviewDto createReviewDto = new CreateReviewDto(longitude, latitude, address, score, isBright, isCrowded, content);
         try {
             reviewService.createReview(request, createReviewDto, reviewImage);

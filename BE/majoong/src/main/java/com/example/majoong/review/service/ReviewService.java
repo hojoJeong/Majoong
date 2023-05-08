@@ -69,6 +69,9 @@ public class ReviewService {
     public void createReview(HttpServletRequest request,
                              CreateReviewDto createReviewDto,
                              MultipartFile reviewImage) throws IOException {
+        log.info("서비스 진입", createReviewDto);
+        log.info("멀티파트 확인", reviewImage.getName(), reviewImage.getContentType());
+
         String token = request.getHeader("Authorization").split(" ")[1];
         int userId = jwtTool.getUserIdFromToken(token);
 
