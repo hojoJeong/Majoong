@@ -61,7 +61,8 @@ class _MapApiService implements MapApiService {
           'multipart/form-data; boundary=----WebKitFormBoundary12345',
     };
     _headers.removeWhere((k, v) => v == null);
-    final _data = FormData.fromMap(data);
+    final _data = <String, dynamic>{};
+    _data.addAll(data);
     final _result = await _dio.fetch<Map<String, dynamic>>(
         _setStreamType<BaseResponse<dynamic>>(Options(
       method: 'POST',

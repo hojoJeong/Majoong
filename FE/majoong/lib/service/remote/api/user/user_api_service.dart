@@ -12,6 +12,7 @@ import 'package:retrofit/http.dart';
 
 import '../../../../common/const/path.dart';
 import '../../../../model/request/receive_number_request_dto.dart';
+import '../../../../model/request/user/ReportRequestDto.dart';
 import '../../../../model/request/user/sign_up_request_dto.dart';
 import '../../../../model/request/verify_number_request_dto.dart';
 
@@ -55,4 +56,8 @@ abstract class UserApiService {
   @Headers({AUTHORIZATION: AUTH})
   @GET('user')
   Future<BaseResponse<UserInfoResponseDto>> getUserInfo();
+
+  @Headers({AUTHORIZATION: AUTH})
+  @POST('user/phone112')
+  Future<BaseResponse> sendPhone112(@Body() ReportRequestDto request);
 }

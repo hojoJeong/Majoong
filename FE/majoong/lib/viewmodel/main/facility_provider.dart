@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:majoong/common/const/key_value.dart';
 import 'package:majoong/model/response/map/get_facility_response_dto.dart';
 import 'package:majoong/service/remote/api/map/map_api_service.dart';
 import 'package:majoong/service/remote/dio/dio_provider.dart';
@@ -107,23 +108,26 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
 
   postReview() async {
     final request = reviewDialogNotifier.state;
-    // final file = await MultipartFile.fromFile('path/to/file',
-    //     filename: 'reviewImage.jpg');
+    logger.d(request.reviewImage.toString());
+
     final formData = FormData.fromMap({
-      'reviewImage': null,
-    });
-    final data = {
-      'isBright': request.isBright,
-      'isCrowded': request.isCrowded,
-      'lng': request.lng,
-      'lat': request.lat,
-      'score': request.score,
+      'lng': request.lng.toString(),
+      'lat': request.lat.toString(),
       'content': request.content,
+      'score': request.score.toString(),
+      'isBright': request.isBright.toString(),
+      'isCrowded': request.isCrowded.toString(),
       'address': request.address,
-    };
-    final response = await service.postReview(formData, data);
-    logger.d(response.message);
-    return response.message;
+      'reviewImage': request.reviewImage != null
+          ? await MultipartFile.fromFile('request.reviewImage!.path',
+              filename: null)
+          : null,
+    });
+
+    dio.options.headers.addAll({AUTHORIZATION: AUTH});
+    final response =
+        await dio.post('https://majoong4u.com/api/map/review', data: formData);
+    logger.d(response);
   }
 
   Future<BitmapDescriptor> getCustomMarkerIcon() async {
