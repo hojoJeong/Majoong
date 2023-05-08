@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -164,11 +165,11 @@ public class UserController {
         return data.builder();
     }
 
-    @PutMapping("/profile")
+    @PutMapping(value = "/profile")
     public ResponseEntity<?> changeProfile(HttpServletRequest request,
                                            @RequestPart("nickname") String nickname,
                                            @RequestPart("phoneNumber") String phoneNumber,
-                                           @Nullable @RequestPart("profileImage") MultipartFile profileImage) throws IOException {
+                                           @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) throws IOException {
         log.info("/user/profile @Put start");
         ResponseData data = new ResponseData();
         UserProfileRequestrDto userProfileRequestrDto = new UserProfileRequestrDto();

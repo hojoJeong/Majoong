@@ -7,6 +7,7 @@ import com.example.majoong.user.domain.User;
 import com.example.majoong.user.dto.*;
 import com.example.majoong.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
     @Autowired
     private UserRepository userRepository;
@@ -180,7 +182,6 @@ public class UserService {
 
         return pin;
     }
-
     public UserProfileResponseDto changeProfile(HttpServletRequest request, UserProfileRequestrDto userProfileRequestrDto, @Nullable MultipartFile profileImage) throws IOException {
         //토큰으로 유저 식별
         String token = request.getHeader("Authorization").split(" ")[1];
@@ -192,19 +193,19 @@ public class UserService {
         }
 
         // phoneNumber 중복확인
-        User existingUser = userRepository.findByPhoneNumber(userProfileRequestrDto.getPhoneNumber());
-        if (existingUser != null && user.get().getPhoneNumber() != userProfileRequestrDto.getPhoneNumber()) {
-            throw new DuplicatePhoneNumberException();
-        }
-
+//        User existingUser = userRepository.findByPhoneNumber(userProfileRequestrDto.getPhoneNumber());
+//        if (existingUser != null && user.get().getPhoneNumber() != userProfileRequestrDto.getPhoneNumber()) {
+//            throw new DuplicatePhoneNumberException();
+//        }
         user.get().setPhoneNumber(userProfileRequestrDto.getPhoneNumber());
         user.get().setNickname(userProfileRequestrDto.getNickname());
 
-        if (!profileImage.isEmpty()) {
+        if (profileImage!=null) {
             String fileType = "profile";
             String profileImageUrl = s3Upload.uploadFile(userId, fileType, profileImage);
             user.get().setProfileImage(profileImageUrl);
         }
+
         userRepository.save(user.get());
 
         UserProfileResponseDto userProfileResponseDto = new UserProfileResponseDto();
