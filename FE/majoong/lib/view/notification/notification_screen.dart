@@ -8,7 +8,7 @@ import 'package:majoong/common/layout/loading_layout.dart';
 import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/user/notification_response_dto.dart';
-import 'package:majoong/viewmodel/notification_provider.dart';
+import 'package:majoong/viewmodel/notification/notification_provider.dart';
 
 class NotificationScreen extends ConsumerWidget {
   const NotificationScreen({Key? key}) : super(key: key);

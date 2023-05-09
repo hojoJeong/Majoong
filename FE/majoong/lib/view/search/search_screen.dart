@@ -12,6 +12,7 @@ import 'package:majoong/view/favorite/favorite_screen.dart';
 import 'package:majoong/view/search/favorite_widget.dart';
 import 'package:majoong/view/search/recent_keyword_widget.dart';
 import 'package:majoong/viewmodel/favorite/favorite_list_provider.dart';
+import 'package:majoong/viewmodel/search/search_provider.dart';
 
 class SearchScreen extends ConsumerWidget {
   SearchScreen({Key? key}) : super(key: key);
@@ -21,7 +22,7 @@ class SearchScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // final favoriteListState = ref.watch(favoriteListStateProvider);
     final recentKeywordListState = ref.watch(recentKeywordProvider);
-
+    final searchstate = ref.watch(searchProvider);
 
     ///임시 데이터
     final List<FavoriteResponseDto> favoriteListState = [
@@ -74,6 +75,11 @@ class SearchScreen extends ConsumerWidget {
                             UnderlineInputBorder(borderSide: BorderSide.none),
                         focusedBorder:
                             UnderlineInputBorder(borderSide: BorderSide.none),
+                        suffixIcon: GestureDetector(
+                            onTap: (){
+                              ref.read(searchProvider.notifier).getResultSearch('스타벅스 구미');
+                            },
+                            child: Icon(Icons.search))
                       ),
                     ),
                   ),
