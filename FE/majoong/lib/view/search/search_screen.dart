@@ -11,6 +11,7 @@ import 'package:majoong/service/local/recent_keyword_storage.dart';
 import 'package:majoong/view/favorite/favorite_screen.dart';
 import 'package:majoong/view/search/favorite_widget.dart';
 import 'package:majoong/view/search/recent_keyword_widget.dart';
+import 'package:majoong/view/search/response_search_places_screen.dart';
 import 'package:majoong/viewmodel/favorite/favorite_list_provider.dart';
 import 'package:majoong/viewmodel/search/search_provider.dart';
 
@@ -22,7 +23,6 @@ class SearchScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // final favoriteListState = ref.watch(favoriteListStateProvider);
     final recentKeywordListState = ref.watch(recentKeywordProvider);
-    final searchstate = ref.watch(searchProvider);
 
     ///임시 데이터
     final List<FavoriteResponseDto> favoriteListState = [
@@ -35,12 +35,13 @@ class SearchScreen extends ConsumerWidget {
       FavoriteResponseDto(
           favoriteId: 1, locationName: '사피', address: '경북 구미시 진평5길 23'),
     ];
+
     // if (favoriteListState is BaseResponse && recentKeywordListState is BaseResponse) {
     if (recentKeywordListState is BaseResponse) {
       return Scaffold(
           body: SafeArea(
-            child: Column(
-        children: [
+        child: Column(
+          children: [
             Container(
               margin: const EdgeInsets.all(10),
               decoration: BoxDecoration(
@@ -68,19 +69,23 @@ class SearchScreen extends ConsumerWidget {
                   ),
                   Expanded(
                     child: TextField(
+                      controller: searchKeywordController,
                       decoration: InputDecoration(
-                        hintText: '도착지를 입력해주세요',
-                        hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
-                        enabledBorder:
-                            UnderlineInputBorder(borderSide: BorderSide.none),
-                        focusedBorder:
-                            UnderlineInputBorder(borderSide: BorderSide.none),
-                        suffixIcon: GestureDetector(
-                            onTap: (){
-                              ref.read(searchProvider.notifier).getResultSearch('스타벅스 구미');
-                            },
-                            child: Icon(Icons.search))
-                      ),
+                          hintText: '위치를 검색해주세요',
+                          hintStyle:
+                              TextStyle(color: Colors.grey, fontSize: 14),
+                          enabledBorder:
+                              UnderlineInputBorder(borderSide: BorderSide.none),
+                          focusedBorder:
+                              UnderlineInputBorder(borderSide: BorderSide.none),
+                          suffixIcon: GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (_) => ResponseSearchPlacesScreen(
+                                        keyword:
+                                            searchKeywordController.text)));
+                              },
+                              child: Icon(Icons.search))),
                     ),
                   ),
                 ],
@@ -133,7 +138,9 @@ class SearchScreen extends ConsumerWidget {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      ref.read(recentKeywordProvider.notifier).addKeyword('임시1');
+                      ref
+                          .read(recentKeywordProvider.notifier)
+                          .addKeyword('임시1');
                     },
                     child: Text(
                       '최근 검색 기록',
@@ -149,9 +156,9 @@ class SearchScreen extends ConsumerWidget {
             ),
             recentKeywordListView(
                 (recentKeywordListState.data as List<dynamic>).cast<String>())
-        ],
-      ),
-          ));
+          ],
+        ),
+      ));
     } else {
       logger.d(recentKeywordListState);
       return const LoadingLayout();

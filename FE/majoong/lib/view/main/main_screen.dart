@@ -67,9 +67,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
    * Firebase Background Messaging 핸들러
    */
   Future<void> fcmHandlerInBackground(RemoteMessage message) async {
-    logger.d("[FCM - Background] MESSAGE notification title: ${message.notification!.title}, ${message.notification!.body}");
-    logger.d("[FCM - Background] MESSAGE title: ${message.data['title']}, ${message.data['body']}, ${message.data['sessionId']}");
-
+    logger.d(
+        "[FCM - Background] MESSAGE notification title: ${message.notification!.title}, ${message.notification!.body}");
+    logger.d(
+        "[FCM - Background] MESSAGE title: ${message.data['title']}, ${message.data['body']}, ${message.data['sessionId']}");
   }
 
   /**
@@ -99,7 +100,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     }
   }
 
-
   Future<void> setupInteractedMessage(FirebaseMessaging fbMsg) async {
     RemoteMessage? initialMessage = await fbMsg.getInitialMessage();
     // 종료상태에서 클릭한 푸시 알림 메세지 핸들링
@@ -113,35 +113,38 @@ class _MainScreenState extends ConsumerState<MainScreen> {
    */
   void clickMessageEvent(RemoteMessage message) {
     final sessionId = message.data['sessionId'].toString();
-    logger.d('background message click : ${message.data['title']}, ${message.data['body']}, ${message.data['sessionId']}');
-    if(sessionId != '') {
+    logger.d(
+        'background message click : ${message.data['title']}, ${message.data['body']}, ${message.data['sessionId']}');
+    if (sessionId != '') {
       //TODO 화면 공유
     } else {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => NotificationScreen()));
+      Navigator.push(
+          context, MaterialPageRoute(builder: (_) => NotificationScreen()));
     }
   }
 
-
-  void initFcm(FirebaseMessaging fcmMessaging) async{
+  void initFcm(FirebaseMessaging fcmMessaging) async {
     late RemoteMessage clickMessage;
 
     // 플랫폼 확인후 권한요청 및 Flutter Local Notification Plugin 설정
     FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
+        FlutterLocalNotificationsPlugin();
 
     await flutterLocalNotificationsPlugin.initialize(
         const InitializationSettings(
             android: AndroidInitializationSettings('@drawable/app_logo'),
             iOS: DarwinInitializationSettings()),
         onDidReceiveNotificationResponse: (NotificationResponse details) async {
-          final sessionId = clickMessage.data['sessionId'].toString();
-          logger.d('message click : ${clickMessage.data['title']}, ${clickMessage.data['body']}, ${clickMessage.data['sessionId']}');
-          if(sessionId != '') {
-            //TODO 화면 공유
-          } else {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => NotificationScreen()));
-          }
-        });
+      final sessionId = clickMessage.data['sessionId'].toString();
+      logger.d(
+          'message click : ${clickMessage.data['title']}, ${clickMessage.data['body']}, ${clickMessage.data['sessionId']}');
+      if (sessionId != '') {
+        //TODO 화면 공유
+      } else {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => NotificationScreen()));
+      }
+    });
 
     AndroidNotificationChannel? androidNotificationChannel;
     if (Platform.isIOS) {
@@ -158,16 +161,17 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
       await flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
+              AndroidFlutterLocalNotificationsPlugin>()
           ?.createNotificationChannel(androidNotificationChannel);
     }
-
 
     //Foreground Handling foreground 메세지 핸들링
     FirebaseMessaging.onMessage.listen((message) {
       clickMessage = message;
-      logger.d('notification message : ${message.notification!.title} , ${message.notification!.body}');
-      logger.d('data message : ${message.data['title']}, ${message.data['body']}, ${message.data['sessionId']}');
+      logger.d(
+          'notification message : ${message.notification!.title} , ${message.notification!.body}');
+      logger.d(
+          'data message : ${message.data['title']}, ${message.data['body']}, ${message.data['sessionId']}');
       notificationHandlerInForeground(
           message, flutterLocalNotificationsPlugin, androidNotificationChannel);
     });
@@ -179,21 +183,20 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     await setupInteractedMessage(fcmMessaging);
   }
 
-
   @override
   void initState() {
     super.initState();
     final fcmMessaging = FirebaseMessaging.instance;
     initFcm(fcmMessaging);
     _getLocation();
-    location.onLocationChanged.listen((event) {
-      setState(() {
-        _locationData = event;
-        final currentLocation = ref.read(currentLocationProvider);
-        currentLocation[0] = event.latitude!;
-        currentLocation[1] = event.longitude!;
+      location.onLocationChanged.listen((event) {
+        setState(() {
+          _locationData = event;
+          final currentLocation = ref.read(currentLocationProvider);
+          currentLocation[0] = event.latitude!;
+          currentLocation[1] = event.longitude!;
+        });
       });
-    });
   }
 
   Future<String?> getAddress() async {
@@ -313,6 +316,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         reportDialog(setState);
       }
     });
+    logger.d('message');
+
     return Scaffold(
       drawer: Drawer(
         width: MediaQuery.of(context).size.width / 1.5,
@@ -416,10 +421,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         print('tab!!!!!!!');
                       },
                       child: GestureDetector(
-                        onTap: (){
+                        onTap: () {
                           showToast(context: context, '로그아웃 되었습니다.');
                           ref.read(secureStorageProvider).deleteAll();
-                          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => LoginScreen()));
+                          Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(builder: (_) => LoginScreen()));
                         },
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
