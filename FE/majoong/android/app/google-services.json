@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "401693245016",
+    "project_id": "majoong-7ec07",
+    "storage_bucket": "majoong-7ec07.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:401693245016:android:569240b13ea6642f54142d",
+        "android_client_info": {
+          "package_name": "com.ssafy.majoong"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "401693245016-ck1fo6nu4arscp62u8euohim1es247it.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBo3JoEeIXOE8TYaPudJSYX0-oNJ60j6zs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "401693245016-ck1fo6nu4arscp62u8euohim1es247it.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "401693245016-e3damlifish7im8ftt2reb2kg9d7mqn0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ssafy.majoong"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

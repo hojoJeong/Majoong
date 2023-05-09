@@ -16,16 +16,16 @@ class FavoriteScreen extends ConsumerWidget {
     // final favoriteListState = ref.watch(favoriteListStateProvider);
     ///임시 데이터
     final List<FavoriteResponseDto> favoriteListState = [
-      FavoriteResponseDto(
-          favoriteId: 1,
-          locationName: '사피',
-          address: '경북 구미시 진평5길 23asdfasdfas sdfsf fsdfsdf'),
-      FavoriteResponseDto(
-          favoriteId: 1, locationName: '사피', address: '경북 구미시 진평5길 23'),
-      FavoriteResponseDto(
-          favoriteId: 1, locationName: '사피', address: '경북 구미시 진평5길 23'),
-      FavoriteResponseDto(
-          favoriteId: 1, locationName: '사피', address: '경북 구미시 진평5길 23'),
+      // FavoriteResponseDto(
+      //     favoriteId: 1,
+      //     locationName: '사피',
+      //     address: '경북 구미시 진평5길 23asdfasdfas sdfsf fsdfsdf'),
+      // FavoriteResponseDto(
+      //     favoriteId: 1, locationName: '사피', address: '경북 구미시 진평5길 23'),
+      // FavoriteResponseDto(
+      //     favoriteId: 1, locationName: '사피', address: '경북 구미시 진평5길 23'),
+      // FavoriteResponseDto(
+      //     favoriteId: 1, locationName: '사피', address: '경북 구미시 진평5길 23'),
     ]; // if (favoriteListState is BaseResponse<List<FavoriteResponseDto>>) {
     return DefaultLayout(
         title: '즐겨찾기',
@@ -33,71 +33,72 @@ class FavoriteScreen extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
-              child: ListView.separated(
-                  itemBuilder: (context, index) {
-                    if (favoriteListState.isEmpty) {
-                      return Text('등록된 즐겨찾기가 없습니다.');
-                    } else {
-                      final favoriteItem = favoriteListState[index];
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Image(
-                            image: AssetImage('res/icon_favorite.png'),
-                            width: 30,
-                          ),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                favoriteItem.locationName,
-                                style: TextStyle(
-                                    fontSize: BASE_TITLE_FONT_SIZE,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black),
-                              ),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.6,
-                                child: Text(
-                                  favoriteItem.address,
+              child: favoriteListState.isEmpty
+                  ? Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 50),
+                    child: Text('등록된 즐겨찾기가 없습니다.'),
+                  )
+                  : ListView.separated(
+                      itemBuilder: (context, index) {
+                        final favoriteItem = favoriteListState[index];
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Image(
+                              image: AssetImage('res/icon_favorite.png'),
+                              width: 30,
+                            ),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  favoriteItem.locationName,
                                   style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.normal,
-                                      color: Colors.black87),
-                                  overflow: TextOverflow.ellipsis,
+                                      fontSize: BASE_TITLE_FONT_SIZE,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black),
                                 ),
-                              ),
-                            ],
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.6,
+                                  child: Text(
+                                    favoriteItem.address,
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.normal,
+                                        color: Colors.black87),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Spacer(),
+                            GestureDetector(
+                              onTap: () {
+                                ref
+                                    .read(favoriteListStateProvider.notifier)
+                                    .deleteFavorite(favoriteItem.favoriteId);
+                              },
+                              child: Icon(Icons.clear),
+                            )
+                          ],
+                        );
+                      },
+                      separatorBuilder: (context, index) => Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: BASE_MARGIN_TITLE_TO_CONTENT),
+                            child: Divider(
+                              thickness: 1,
+                            ),
                           ),
-                          Spacer(),
-                          GestureDetector(
-                            onTap: () {
-                              ref
-                                  .read(favoriteListStateProvider.notifier)
-                                  .deleteFavorite(favoriteItem.favoriteId);
-                            },
-                            child: Icon(Icons.clear),
-                          )
-                        ],
-                      );
-                    }
-                  },
-                  separatorBuilder: (context, index) => Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: BASE_MARGIN_TITLE_TO_CONTENT),
-                        child: Divider(
-                          thickness: 1,
-                        ),
-                      ),
-                  itemCount: favoriteListState.length),
+                      itemCount: favoriteListState.length),
             ),
             Spacer(),
             SingleButtonWidget(
-                content: '뒤로가기',
-                onPressed: () => Navigator.pop(context))
+                content: '뒤로가기', onPressed: () => Navigator.pop(context))
           ],
         ));
     // } else {
@@ -107,5 +108,4 @@ class FavoriteScreen extends ConsumerWidget {
     //   );
     // }
   }
-
 }
