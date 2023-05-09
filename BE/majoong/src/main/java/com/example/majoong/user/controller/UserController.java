@@ -68,7 +68,7 @@ public class UserController {
     @Operation(summary = "로그인", description = "소셜 계정 PK로 로그인")
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody LoginDto info) {
-        UserResponseDto user = userService.login(info.getSocialPK());
+        UserResponseDto user = userService.login(info.getSocialPK(),info.getFcmToken());
         log.info("/user/login @Post start");
         ResponseData data = new ResponseData();
         data.setData(user);
