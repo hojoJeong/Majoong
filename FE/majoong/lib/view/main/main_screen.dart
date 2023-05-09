@@ -1,10 +1,15 @@
+import 'dart:io';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:location/location.dart';
 import 'package:majoong/common/const/colors.dart';
+import 'package:majoong/main.dart';
 import 'package:majoong/model/request/map/get_facility_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/user/user_info_response_dto.dart';
@@ -19,6 +24,7 @@ import 'package:majoong/view/search/search_screen.dart';
 import 'package:majoong/viewmodel/main/facility_provider.dart';
 import 'package:majoong/viewmodel/main/marker_provider.dart';
 
+import '../../common/util/logger.dart';
 import '../../viewmodel/main/user_info_provider.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
@@ -40,9 +46,128 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     mapController = controller;
   }
 
+  /**
+   * Firebase Background Messaging 핸들러
+   */
+  Future<void> fcmHandlerInBackground(RemoteMessage message) async {
+    logger.d("[FCM - Background] MESSAGE notification title: ${message.notification!.title}, ${message.notification!.body}");
+    logger.d("[FCM - Background] MESSAGE title: ${message.data['title']}, ${message.data['body']}, ${message.data['sessionId']}");
+
+  }
+
+  /**
+   * Firebase Foreground Messaging 핸들러
+   */
+  Future<void> notificationHandlerInForeground(
+      RemoteMessage message,
+      FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin,
+      AndroidNotificationChannel? channel) async {
+    if (message.notification != null) {
+      flutterLocalNotificationsPlugin.show(
+          message.hashCode,
+          message.notification?.title,
+          message.notification?.body,
+          NotificationDetails(
+              android: AndroidNotificationDetails(
+                channel!.id,
+                channel.name,
+                channelDescription: channel.description,
+                icon: '@mipmap/ic_launcher',
+              ),
+              iOS: const DarwinNotificationDetails(
+                badgeNumber: 1,
+                subtitle: 'the subtitle',
+                sound: 'slow_spring_board.aiff',
+              )));
+    }
+  }
+
+
+  Future<void> setupInteractedMessage(FirebaseMessaging fbMsg) async {
+    RemoteMessage? initialMessage = await fbMsg.getInitialMessage();
+    // 종료상태에서 클릭한 푸시 알림 메세지 핸들링
+    if (initialMessage != null) clickMessageEvent(initialMessage);
+    // 앱이 백그라운드 상태에서 푸시 알림 클릭 하여 열릴 경우 메세지 스트림을 통해 처리
+    FirebaseMessaging.onMessageOpenedApp.listen(clickMessageEvent);
+  }
+
+  /**
+   * 백그라운드 FCM 메시지 클릭 이벤트 정의
+   */
+  void clickMessageEvent(RemoteMessage message) {
+    final sessionId = message.data['sessionId'].toString();
+    logger.d('background message click : ${message.data['title']}, ${message.data['body']}, ${message.data['sessionId']}');
+    if(sessionId != '') {
+      //TODO 화면 공유
+    } else {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => NotificationScreen()));
+    }
+  }
+
+
+  void initFcm(FirebaseMessaging fcmMessaging) async{
+    late RemoteMessage clickMessage;
+
+    // 플랫폼 확인후 권한요청 및 Flutter Local Notification Plugin 설정
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+    await flutterLocalNotificationsPlugin.initialize(
+        const InitializationSettings(
+            android: AndroidInitializationSettings('@drawable/app_logo'),
+            iOS: DarwinInitializationSettings()),
+        onDidReceiveNotificationResponse: (NotificationResponse details) async {
+          final sessionId = clickMessage.data['sessionId'].toString();
+          logger.d('message click : ${clickMessage.data['title']}, ${clickMessage.data['body']}, ${clickMessage.data['sessionId']}');
+          if(sessionId != '') {
+            //TODO 화면 공유
+          } else {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => NotificationScreen()));
+          }
+        });
+
+    AndroidNotificationChannel? androidNotificationChannel;
+    if (Platform.isIOS) {
+      await reqIOSPermission(fcmMessaging);
+    } else if (Platform.isAndroid) {
+      //Android 8 (API 26) 이상부터는 채널설정이 필수.
+      androidNotificationChannel = const AndroidNotificationChannel(
+        'majoong', // id
+        '알림', // name
+        description: '마중 알림 채널',
+        // description
+        importance: Importance.high,
+      );
+
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(androidNotificationChannel);
+    }
+
+
+    //Foreground Handling foreground 메세지 핸들링
+    FirebaseMessaging.onMessage.listen((message) {
+      clickMessage = message;
+      logger.d('notification message : ${message.notification!.title} , ${message.notification!.body}');
+      logger.d('data message : ${message.data['title']}, ${message.data['body']}, ${message.data['sessionId']}');
+      notificationHandlerInForeground(
+          message, flutterLocalNotificationsPlugin, androidNotificationChannel);
+    });
+
+    //Background Handling background 메세지 핸들링
+    FirebaseMessaging.onBackgroundMessage(fcmHandlerInBackground);
+
+    //Message Click Event Implement
+    await setupInteractedMessage(fcmMessaging);
+  }
+
+
   @override
   void initState() {
     super.initState();
+    final fcmMessaging = FirebaseMessaging.instance;
+    initFcm(fcmMessaging);
     _getLocation();
     location.onLocationChanged.listen((event) {
       setState(() {

@@ -5,15 +5,26 @@ import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/view/main/main_screen.dart';
 import 'package:majoong/view/login/login_screen.dart';
 import 'package:majoong/viewmodel/login/check_auto_login_provider.dart';
+import 'package:majoong/viewmodel/login/fcm_token_provider.dart';
 import 'package:majoong/viewmodel/login/login_provider.dart';
 import '../../common/const/colors.dart';
 
 class SplashScreen extends ConsumerWidget {
-  const SplashScreen({super.key});
+  final String fcmToken;
+  const SplashScreen({super.key, required this.fcmToken});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final checkAutoLoginState = ref.read(checkAutoLoginProvider);
+    Future.delayed(Duration.zero, (){
+      logger.d('fcmToken in splash : $fcmToken');
+      if(fcmToken != ''){
+        ref.read(fcmTokenProvider.notifier).update((state) => fcmToken);
+      } else {
+        logger.d('fcmToken 오류 - token : $fcmToken');
+      }
+    });
+
+    final checkAutoLoginState = ref.watch(checkAutoLoginProvider);
     final autoLoginState = ref.watch(loginProvider);
     if (checkAutoLoginState == 1) {
       logger.d('자동로그인 맞음!');
