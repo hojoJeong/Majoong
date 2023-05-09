@@ -5,6 +5,7 @@ import com.example.majoong.user.service.UserService;
 import com.example.majoong.video.dto.GetRecordingsResponseDto;
 import com.example.majoong.video.dto.InitializeConnectionResponseDto;
 import com.example.majoong.video.dto.InitializeSessionResponseDto;
+import com.example.majoong.video.dto.StartVideoResponseDto;
 import com.example.majoong.video.service.VideoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,6 +25,31 @@ import java.util.List;
 public class VideoController {
 
     private final VideoService videoService;
+
+    @PostMapping("/start")
+    @Operation(summary = "session 생성", description = "session을 생성합니다.")
+    public ResponseEntity<?> videoStart(HttpServletRequest request) {
+        StartVideoResponseDto responseDto = new StartVideoResponseDto();
+
+        // 세션 생성
+        InitializeSessionResponseDto responseDto1 = videoService.initializeSession(request);
+        String sessionId = responseDto1.getSessionId();
+
+        // 연결 생성
+        InitializeConnectionResponseDto responseDto2 = videoService.initializeConnection(request, sessionId);
+        String connectionId = responseDto2.getConnectionId() ;
+        String connectionToken = responseDto2.getConnectionToken();
+
+        responseDto.setSessionId(sessionId);
+        responseDto.setConnectionId(connectionId);
+        responseDto.setConnectionToken(connectionToken);
+
+        ResponseData data = new ResponseData();
+        data.setData(responseDto);
+        data.setMessage("videoStart 성공");
+
+        return data.builder();
+    }
 
     @PostMapping("/sessions")
     @Operation(summary = "session 생성", description = "session을 생성합니다.")
@@ -48,7 +74,18 @@ public class VideoController {
         return data.builder();
     }
 
-    @PostMapping("/sessions/{sessionId}/connection")
+//    @PostMapping("/sessions/{sessionId}/connection")
+//    @Operation(summary = "connection 생성", description = "특정 session에 대한 connection을 생성합니다.")
+//    public ResponseEntity<?> initializeConnection(HttpServletRequest request, @PathVariable("sessionId")String sessionId) {
+//
+//        InitializeConnectionResponseDto responseDto = videoService.initializeConnection(request, sessionId);
+//
+//        ResponseData data = new ResponseData();
+//        data.setData(responseDto);
+//        data.setMessage("initializeConnection 성공");
+//        return data.builder();
+//    }
+    @PostMapping("/connection/{sessionId}")
     @Operation(summary = "connection 생성", description = "특정 session에 대한 connection을 생성합니다.")
     public ResponseEntity<?> initializeConnection(HttpServletRequest request, @PathVariable("sessionId")String sessionId) {
 
@@ -112,4 +149,5 @@ public class VideoController {
         data.setMessage("removeRecording 성공");
         return data.builder();
     }
+
 }
