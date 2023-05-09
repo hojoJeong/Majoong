@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class FriendController {
 
     @Operation(summary = "친구요청", description = "친구요청 API")
     @PostMapping("/friend")
-    public ResponseEntity sendFriendRequest(@RequestBody FriendRequestDto friendRequest) {
+    public ResponseEntity sendFriendRequest(@RequestBody FriendRequestDto friendRequest) throws IOException {
         log.info("/user/friend @Post start");
         User user = userRepository.findById(friendRequest.getUserId()).orElseThrow(() -> new NoUserException());
         User friend = userRepository.findById(friendRequest.getFriendId()).orElseThrow(() -> new NoUserException());
