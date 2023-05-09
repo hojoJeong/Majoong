@@ -271,8 +271,7 @@ public class UserController {
 
     @PostMapping("/test/{userId}")
     public ResponseEntity fcm(@PathVariable("userId") int userId) throws IOException {
-        User user = userRepository.findById(userId).get();
-        fCMService.sendMessage(user.getFcmToken(),"타이틀","바디","네임","디스크립션","");
+        fCMService.sendMessage(userId,"타이틀","바디","네임","디스크립션","");
         ResponseData data = new ResponseData();
         data.setMessage("메세지 보냄");
         return data.builder();

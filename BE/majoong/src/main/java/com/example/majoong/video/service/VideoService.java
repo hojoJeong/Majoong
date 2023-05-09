@@ -2,8 +2,12 @@ package com.example.majoong.video.service;
 
 
 import com.example.majoong.exception.*;
+import com.example.majoong.fcm.service.FCMService;
+import com.example.majoong.map.dto.MovingInfoDto;
+import com.example.majoong.map.service.MapService;
 import com.example.majoong.tools.JwtTool;
 import com.example.majoong.tools.UnitConverter;
+import com.example.majoong.user.domain.User;
 import com.example.majoong.user.repository.UserRepository;
 import com.example.majoong.video.dto.GetRecordingsResponseDto;
 import com.example.majoong.video.dto.InitializeConnectionResponseDto;
@@ -24,6 +28,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -35,6 +40,9 @@ public class VideoService {
     private final JwtTool jwtTool;
     private final UnitConverter unitConverter;
 
+    private final FCMService fCMService;
+
+    private final MapService mapService;
 
     @Value("${OPENVIDU_BASE_PATH}")
     private String OPENVIDU_BASE_PATH;
@@ -42,7 +50,7 @@ public class VideoService {
     @Value("${OPENVIDU_SECRET}")
     private String OPENVIDU_SECRET;
 
-    public InitializeSessionResponseDto initializeSession(HttpServletRequest request){
+    public InitializeSessionResponseDto initializeSession(HttpServletRequest request) throws IOException {
         String token = request.getHeader("Authorization").split(" ")[1];
         int userId = jwtTool.getUserIdFromToken(token);
 
@@ -78,6 +86,19 @@ public class VideoService {
 
         InitializeSessionResponseDto responseDto = new InitializeSessionResponseDto();
         responseDto.setSessionId(sessionId);
+
+        // fcm
+        User user = userRepository.findById(userId).get();
+        MovingInfoDto movingInfo = mapService.getLocationInfo(userId);
+        List<Integer> guardians = movingInfo.getGuardians();
+        for (int guardianId : guardians){
+            User guardian = userRepository.findById(guardianId).get();
+            guardian.getFcmToken();
+            String title = "[마중] 바디캠 수신 요청";
+            String body = user.getNickname()+"님이 바디캠을 시작했습니다.";
+            fCMService.sendMessage(guardianId,title, body,title,body,sessionId);
+
+        }
         return responseDto;
     }
 

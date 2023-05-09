@@ -1,6 +1,9 @@
 package com.example.majoong.fcm.service;
 
+import com.example.majoong.exception.NoFcmTokenException;
 import com.example.majoong.fcm.dto.FCMMessageDto;
+import com.example.majoong.user.domain.User;
+import com.example.majoong.user.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -20,6 +23,8 @@ import java.util.List;
 public class FCMService {
 
     private final ObjectMapper objectMapper;
+
+    private final UserRepository userRepository;
 
     @Value("${FCM_API_URL}")
     private String API_URL;
@@ -63,9 +68,14 @@ public class FCMService {
 
     }
     public void sendMessage(
-            String targetToken, String title, String body, String dataTitle, String dataBody, String sessionId
+            int userId, String title, String body, String dataTitle, String dataBody, String sessionId
     ) throws IOException{
 
+        User user = userRepository.findById(userId).get();
+        if (user.getFcmToken()==null){
+            throw new NoFcmTokenException();
+        }
+        String targetToken = user.getFcmToken();
         String message = makeMessage(targetToken, title, body, dataTitle, dataBody, sessionId);
 
         OkHttpClient client = new OkHttpClient();

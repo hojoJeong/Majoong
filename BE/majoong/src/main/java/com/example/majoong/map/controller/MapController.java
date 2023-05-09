@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Map;
 
 @Slf4j
@@ -58,7 +59,7 @@ public class MapController {
     }
 
     @PostMapping("/share")
-    public ResponseEntity startMoving(@RequestBody LocationRequestDto locationRequest){
+    public ResponseEntity startMoving(@RequestBody LocationRequestDto locationRequest) throws IOException {
         mapService.startMoving(locationRequest);
         ResponseData data = new ResponseData();
         data.setMessage("위치 공유 시작");

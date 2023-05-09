@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.List;
 
 @Tag(name = "비디오 API", description = "세션 관리, 연결, 녹화")
@@ -28,7 +29,7 @@ public class VideoController {
 
     @PostMapping("/start")
     @Operation(summary = "바디캠 시작", description = "사용자가 바디캠을 시작합니다.")
-    public ResponseEntity<?> videoStart(HttpServletRequest request) {
+    public ResponseEntity<?> videoStart(HttpServletRequest request) throws IOException {
         StartVideoResponseDto responseDto = new StartVideoResponseDto();
 
         // 세션 생성

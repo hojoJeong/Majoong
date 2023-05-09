@@ -1,5 +1,6 @@
 package com.example.majoong.map.service;
 
+import com.example.majoong.fcm.service.FCMService;
 import com.example.majoong.map.dto.LocationDto;
 import com.example.majoong.map.dto.LocationRequestDto;
 import com.example.majoong.map.dto.MovingInfoDto;
@@ -15,6 +16,7 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -31,6 +33,8 @@ public class MapService {
     private final RedisTemplate redisTemplate;
 
     private final UserRepository userRepository;
+
+    private final FCMService fCMService;
 
     public List<LocationDto> getRecommendPath(LocationRequestDto pathPoints) { //나중에 진짜 추천 경로로 대체 (지금 그냥 예시)
         List<Map<String, Double>> points = new ArrayList<>();
@@ -59,19 +63,26 @@ public class MapService {
         return pointDtos;
     }
 
-    public void startMoving(LocationRequestDto movingInfo) {
+    public void startMoving(LocationRequestDto movingInfo) throws IOException {
         List<Integer> guardianIds;
         guardianIds = movingInfo.getGuardians();
         int userId = movingInfo.getUserId();
-
+        User user = userRepository.findById(userId).get();
         // 보호자에게 알림 전송
         for (int guardianId : guardianIds) {
+
             Notification notification = new Notification(guardianId, userId, 2);
             notificationService.saveNotification(notification);
+
+            String title = "[마중] 마중요청!";
+            String body = user.getNickname()+"님이 마중을 요청했습니다.";
+
+            fCMService.sendMessage(guardianId,title, body,title,body,"");
         }
 
         // redis 저장
         saveLocationInfo(userId, movingInfo);
+
 
     }
     public void saveLocationInfo(int userId, LocationRequestDto movingInfo) {
