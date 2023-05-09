@@ -66,6 +66,7 @@ public class FCMService {
             String targetToken, String title, String body, String dataTitle, String dataBody, String sessionId
     ) throws IOException{
 
+
         String message = makeMessage(targetToken, title, body, dataTitle, dataBody, sessionId);
 
         OkHttpClient client = new OkHttpClient();

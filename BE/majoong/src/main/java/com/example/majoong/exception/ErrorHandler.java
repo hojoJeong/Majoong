@@ -127,4 +127,10 @@ public class ErrorHandler {
         ResponseData data = new ResponseData(ErrorEnum.NO_USER);
         return data.builder();
     }
+
+    @ExceptionHandler(NoFcmTokenException.class)
+    public ResponseEntity<?> NoFcmTokenException() {
+        ResponseData data = new ResponseData(ErrorEnum.NOT_EXIST_FCM_TOKEN);
+        return data.builder();
+    }
 }

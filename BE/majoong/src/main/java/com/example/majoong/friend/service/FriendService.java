@@ -4,6 +4,7 @@ import com.example.majoong.exception.ExistFriendException;
 import com.example.majoong.exception.ExistFriendRequestException;
 import com.example.majoong.exception.NotExistFriendRequestException;
 import com.example.majoong.exception.NotFriendException;
+import com.example.majoong.fcm.service.FCMService;
 import com.example.majoong.friend.domain.Friend;
 import com.example.majoong.friend.dto.FriendDto;
 import com.example.majoong.friend.repository.FriendRepository;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +33,9 @@ public class FriendService {
 
     private final NotificationService notificationService;
 
-    public void sendFriendRequest(User user, User friend) {
+    private final FCMService fCMService;
+
+    public void sendFriendRequest(User user, User friend) throws IOException {
 
         if (friendRepository.existsByUserAndFriendAndState(user, friend,0)) { //이미 친구요청 보낸 상태
             throw new ExistFriendRequestException();
@@ -45,6 +49,11 @@ public class FriendService {
 
         Notification notification = new Notification(friend.getId(),user.getId(),1);
         notificationService.saveNotification(notification);
+
+        String title = "[마중] 친구요청!";
+        String body = user.getNickname()+"님이 친구를 요청했습니다.";
+
+        fCMService.sendMessage(friend.getFcmToken(),title, body,title,body,"");
 
     }
 
