@@ -73,7 +73,7 @@ public class CsvUtils {
 
     public static List<CctvDto> convertToCctvDtoList(String category) {
 
-        String file = "src/main/resources/static/facility/경찰서.csv";
+        String file = "src/main/resources/static/facility/CCTV.csv";
 
         List<List<String>> csvList = new ArrayList<>();
         try (CSVReader csvReader = new CSVReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
