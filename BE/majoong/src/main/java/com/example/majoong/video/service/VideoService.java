@@ -96,7 +96,7 @@ public class VideoService {
             guardian.getFcmToken();
             String title = "[마중] 바디캠 수신 요청";
             String body = user.getNickname()+"님이 바디캠을 시작했습니다.";
-            fCMService.sendMessage(guardian.getFcmToken(),title, body,title,body,"");
+            fCMService.sendMessage(guardianId,title, body,title,body,sessionId);
 
         }
         return responseDto;

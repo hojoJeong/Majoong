@@ -53,7 +53,7 @@ public class FriendService {
         String title = "[마중] 친구요청!";
         String body = user.getNickname()+"님이 친구를 요청했습니다.";
 
-        fCMService.sendMessage(friend.getFcmToken(),title, body,title,body,"");
+        fCMService.sendMessage(friend.getId(),title, body,title,body,"");
 
     }
 

@@ -71,15 +71,13 @@ public class MapService {
         // 보호자에게 알림 전송
         for (int guardianId : guardianIds) {
 
-            User guardian = userRepository.findById(guardianId).get();
-
             Notification notification = new Notification(guardianId, userId, 2);
             notificationService.saveNotification(notification);
 
             String title = "[마중] 마중요청!";
             String body = user.getNickname()+"님이 마중을 요청했습니다.";
 
-            fCMService.sendMessage(guardian.getFcmToken(),title, body,title,body,"");
+            fCMService.sendMessage(guardianId,title, body,title,body,"");
         }
 
         // redis 저장
