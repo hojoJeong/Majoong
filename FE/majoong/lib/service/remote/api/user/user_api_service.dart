@@ -22,6 +22,8 @@ import 'package:retrofit/retrofit.dart';
 import 'package:retrofit/http.dart';
 
 import '../../../../common/const/path.dart';
+import '../../../../model/request/user/ReportRequestDto.dart';
+import '../../../../model/request/user/delete_notification_request_dto.dart';
 import '../../../../model/request/user/receive_number_request_dto.dart';
 import '../../../../model/request/user/sign_up_request_dto.dart';
 import '../../../../model/request/user/verify_number_request_dto.dart';
