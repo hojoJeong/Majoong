@@ -34,8 +34,8 @@ public class PathResponseDto {
 //    private List<PathDto> recommendedPath;
 //    private List<PathDto> shortestPath;
 
-    private List<PointDto> recommendedPath;
-    private List<PointDto> shortestPath;
+    private List<NodeDto> recommendedPath;
+    private List<NodeDto> shortestPath;
 
 
 }

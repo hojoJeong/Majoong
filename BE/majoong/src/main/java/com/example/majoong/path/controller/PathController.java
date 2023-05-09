@@ -2,8 +2,9 @@ package com.example.majoong.path.controller;
 
 import com.example.majoong.path.dto.PathRequestDto;
 import com.example.majoong.path.dto.PathResponseDto;
-import com.example.majoong.path.dto.PointDto;
-import com.example.majoong.path.service.PathService;
+import com.example.majoong.path.dto.NodeDto;
+import com.example.majoong.path.service.RecommendedPathService;
+import com.example.majoong.path.service.ShortestPathService;
 import com.example.majoong.response.ResponseData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,7 +27,8 @@ import java.util.List;
 public class PathController {
 
     @Autowired
-    private final PathService pathService;
+    private final RecommendedPathService recommendedPathService;
+    private final ShortestPathService shortestPathService;
 
     @PostMapping("/path")
     @Operation(summary = "경로 추천 API", description = "최단 거리, 안전 거리 반환")
@@ -36,13 +38,17 @@ public class PathController {
         double endLng = pathRequestDto.getEndLng();
         double endLat = pathRequestDto.getEndLat();
 
-        List<PointDto> recommendedPath = pathService.getRecommendedPath(startLng, startLat, endLng, endLat);
-        List<PointDto> shortestPath = pathService.getShortestPath(startLng, startLat, endLng, endLat);
-        PathResponseDto pathResponseDto = new PathResponseDto(recommendedPath, shortestPath);
+//        List<NodeDto> recommendedPath = recommendedPathService.getRecommendedPath(startLng, startLat, endLng, endLat);
+//        List<NodeDto> shortestPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
+//        PathResponseDto pathResponseDto = new PathResponseDto(recommendedPath, shortestPath);
+
+
+        List<NodeDto> shortestPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
+        PathResponseDto pathResponseDto = new PathResponseDto(shortestPath, shortestPath);
 
         ResponseData data = new ResponseData();
         data.setStatus(200);
-//        data.setData(pathResponseDto);
+        data.setData(pathResponseDto);
         data.setMessage("경로 추천 성공");
         return data.builder();
     }

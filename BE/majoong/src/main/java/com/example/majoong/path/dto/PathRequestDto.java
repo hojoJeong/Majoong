@@ -10,12 +10,14 @@ import lombok.*;
 @Schema(description = "경로 추천 요청 DTO")
 public class PathRequestDto {
 
-//    {
-//        startLng: Double,
-//        startLat: Double,
-//        endLng: Double,
-//        endLat: Double
-//    }
+    /**
+     *     {
+     *         startLng: Double,
+     *         startLat: Double,
+     *         endLng: Double,
+     *         endLat: Double
+     *     }
+     */
 
     @Schema(description = "출발점 경도 Longitude X", example = "127.0039")
     private Double startLng;

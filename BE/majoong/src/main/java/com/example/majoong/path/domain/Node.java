@@ -16,7 +16,7 @@ public class Node {
     @Id
     @Column(name = "id", unique = true, nullable = false)
     private Long nodeId;
-    private double longitude;
-    private double latitude;
+    private double lng;
+    private double lat;
     private String address;
 }
