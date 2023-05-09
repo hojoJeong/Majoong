@@ -35,7 +35,7 @@ public class FCMService {
 
 
     public String makeMessage(
-            String targetToken, String title, String body, String name, String description
+            String targetToken, String title, String body, String dataTitle, String dataBody, String sessionId
     ) throws JsonProcessingException {
         FCMMessageDto fcmMessage = FCMMessageDto.builder()
                 .message(
@@ -49,8 +49,9 @@ public class FCMService {
                                 )
                                 .data(
                                         FCMMessageDto.Data.builder()
-                                                .name(name)
-                                                .description(description)
+                                                .title(dataTitle)
+                                                .body(dataBody)
+                                                .sessionId(sessionId)
                                                 .build()
                                 )
                                 .build()
@@ -62,10 +63,10 @@ public class FCMService {
 
     }
     public void sendMessage(
-            String targetToken, String title, String body, String name, String description
+            String targetToken, String title, String body, String dataTitle, String dataBody, String sessionId
     ) throws IOException{
 
-        String message = makeMessage(targetToken, title, body, name, description);
+        String message = makeMessage(targetToken, title, body, dataTitle, dataBody, sessionId);
 
         OkHttpClient client = new OkHttpClient();
         RequestBody requestBody = RequestBody.create(message, MediaType.get("application/json; charset=utf-8"));

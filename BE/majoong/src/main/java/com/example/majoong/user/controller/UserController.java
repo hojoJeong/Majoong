@@ -1,7 +1,10 @@
 package com.example.majoong.user.controller;
 
+import com.example.majoong.fcm.service.FCMService;
 import com.example.majoong.response.ResponseData;
+import com.example.majoong.user.domain.User;
 import com.example.majoong.user.dto.*;
+import com.example.majoong.user.repository.UserRepository;
 import com.example.majoong.user.service.FavoriteService;
 import com.example.majoong.user.service.MessageService;
 import com.example.majoong.user.service.UserService;
@@ -38,6 +41,9 @@ public class UserController {
 
     private final FavoriteService favoriteService;
 
+    private final FCMService fCMService;
+
+    private final UserRepository userRepository;
 
     @GetMapping
     public ResponseEntity getUser(HttpServletRequest request) {
@@ -260,6 +266,15 @@ public class UserController {
         log.info(data.toString());
         log.info("/user/favorite end\n");
         log.info("");
+        return data.builder();
+    }
+
+    @PostMapping("/test/{userId}")
+    public ResponseEntity fcm(@PathVariable("userId") int userId) throws IOException {
+        User user = userRepository.findById(userId).get();
+        fCMService.sendMessage(user.getFcmToken(),"타이틀","바디","네임","디스크립션","");
+        ResponseData data = new ResponseData();
+        data.setMessage("메세지 보냄");
         return data.builder();
     }
 }
