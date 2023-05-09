@@ -27,7 +27,7 @@ public class VideoController {
     private final VideoService videoService;
 
     @PostMapping("/start")
-    @Operation(summary = "session 생성", description = "session을 생성합니다.")
+    @Operation(summary = "바디캠 시작", description = "사용자가 바디캠을 시작합니다.")
     public ResponseEntity<?> videoStart(HttpServletRequest request) {
         StartVideoResponseDto responseDto = new StartVideoResponseDto();
 
@@ -39,6 +39,8 @@ public class VideoController {
         InitializeConnectionResponseDto responseDto2 = videoService.initializeConnection(request, sessionId);
         String connectionId = responseDto2.getConnectionId() ;
         String connectionToken = responseDto2.getConnectionToken();
+        
+        // 녹화 자동 시작
 
         responseDto.setSessionId(sessionId);
         responseDto.setConnectionId(connectionId);
@@ -51,42 +53,21 @@ public class VideoController {
         return data.builder();
     }
 
-    @PostMapping("/sessions")
-    @Operation(summary = "session 생성", description = "session을 생성합니다.")
-    public ResponseEntity<?> initializeSession(HttpServletRequest request) {
+    @DeleteMapping("/stop/{sessionId}/{connectionId}")
+    @Operation(summary = "바디캠 종료", description = "사용자가 바디캠을 종료합니다")
+    public ResponseEntity<?> videoStop(HttpServletRequest request, @PathVariable("sessionId")String sessionId, @PathVariable("connectionId")String connectionId) {
 
-        InitializeSessionResponseDto responseDto = videoService.initializeSession(request);
+        videoService.stopRecording(request, sessionId);         // 녹화 종료
+        videoService.closeConnection(sessionId, connectionId);  // 연결 종료
+        videoService.closeSession(request, sessionId);          // 세션 종료
 
         ResponseData data = new ResponseData();
-        data.setData(responseDto);
-        data.setMessage("initializeSession 성공");
-
+        data.setMessage("videoStop 성공");
         return data.builder();
     }
 
-    @DeleteMapping("/sessions/{sessionId}")
-    @Operation(summary = "session 삭제", description = "session을 삭제합니다. 세션에 대한 모든 connection도 삭제합니다.")
-    public ResponseEntity<?> closeSession(HttpServletRequest request, @PathVariable("sessionId") String sessionId) {
-
-        videoService.closeSession(request, sessionId);
-        ResponseData data = new ResponseData();
-        data.setMessage("closeSession 성공");
-        return data.builder();
-    }
-
-//    @PostMapping("/sessions/{sessionId}/connection")
-//    @Operation(summary = "connection 생성", description = "특정 session에 대한 connection을 생성합니다.")
-//    public ResponseEntity<?> initializeConnection(HttpServletRequest request, @PathVariable("sessionId")String sessionId) {
-//
-//        InitializeConnectionResponseDto responseDto = videoService.initializeConnection(request, sessionId);
-//
-//        ResponseData data = new ResponseData();
-//        data.setData(responseDto);
-//        data.setMessage("initializeConnection 성공");
-//        return data.builder();
-//    }
     @PostMapping("/connection/{sessionId}")
-    @Operation(summary = "connection 생성", description = "특정 session에 대한 connection을 생성합니다.")
+    @Operation(summary = "바디캠 시청", description = "보호자가 바디캠을 시청합니다.")
     public ResponseEntity<?> initializeConnection(HttpServletRequest request, @PathVariable("sessionId")String sessionId) {
 
         InitializeConnectionResponseDto responseDto = videoService.initializeConnection(request, sessionId);
@@ -97,34 +78,12 @@ public class VideoController {
         return data.builder();
     }
 
-    @DeleteMapping("/sessions/{sessionId}/connection/{connectionId}")
-    @Operation(summary = "connection 삭제", description = "특정 session에 대한 특정한 connection을 삭제합니다.")
+    @DeleteMapping("/connection/{sessionId}/{connectionId}")
+    @Operation(summary = "바디캠 시청 종료", description = "보호자가 바디캠 시청을 종료합니다.")
     public ResponseEntity<?> closeConnection(@PathVariable("sessionId")String sessionId, @PathVariable("connectionId")String connectionId) {
         videoService.closeConnection(sessionId, connectionId);
         ResponseData data = new ResponseData();
         data.setMessage("closeConnection 성공");
-        return data.builder();
-    }
-
-    @PostMapping("/recordings/start/{sessionId}")
-    @Operation(summary = "recording 시작", description = "특정 세션에서 녹화를 시작합니다.")
-    public ResponseEntity<?> startRecording(HttpServletRequest request, @PathVariable("sessionId") String sessionId) {
-
-        videoService.startRecording(request, sessionId);
-
-        ResponseData data = new ResponseData();
-        data.setMessage("startRecording 성공");
-        return data.builder();
-    }
-
-    @PostMapping("/recordings/stop/{sessionId}")
-    @Operation(summary = "recording 종료", description = "특정 세션에서 녹화를 종료합니다.")
-    public ResponseEntity<?> stopRecording(HttpServletRequest request, @PathVariable("sessionId") String sessionId) {
-
-        videoService.stopRecording(request, sessionId);
-
-        ResponseData data = new ResponseData();
-        data.setMessage("stopRecording 성공");
         return data.builder();
     }
 
@@ -149,5 +108,79 @@ public class VideoController {
         data.setMessage("removeRecording 성공");
         return data.builder();
     }
+
+//    @PostMapping("/sessions")
+//    @Operation(summary = "session 생성", description = "session을 생성합니다.")
+//    public ResponseEntity<?> initializeSession(HttpServletRequest request) {
+//
+//        InitializeSessionResponseDto responseDto = videoService.initializeSession(request);
+//
+//        ResponseData data = new ResponseData();
+//        data.setData(responseDto);
+//        data.setMessage("initializeSession 성공");
+//
+//        return data.builder();
+//    }
+
+
+//    @DeleteMapping("/sessions/{sessionId}")
+//    @Operation(summary = "session 삭제", description = "session을 삭제합니다. 세션에 대한 모든 connection도 삭제합니다.")
+//    public ResponseEntity<?> closeSession(HttpServletRequest request, @PathVariable("sessionId") String sessionId) {
+//
+//        videoService.closeSession(request, sessionId);
+//        ResponseData data = new ResponseData();
+//        data.setMessage("closeSession 성공");
+//        return data.builder();
+//    }
+
+
+//    @PostMapping("/sessions/{sessionId}/connection")
+//    @Operation(summary = "connection 생성", description = "특정 session에 대한 connection을 생성합니다.")
+//    public ResponseEntity<?> initializeConnection(HttpServletRequest request, @PathVariable("sessionId")String sessionId) {
+//
+//        InitializeConnectionResponseDto responseDto = videoService.initializeConnection(request, sessionId);
+//
+//        ResponseData data = new ResponseData();
+//        data.setData(responseDto);
+//        data.setMessage("initializeConnection 성공");
+//        return data.builder();
+//    }
+
+
+//    @DeleteMapping("/sessions/{sessionId}/connection/{connectionId}")
+//    @Operation(summary = "connection 삭제", description = "특정 session에 대한 특정한 connection을 삭제합니다.")
+//    public ResponseEntity<?> closeConnection(@PathVariable("sessionId")String sessionId, @PathVariable("connectionId")String connectionId) {
+//        videoService.closeConnection(sessionId, connectionId);
+//        ResponseData data = new ResponseData();
+//        data.setMessage("closeConnection 성공");
+//        return data.builder();
+//    }
+
+
+//    @PostMapping("/recordings/start/{sessionId}")
+//    @Operation(summary = "recording 시작", description = "특정 세션에서 녹화를 시작합니다.")
+//    public ResponseEntity<?> startRecording(HttpServletRequest request, @PathVariable("sessionId") String sessionId) {
+//
+//        //녹화 시작
+//        videoService.startRecording(request, sessionId);
+//
+//        ResponseData data = new ResponseData();
+//        data.setMessage("startRecording 성공");
+//        return data.builder();
+//    }
+
+
+//    @PostMapping("/recordings/stop/{sessionId}")
+//    @Operation(summary = "recording 종료", description = "특정 세션에서 녹화를 종료합니다.")
+//    public ResponseEntity<?> stopRecording(HttpServletRequest request, @PathVariable("sessionId") String sessionId) {
+//
+//        videoService.stopRecording(request, sessionId);
+//
+//        ResponseData data = new ResponseData();
+//        data.setMessage("stopRecording 성공");
+//        return data.builder();
+//    }
+
+
 
 }
