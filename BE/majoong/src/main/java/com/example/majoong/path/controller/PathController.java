@@ -41,10 +41,6 @@ public class PathController {
         double endLng = pathRequestDto.getEndLng();
         double endLat = pathRequestDto.getEndLat();
 
-//        List<NodeDto> recommendedPath = recommendedPathService.getRecommendedPath(startLng, startLat, endLng, endLat);
-//        List<NodeDto> shortestPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
-//        PathResponseDto pathResponseDto = new PathResponseDto(recommendedPath, shortestPath);
-
         ResponseData data = new ResponseData();
 
         List<LocationDto> shortestPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
@@ -52,8 +48,9 @@ public class PathController {
             data.setStatus(404);
             data.setMessage("최단거리 추천 오류");
         }
+
         Map<String,Object> result = new HashMap<>();
-        result.put("recommendedPath",null);
+        result.put("recommendedPath",null); //추천경로 넣기!
         result.put("shortestPath",shortestPath);
 
         data.setStatus(200);
