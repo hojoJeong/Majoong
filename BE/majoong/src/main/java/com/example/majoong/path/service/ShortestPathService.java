@@ -14,9 +14,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ShortestPathService {
 
-    @Value("${google.maps.api.key}")
-    private String API_KEY;
-    private String API_URL = "https://";
+//    @Value("${google.maps.api.key}")
+//    private String API_KEY;
+//    private String API_URL = "https://";
 
     public List<NodeDto> getShortestPath(double startLng, double startLat, double endLng, double endLat) {
 
