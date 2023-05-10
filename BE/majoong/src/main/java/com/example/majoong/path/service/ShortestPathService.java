@@ -27,7 +27,7 @@ public class ShortestPathService {
     @Value("${map.api.key}")
     private String API_KEY;
 
-    public List<LocationDto> getShortestPath(double startLng, double startLat, double endLng, double endLat) {
+    public Map<String, Object> getShortestPath(double startLng, double startLat, double endLng, double endLat) {
         List<NodeDto> shortestPath = new ArrayList<>();
         String startX = Double.toString(startLng);
         String startY = Double.toString(startLat);
@@ -35,6 +35,7 @@ public class ShortestPathService {
         String endY = Double.toString(endLat);
         String reqCoordType = "WGS84GEO";
         String resCoordType = "WGS84GEO";
+        double distance = 0; //미터
 
         String requestBody = "startX=" + startX +
                 "&startY=" + startY +
@@ -78,6 +79,8 @@ public class ShortestPathService {
                             pointList.add(location);
                         }
                     } else if (geometryType.equals("LineString")) {
+                        distance += feature.getAsJsonObject("properties").get("distance").getAsInt();
+
                         for (JsonElement coordinateElement : coordinates) {
                             JsonArray coordinateArray = coordinateElement.getAsJsonArray();
                             double longitude = coordinateArray.get(0).getAsDouble();
@@ -91,7 +94,11 @@ public class ShortestPathService {
                         System.out.println("Request failed: " + response.code() + " - " + response.message());
                     }
                 }
-                return pointList;}
+                Map<String,Object> result = new HashMap<>();
+                result.put("point",pointList);
+                result.put("distance",(int) distance);
+                result.put("time",(int)(distance/1000/5*60));
+                return result;}
         } catch (IOException e) {
             e.printStackTrace();
         }
