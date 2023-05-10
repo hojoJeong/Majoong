@@ -43,15 +43,15 @@ public class PathController {
 
         ResponseData data = new ResponseData();
 
-        List<LocationDto> shortestPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
-        if (shortestPath==null){
+        Map<String,Object> shortPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
+        if (shortPath.get("point")==null){
             data.setStatus(404);
             data.setMessage("최단거리 추천 오류");
         }
 
         Map<String,Object> result = new HashMap<>();
         result.put("recommendedPath",null); //추천경로 넣기!
-        result.put("shortestPath",shortestPath);
+        result.put("shortestPath",shortPath);
 
         data.setStatus(200);
         data.setData(result);
