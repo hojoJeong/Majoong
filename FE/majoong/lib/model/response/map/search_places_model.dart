@@ -5,6 +5,7 @@ class SearchPlacesModel {
   final bool isFavorite;
   final double lat;
   final double lng;
+  final int favoriteId;
 
   SearchPlacesModel(
       {required this.image,
@@ -12,5 +13,6 @@ class SearchPlacesModel {
       required this.address,
       required this.isFavorite,
       required this.lat,
-      required this.lng});
+      required this.lng,
+      required this.favoriteId});
 }

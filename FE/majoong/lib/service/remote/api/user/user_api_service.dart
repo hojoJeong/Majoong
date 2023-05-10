@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart' hide Headers;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:majoong/common/const/key_value.dart';
+import 'package:majoong/model/request/favorite/favorite_request_dto.dart';
 import 'package:majoong/model/request/user/edit_user_info_request_dto.dart';
 import 'package:majoong/model/request/user/friend_request_request_dto.dart';
 import 'package:majoong/model/request/user/login_request_dto.dart';
@@ -138,4 +139,8 @@ abstract class UserApiService {
   @Headers({AUTHORIZATION: AUTH})
   @DELETE('user/notification')
   Future<BaseResponse> deleteNotification(@Body() DeleteNotificationRequestDto request);
+
+  @Headers({AUTHORIZATION: AUTH})
+  @POST('user/favorite')
+  Future<BaseResponse> addFavorite(@Body() FavoriteRequestDto request);
 }

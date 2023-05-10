@@ -13,7 +13,7 @@ import 'package:majoong/view/search/favorite_widget.dart';
 import 'package:majoong/view/search/recent_keyword_widget.dart';
 import 'package:majoong/view/search/response_search_places_screen.dart';
 import 'package:majoong/viewmodel/favorite/favorite_list_provider.dart';
-import 'package:majoong/viewmodel/search/search_provider.dart';
+import 'package:majoong/viewmodel/search/search_route_point_provider.dart';
 
 class SearchScreen extends ConsumerWidget {
   SearchScreen({Key? key}) : super(key: key);

@@ -70,6 +70,8 @@ dependencies:
   google_places_flutter: ^2.0.5
   google_maps_webservice: ^0.0.20-nullsafety.0
   sliding_up_panel: ^2.0.0+1
+  favorite_button: ^0.0.4
+  group_button: ^5.2.2
 
 dev_dependencies:
   flutter_test:
@@ -112,6 +114,14 @@ flutter:
     - res/icon_camera.png
     - assets/whistle.mp3
     - res/icon_star_line.png
+    - res/icon_search_route_selected.png
+    - res/icon_search_route_unselected.png
+    - res/icon_start.png
+    - res/icon_end.png
+    - res/icon_start_2.png
+    - res/icon_end_2.png
+    - res/icon_start_3.png
+    - res/icon_end_3.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

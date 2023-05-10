@@ -1,12 +1,16 @@
+import 'package:favorite_button/favorite_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:location/location.dart';
 import 'package:majoong/common/component/signle_button_widget.dart';
 import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/model/response/map/search_places_model.dart';
-import 'package:majoong/viewmodel/search/search_provider.dart';
+import 'package:majoong/view/search/select_route_screen.dart';
+import 'package:majoong/viewmodel/search/search_route_point_provider.dart';
+import 'package:majoong/viewmodel/search/route_point_provider.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
@@ -139,10 +143,10 @@ class _ResponseSearchPlacesState
     final markerInfo = ref.watch(markerProvider.notifier);
     final chipInfo = ref.watch(chipProvider.notifier);
     final cameraMovedInfo = ref.watch(cameraMovedProvider);
-    final searchState = ref.watch(searchProvider);
+    final searchState = ref.watch(searchRoutePointProvider);
 
     if (searchState is BaseResponseLoading) {
-      ref.read(searchProvider.notifier).getResultSearch(keyword);
+      ref.read(searchRoutePointProvider.notifier).getResultSearch(keyword);
     }
     logger.d('검색 로딩 성공');
     if (_locationData != null &&
@@ -312,7 +316,8 @@ class _ResponseSearchPlacesState
           }),
         ),
       );
-    } else {
+    }
+    else {
       return Scaffold(
         body: Container(
           width: MediaQuery.of(context).size.width,
@@ -367,30 +372,37 @@ class _ResponseSearchPlacesState
                           children: [
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  place.locationName,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: BASE_TITLE_FONT_SIZE,
-                                      fontWeight: FontWeight.bold),
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.5,
+                                  child: Text(
+                                    place.locationName,
+                                    overflow: TextOverflow.clip,
+                                    style: TextStyle(
+                                        fontSize: BASE_TITLE_FONT_SIZE,
+                                        fontWeight: FontWeight.bold),
+                                  ),
                                 ),
-                                GestureDetector(
-                                  onTap: (){
-                                    //TODO 즐겨찾기 등록
+                                StarButton(
+                                  iconSize: 30,
+                                  valueChanged: (newState) {
+                                    // if (newState) {
+                                    //   ref
+                                    //       .read(searchProvider.notifier)
+                                    //       .setFavoritePlace(place.address,
+                                    //           place.locationName);
+                                    // } else {
+                                    //   ///화면 리빌드 되는 오류 수정되면 즐겨찾기 수정할 때마다 화면 리빌드 할 수 있고(지금은 is BaseResponseLoading 일 때만 리스트 불러오게 해놨음) 그러면 즐겨찾기 추가 후 다시 삭제 가능
+                                    //   ref
+                                    //       .read(searchProvider.notifier)
+                                    //       .deleteFavoritePlace(
+                                    //           place.favoriteId);
+                                    // }
                                   },
-                                  child:  place.isFavorite
-                                      ? Image(
-                                    image: AssetImage('res/icon_star.png'),
-                                    width: 1,
-                                  )
-                                      : Image(
-                                    image: AssetImage(
-                                        'res/icon_star_line.png'),
-                                    width: 30,
-                                  )
+                                  isStarred: place.isFavorite,
                                 ),
-
                               ],
                             ),
                             SizedBox(
@@ -408,7 +420,24 @@ class _ResponseSearchPlacesState
                                     child: ElevatedButton(
                                         style: ElevatedButton.styleFrom(
                                             backgroundColor: GAINSBORO),
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          ref
+                                              .read(routePointProvider
+                                              .notifier)
+                                              .addStartPoint(
+                                              place.locationName,
+                                              place.lat,
+                                              place.lng);
+
+                                          final routePoint = ref
+                                              .read(routePointProvider);
+                                          if(routePoint.startLocationName != '' && routePoint.endLocationName != ''){
+                                            Navigator.of(context).push(MaterialPageRoute(builder: (_) => ResultSearchRouteScreen()));
+                                          } else {
+                                            Navigator.pop(context);
+                                            showToast(context: context, '도착지를 지정해주세요');
+                                          }
+                                        },
                                         child: Text(
                                           '출발',
                                           style: TextStyle(color: Colors.white),
@@ -421,7 +450,24 @@ class _ResponseSearchPlacesState
                                         style: ElevatedButton.styleFrom(
                                             backgroundColor:
                                                 POLICE_MARKER_COLOR),
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          ref
+                                              .read(routePointProvider
+                                              .notifier)
+                                              .addEndPoint(
+                                              place.locationName,
+                                              place.lat,
+                                              place.lng);
+
+                                          final routePoint = ref
+                                              .read(routePointProvider);
+                                          if(routePoint.startLocationName != '' && routePoint.endLocationName != ''){
+                                            Navigator.of(context).push(MaterialPageRoute(builder: (_) => ResultSearchRouteScreen()));
+                                          } else {
+                                            Navigator.pop(context);
+                                            showToast(context: context, '출발지를 지정해주세요');
+                                          }
+                                        },
                                         child: Text(
                                           '도착',
                                           style: TextStyle(color: Colors.white),

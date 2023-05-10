@@ -5,8 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:majoong/common/const/key_value.dart';
 import 'package:majoong/model/request/map/get_facility_request_dto.dart';
+import 'package:majoong/model/request/map/search_route_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/map/get_facility_response_dto.dart';
+import 'package:majoong/model/response/map/search_route_response_dto.dart';
 import 'package:majoong/service/remote/dio/dio_provider.dart';
 import 'package:retrofit/http.dart';
 import 'package:retrofit/retrofit.dart';
@@ -41,4 +43,9 @@ abstract class MapApiService {
           FormData formData,
       @Body()
           Map<String, dynamic> data);
+
+  @Headers({AUTHORIZATION: AUTH})
+  @POST('map/path')
+  Future<BaseResponse<SearchRouteResponseDto>> getRoute(@Body() SearchRouteRequestDto request);
+
 }
