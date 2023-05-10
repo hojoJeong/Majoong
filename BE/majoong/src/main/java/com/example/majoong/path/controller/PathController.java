@@ -1,5 +1,6 @@
 package com.example.majoong.path.controller;
 
+import com.example.majoong.map.dto.LocationDto;
 import com.example.majoong.path.dto.PathRequestDto;
 import com.example.majoong.path.dto.PathResponseDto;
 import com.example.majoong.path.dto.NodeDto;
@@ -17,7 +18,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -38,17 +41,20 @@ public class PathController {
         double endLng = pathRequestDto.getEndLng();
         double endLat = pathRequestDto.getEndLat();
 
-//        List<NodeDto> recommendedPath = recommendedPathService.getRecommendedPath(startLng, startLat, endLng, endLat);
-//        List<NodeDto> shortestPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
-//        PathResponseDto pathResponseDto = new PathResponseDto(recommendedPath, shortestPath);
-
-
-        List<NodeDto> shortestPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
-        PathResponseDto pathResponseDto = new PathResponseDto(shortestPath, shortestPath);
-
         ResponseData data = new ResponseData();
+
+        List<LocationDto> shortestPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
+        if (shortestPath==null){
+            data.setStatus(404);
+            data.setMessage("최단거리 추천 오류");
+        }
+
+        Map<String,Object> result = new HashMap<>();
+        result.put("recommendedPath",null); //추천경로 넣기!
+        result.put("shortestPath",shortestPath);
+
         data.setStatus(200);
-        data.setData(pathResponseDto);
+        data.setData(result);
         data.setMessage("경로 추천 성공");
         return data.builder();
     }
