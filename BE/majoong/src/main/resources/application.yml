@@ -70,3 +70,6 @@ google:
   maps:
     api:
       key: ${GOOGLE_MAPS_DIRECTION_API_KEY}
+map:
+  api:
+    key: ${MAP_API_KEY}
