@@ -157,4 +157,5 @@ public class MapService {
         String key = "moving_location:" + userId;
         redisTemplate.delete(key);
     }
+
 }
