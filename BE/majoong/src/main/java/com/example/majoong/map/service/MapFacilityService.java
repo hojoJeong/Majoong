@@ -30,6 +30,8 @@ public class MapFacilityService {
         facilities.setStore(getFacilityDtos("store", centerLng, centerLat, radius, StoreDto.class));
         facilities.setBell(getFacilityDtos("bell", centerLng, centerLat, radius, BellDto.class));
         facilities.setCctv(getFacilityDtos("cctv", centerLng, centerLat, radius, CctvDto.class));
+
+
         facilities.setReview(getFacilityDtos("review", centerLng, centerLat,radius, ReviewDto.class));
         return facilities;
     }
