@@ -566,7 +566,7 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                       ? () {
                           ref
                               .read(shareLocationProvider.notifier)
-                              .initChannel(false);
+                              .initChannel(false, 35);
                           showToast(context: context, '경로 탐색을 시작합니다.');
                         }
                       : null,
