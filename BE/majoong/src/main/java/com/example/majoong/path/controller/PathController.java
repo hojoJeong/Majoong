@@ -42,20 +42,26 @@ public class PathController {
         double endLat = pathRequestDto.getEndLat();
 
         ResponseData data = new ResponseData();
+        data.setStatus(200);
+        data.setMessage("경로 추천 성공");
 
         Map<String,Object> shortPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
-        if (shortPath.get("point")==null){
+        if (shortPath.get("point") == null){
             data.setStatus(404);
             data.setMessage("최단거리 추천 오류");
         }
 
-        Map<String,Object> result = new HashMap<>();
-        result.put("recommendedPath",null); //추천경로 넣기!
-        result.put("shortestPath",shortPath);
+        Map<String, Object> recommendedPath = recommendedPathService.getRecommendedPath(startLng, startLat, endLng, endLat);
+        if (recommendedPath == null) {
+            data.setStatus(404);
+            data.setMessage("안전경로 추천 오류");
+        }
 
-        data.setStatus(200);
+        Map<String,Object> result = new HashMap<>();
+        result.put("recommendedPath", recommendedPath);
+        result.put("shortestPath", shortPath);
+
         data.setData(result);
-        data.setMessage("경로 추천 성공");
         return data.builder();
     }
 }

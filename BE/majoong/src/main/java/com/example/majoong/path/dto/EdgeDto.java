@@ -17,6 +17,8 @@ public class EdgeDto {
     private Long targetId;
     private int distanceVal;
     private int safeVal;
+    private double centerLng;
+    private double centerLat;
 
     /**
      * 실제 postGIS에 어떻게 들어가는지에 따라서 수정하기
