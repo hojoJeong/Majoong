@@ -8,8 +8,10 @@ import 'package:location/location.dart';
 import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/response/map/search_route_response_dto.dart';
+import 'package:majoong/view/on_going/on_going_screen.dart';
 import 'package:majoong/viewmodel/search/route_point_provider.dart';
 import 'package:majoong/viewmodel/search/search_route_provider.dart';
+import 'package:majoong/viewmodel/share_loaction/share_location_provider.dart';
 
 import '../../common/const/colors.dart';
 import '../../model/request/map/get_facility_request_dto.dart';
@@ -161,20 +163,27 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
       'res/icon_start_3.png',
     );
     final endMarkerIcon = await BitmapDescriptor.fromAssetImage(
-      ImageConfiguration(size: Size(50, 50),),
+      ImageConfiguration(
+        size: Size(50, 50),
+      ),
       'res/icon_end_3.png',
     );
     final startPoint = Marker(
-        markerId: MarkerId('startPoint'), position: LatLng(startLat, startLng), icon: startMarkerIcon);
+        markerId: MarkerId('startPoint'),
+        position: LatLng(startLat, startLng),
+        icon: startMarkerIcon);
     final endPoint = Marker(
-        markerId: MarkerId('endPoint'), position: LatLng(endLat, endLng), icon: endMarkerIcon);
+        markerId: MarkerId('endPoint'),
+        position: LatLng(endLat, endLng),
+        icon: endMarkerIcon);
 
     marker.clear();
     marker.addAll(facilities);
     marker.add(startPoint);
     marker.add(endPoint);
 
-    logger.d('마커 생성 - 크기 : ${marker.length}, start : ${marker[marker.length-2]}, end : ${marker[marker.length-1]}');
+    logger.d(
+        '마커 생성 - 크기 : ${marker.length}, start : ${marker[marker.length - 2]}, end : ${marker[marker.length - 1]}');
   }
 
   @override
@@ -185,6 +194,14 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
     final cameraMovedInfo = ref.watch(cameraMovedProvider);
     final resultRoutePoint = ref.watch(routePointProvider);
     final searchRouteState = ref.watch(searchRouteProvider);
+    final shareLocationState = ref.watch(shareLocationProvider);
+    if (shareLocationState is BaseResponse) {
+      logger.d('이동 준비 완료 : ${shareLocationState.message}');
+      Future.delayed(Duration.zero, (){
+        Navigator.of(context)
+            .pushReplacement(MaterialPageRoute(builder: (_) => OnGoingScreen()));
+      });
+    }
 
     if (searchRouteState is BaseResponseLoading) {
       ref.read(searchRouteProvider.notifier).getRoute(
@@ -547,6 +564,9 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                 GestureDetector(
                   onTap: selected
                       ? () {
+                          ref
+                              .read(shareLocationProvider.notifier)
+                              .initChannel(false);
                           showToast(context: context, '경로 탐색을 시작합니다.');
                         }
                       : null,
