@@ -34,8 +34,8 @@ public class MapDataService {
 //        saveStoreToRedis();
 //        saveCctvToRedis();
 //        saveBellToRedis();
-        saveLampToRedis();
-        saveSafeRoadToRedis();
+//        saveLampToRedis();
+//        saveSafeRoadToRedis();
         log.info("save success");
     }
 
@@ -44,16 +44,16 @@ public class MapDataService {
 //        List<Store> storeList = loadStoreList();
 //        List<Cctv> cctvList = loadCctvList();
 //        List<Bell> bellList = loadBellList();
-        List<Lamp> lampList = loadLampList();
-        List<SafeRoad> safeRoadList = loadSafeRoadList();
+//        List<Lamp> lampList = loadLampList();
+//        List<SafeRoad> safeRoadList = loadSafeRoadList();
         log.info("load success");
 
 //        saveEntity(policeList, policeRepository);
 //        saveEntity(storeList, storeRepository);
 //        saveEntity(cctvList, cctvRepository);
 //        saveEntity(bellList, bellRepository);
-        saveEntity(lampList, lampRepository);
-        saveEntity(safeRoadList, safeRoadRepository);
+//        saveEntity(lampList, lampRepository);
+//        saveEntity(safeRoadList, safeRoadRepository);
         log.info("save success");
     }
 

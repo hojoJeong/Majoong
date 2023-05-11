@@ -120,7 +120,7 @@ public class CsvUtils {
 
     public static List<LampDto> convertToLampDtoList(String category) {
 
-        String file = "src/main/resources/static/facility/보안등(구미).csv";
+        String file = "src/main/resources/static/facility/보안등_구미.csv";
 
         List<List<String>> csvList = new ArrayList<>();
         try (CSVReader csvReader = new CSVReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
