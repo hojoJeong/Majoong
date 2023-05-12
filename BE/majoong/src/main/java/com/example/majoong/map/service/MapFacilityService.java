@@ -106,11 +106,11 @@ public class MapFacilityService {
                 safeRoadPointDto.setLat(safeRoad.getLatitude());
                 safeRoadPointDtoList.add(safeRoadPointDto);
 
-                safeRoadMapDto.setAddress(safeRoad.getAddress());
+//                safeRoadMapDto.setAddress(safeRoad.getAddress());
             }
 
             safeRoadMapDto.setPoint(safeRoadPointDtoList);
-            safeRoadMapDto.setSafeRoadNumber(num);
+//            safeRoadMapDto.setSafeRoadNumber(num);
             safeRoadMapDtoList.add(safeRoadMapDto);
         }
 

@@ -15,7 +15,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SafeRoadMapDto {
-    private Long safeRoadNumber;
+//    private Long safeRoadNumber;
     private List<SafeRoadPointDto> point;
-    private String address;
+//    private String address;
 }
