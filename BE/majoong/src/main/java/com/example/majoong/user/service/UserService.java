@@ -154,8 +154,9 @@ public class UserService {
         String queueName = "location.queue." + id;
         String exchangeName = "location.exchange";
 
-        Queue queue = QueueBuilder.durable(queueName).build();
-        amqpAdmin.declareQueue(queue);
+        Queue queue = QueueBuilder.durable(queueName)
+                .ttl(1000)
+                .build();        amqpAdmin.declareQueue(queue);
 
         TopicExchange exchange = new TopicExchange(exchangeName);
         amqpAdmin.declareExchange(exchange);
