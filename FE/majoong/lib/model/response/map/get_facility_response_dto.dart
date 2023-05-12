@@ -94,7 +94,7 @@ class Store {
 
 @JsonSerializable()
 class SafeRoad {
-  final int safeRoadId;
+  final int? safeRoadId;
 
   SafeRoad(this.safeRoadId);
 

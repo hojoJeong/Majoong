@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/service/local/recent_keyword_storage.dart';
+import 'package:majoong/viewmodel/search/recent_keyword_provider.dart';
 
 class RecentKeywordWidget extends ConsumerWidget {
   final String keyword;
@@ -17,6 +18,7 @@ class RecentKeywordWidget extends ConsumerWidget {
         GestureDetector(
           onTap: (){
             logger.d('keyword : $keyword');
+            ref.read(keywordProvider.notifier).update((state) => keyword);
           },
           child: Text(
             keyword,

@@ -4,7 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../common/util/logger.dart';
 
 final markerProvider =
-    StateNotifierProvider<MarkerNotifier, Set<Marker>>((ref) {
+    StateNotifierProvider.autoDispose<MarkerNotifier, Set<Marker>>((ref) {
   return MarkerNotifier(chipNotifier: ref.watch(chipProvider.notifier));
 });
 

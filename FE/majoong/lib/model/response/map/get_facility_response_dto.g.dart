@@ -119,7 +119,7 @@ Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
     };
 
 SafeRoad _$SafeRoadFromJson(Map<String, dynamic> json) => SafeRoad(
-      json['safeRoadId'] as int,
+      json['safeRoadId'] as int?,
     );
 
 Map<String, dynamic> _$SafeRoadToJson(SafeRoad instance) => <String, dynamic>{

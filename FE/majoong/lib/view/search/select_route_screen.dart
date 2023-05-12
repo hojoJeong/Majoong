@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:group_button/group_button.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:location/location.dart';
 import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/response/map/search_route_response_dto.dart';
-import 'package:majoong/view/on_going/on_going_screen.dart';
+import 'package:majoong/view/guardian/guardian_screen.dart';
 import 'package:majoong/viewmodel/search/route_point_provider.dart';
 import 'package:majoong/viewmodel/search/search_route_provider.dart';
 import 'package:majoong/viewmodel/share_loaction/share_location_provider.dart';
@@ -104,14 +103,14 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
   void initState() {
     super.initState();
     _getLocation();
-    location.onLocationChanged.listen((event) {
-      setState(() {
-        _locationData = event;
-        final currentLocation = ref.read(currentLocationProvider);
-        currentLocation[0] = event.latitude!;
-        currentLocation[1] = event.longitude!;
-      });
-    });
+    // location.onLocationChanged.listen((event) {
+    //   setState(() {
+    //     _locationData = event;
+    //     final currentLocation = ref.read(currentLocationProvider);
+    //     currentLocation[0] = event.latitude!;
+    //     currentLocation[1] = event.longitude!;
+    //   });
+    // });
   }
 
   List<String> _choices = [
@@ -199,7 +198,7 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
       logger.d('이동 준비 완료 : ${shareLocationState.message}');
       Future.delayed(Duration.zero, (){
         Navigator.of(context)
-            .pushReplacement(MaterialPageRoute(builder: (_) => OnGoingScreen()));
+            .pushReplacement(MaterialPageRoute(builder: (_) => GuardianScreen()));
       });
     }
 
@@ -215,6 +214,11 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
         '출발지 : ${resultRoutePoint.startLocationName}, 목적지 : ${resultRoutePoint.endLocationName}');
     if (_locationData != null &&
         searchRouteState is BaseResponse<SearchRouteResponseDto>) {
+      final shortestPath = searchRouteState.data!.shortestPath.point;
+
+      final initialLat = searchRouteState.data!.shortestPath.point[shortestPath.length~/2].lat;
+      final initialLng = searchRouteState.data!.shortestPath.point[shortestPath.length~/2].lng;
+
       makePolyline(
           searchRouteState.data!.recommendedPath?.point ?? [],
           searchRouteState.data!.shortestPath.point ?? [],
@@ -237,7 +241,7 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                 markers: Set.from(marker),
                 initialCameraPosition: CameraPosition(
                   target: LatLng(
-                      _locationData!.latitude!, _locationData!.longitude!),
+                      initialLat, initialLng),
                   zoom: 15.7,
                 ),
                 onCameraMove: (CameraPosition position) {
@@ -491,8 +495,8 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                             },
                             child: selectRouteButton(
                                 '최단 경로',
-                                searchRouteState.data!.shortestPath?.time ?? 0,
-                                searchRouteState.data!.shortestPath?.distance ??
+                                searchRouteState.data!.shortestPath.time ?? 0,
+                                searchRouteState.data!.shortestPath.distance ??
                                     0,
                                 selectShortest),
                           ),
@@ -566,7 +570,7 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                       ? () {
                           ref
                               .read(shareLocationProvider.notifier)
-                              .initChannel(false, 35);
+                              .initChannel(true, 5);
                           showToast(context: context, '경로 탐색을 시작합니다.');
                         }
                       : null,

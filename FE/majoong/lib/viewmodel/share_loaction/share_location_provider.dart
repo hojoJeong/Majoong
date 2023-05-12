@@ -1,5 +1,6 @@
+
+
 import "package:dart_amqp/dart_amqp.dart";
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:majoong/common/const/key_value.dart';
@@ -23,11 +24,11 @@ class ShareLocationStateNotifier extends StateNotifier<BaseResponseState> {
       : super(BaseResponseLoading());
 
   late ConnectionSettings amqpSetting;
-  late Client client;
-  late Channel channel;
-  late Exchange exchange;
-  late Queue queue;
-  late dynamic consumer;
+  late Client amqpClient;
+  late Channel amqpChannel;
+  late Exchange amqpExchange;
+  late Queue amqpQueue;
+  late dynamic amqpConsumer;
   double lat = 0;
   double lng = 0;
   String userId = "";
@@ -39,24 +40,24 @@ class ShareLocationStateNotifier extends StateNotifier<BaseResponseState> {
           host: RABBITMQ_HOST_URL,
           authProvider: PlainAuthenticator(RABBITMQ_ID, RABBITMQ_PW));
 
-      client = Client(settings: amqpSetting);
-      channel = await client.channel();
+      amqpClient = Client(settings: amqpSetting);
+      amqpChannel = await amqpClient.channel();
 
       if (isGuardian) {
         //보호자일 때
         logger.d('isGuardian : $isGuardian, friendId : $friendId');
-        queue = await channel
-            .queue('$RABBITMQ_QUEUE_NAME.$friendId', durable: true);
-        consumer = await queue.consume(noAck: false);
+        amqpQueue = await amqpChannel
+            .queue('$RABBITMQ_QUEUE_NAME.$friendId', durable: true, arguments: {"x-message-ttl": 1000});
+        amqpConsumer = await amqpQueue.consume(noAck: false);
       } else {
         logger.d('isGuardian : $isGuardian');
-        queue = await channel
-            .queue('$RABBITMQ_QUEUE_NAME.$userId',  durable: true, arguments: {'x-message-ttl':2000});
+        amqpQueue = await amqpChannel
+            .queue('$RABBITMQ_QUEUE_NAME.$userId',  durable: true,arguments: {"x-message-ttl": 1000});
 
-        exchange = await channel.exchange(
+        amqpExchange = await amqpChannel.exchange(
             RABBITMQ_EXCHANGE_NAME, ExchangeType.TOPIC,
             durable: true);
-        await queue.bind(exchange, userId.toString());
+        await amqpQueue.bind(amqpExchange, userId.toString());
       }
 
       logger.d('success init AMQP');
@@ -70,31 +71,36 @@ class ShareLocationStateNotifier extends StateNotifier<BaseResponseState> {
   /// 위도, 경도 좌표를 하나의 문자열로 병합하여 전송
   sendLocation(double lat, double lng) async {
     final location = '$lat/$lng';
-    final properties = MessageProperties();
-    properties.headers = <String, Object>{};
-    properties.headers!['expiration'] = '1000';
-    exchange.publish(location, userId);
-    print('send Location : $lat, $lng');
+    // final properties = MessageProperties();
+    // properties.headers = <String, Object>{};
+    // properties.headers!['expiration'] = '1000';
+    amqpExchange.publish(location, userId);
+    print('amqp send Location : $lat, $lng');
   }
 
   /// 위치정보 수신
-  receiveLocation() async {
-    consumer.listen((message) {
-      final data = message.payloadAsString.split('/');
+  receiveLocation() {
+    logger.d('수신 메소드 호출');
+    Set<LocationPointResponseDto> locationSet = {};
+    int setSize = 0;
+    amqpConsumer.listen((message) {
+      final data =message.payloadAsString.split('/');
       lat = double.parse(data[0]);
       lng = double.parse(data[1]);
-
-      state = BaseResponse(
-          status: 200,
-          message: '위치 정보 수신 성공',
-          data: LocationPointResponseDto(lng: lng, lat: lat));
-      print('receive message : $lat, $lng');
-      channel.recover(true);
+      locationSet.add(LocationPointResponseDto(lng: lng, lat: lat));
+      if(setSize < locationSet.length){
+        setSize = locationSet.length;
+        state = BaseResponse(
+            status: 200,
+            message: '위치 정보 수신 성공',
+            data: LocationPointResponseDto(lng: lng, lat: lat));
+        print('receive message : $lat, $lng');
+      }
     });
   }
 
   closeConnection() async {
     state = BaseResponseLoading();
-    channel.close();
+    amqpChannel.close();
   }
 }

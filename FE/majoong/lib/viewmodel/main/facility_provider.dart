@@ -27,7 +27,7 @@ final cameraMovedProvider = StateProvider<bool>((ref) {
 final facilityProvider =
     StateNotifierProvider<FacilityNotifier, BaseResponseState>((ref) {
   final mapService = ref.watch(mapApiServiceProvider);
-  final markerInfo = ref.watch(markerProvider.notifier);
+  final markerInfo = ref.watch(markerProvider.notifier as AlwaysAliveProviderListenable);
   final chipInfo = ref.watch(chipProvider.notifier);
   final reviewDialogInfo = ref.watch(reviewDialogProvider.notifier);
   final centerPositionInfo = ref.watch(centerPositionProvider.notifier);

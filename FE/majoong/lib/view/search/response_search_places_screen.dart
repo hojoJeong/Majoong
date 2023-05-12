@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:favorite_button/favorite_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +9,7 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:location/location.dart';
 import 'package:majoong/common/component/signle_button_widget.dart';
 import 'package:majoong/common/const/size_value.dart';
+import 'package:majoong/common/layout/loading_layout.dart';
 import 'package:majoong/model/response/map/search_places_model.dart';
 import 'package:majoong/view/search/select_route_screen.dart';
 import 'package:majoong/viewmodel/search/search_route_point_provider.dart';
@@ -106,13 +109,18 @@ class _ResponseSearchPlacesState
     );
   }
 
-  final pannelController = PanelController();
+  final panelController = PanelController();
+  double panelPosition = 0.8;
+  late StreamSubscription<LocationData> locationSubscription;
 
   @override
   void initState() {
+    Future.delayed(Duration.zero, () {
+      panelController.animatePanelToPosition(panelPosition);
+    });
     super.initState();
     _getLocation();
-    location.onLocationChanged.listen((event) {
+    locationSubscription = location.onLocationChanged.listen((event) {
       setState(() {
         _locationData = event;
         final currentLocation = ref.read(currentLocationProvider);
@@ -132,216 +140,6 @@ class _ResponseSearchPlacesState
     '도로 리뷰',
     '위험 지역',
   ];
-
-  @override
-  Widget build(BuildContext context) {
-    Future.delayed(Duration.zero, () {
-      pannelController.animatePanelToPosition(0.6);
-    });
-
-    final facilityInfo = ref.watch(facilityProvider.notifier);
-    final markerInfo = ref.watch(markerProvider.notifier);
-    final chipInfo = ref.watch(chipProvider.notifier);
-    final cameraMovedInfo = ref.watch(cameraMovedProvider);
-    final searchState = ref.watch(searchRoutePointProvider);
-
-    if (searchState is BaseResponseLoading) {
-      ref.read(searchRoutePointProvider.notifier).getResultSearch(keyword);
-    }
-    logger.d('검색 로딩 성공');
-    if (_locationData != null &&
-        searchState is BaseResponse<List<SearchPlacesModel>>) {
-      return Scaffold(
-        body: SlidingUpPanel(
-          controller: pannelController,
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-          panel: Center(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 20, bottom: 40),
-                  child: Container(
-                    width: MediaQuery.of(context).size.width * 0.2,
-                    height: 5,
-                    decoration: BoxDecoration(
-                        color: Colors.grey[500],
-                        borderRadius: BorderRadius.all(Radius.circular(12.0))),
-                  ),
-                ),
-                placesListView(searchState.data ?? [])
-              ],
-            ),
-          ),
-          body: Builder(builder: (context) {
-            return SafeArea(
-              child: Stack(alignment: Alignment.topCenter, children: [
-                GoogleMap(
-                  onMapCreated: _onMapCreated,
-                  markers: markerInfo.state,
-                  initialCameraPosition: CameraPosition(
-                    target: LatLng(
-                        _locationData!.latitude!, _locationData!.longitude!),
-                    zoom: 15.7,
-                  ),
-                  onCameraMove: (CameraPosition position) {
-                    final lat = position.target.latitude;
-                    final lng = position.target.longitude;
-                    final centerLat = lat;
-                    final centerLng = lng;
-                    ref.read(centerPositionProvider.notifier).update((state) {
-                      return state = GetFacilityRequestDto(
-                        centerLat: centerLat,
-                        centerLng: centerLng,
-                        radius: 1000,
-                      );
-                    });
-                    ref
-                        .read(cameraMovedProvider.notifier)
-                        .update((state) => true);
-                  },
-                  myLocationEnabled: true,
-                ),
-                ref.read(facilityProvider.notifier).state is BaseResponseLoading
-                    ? loadingWidget()
-                    : Container(),
-                Container(
-                  margin: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  width: double.infinity,
-                  height: MediaQuery.of(context).size.height / 14,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        icon: const Icon(Icons.arrow_back),
-                      ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
-                          child: Text(
-                            keyword,
-                            style: TextStyle(color: Colors.grey, fontSize: 14),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  top: MediaQuery.of(context).size.height / 12,
-                  left: MediaQuery.of(context).size.width / 50,
-                  right: MediaQuery.of(context).size.width / 50,
-                  child: Container(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          for (String choice in _choices)
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 4.0),
-                              child: ChoiceChip(
-                                backgroundColor: Colors.grey,
-                                label: Text(
-                                  choice,
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                selectedColor: PRIMARY_COLOR,
-                                selected: chipInfo.state.contains(choice),
-                                onSelected: (bool selected) {
-                                  chipInfo.toggleChip(choice);
-                                  markerInfo.renderMarker();
-                                  setState(() {});
-                                },
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: MediaQuery.of(context).size.height / 7,
-                  child: GestureDetector(
-                    onTap: () async {
-                      facilityInfo.getFacility();
-                      ref
-                          .read(cameraMovedProvider.notifier)
-                          .update((state) => false);
-                    },
-                    child: cameraMovedInfo
-                        ? Container(
-                            alignment: Alignment.center,
-                            height: MediaQuery.of(context).size.height / 25,
-                            width: MediaQuery.of(context).size.width / 3,
-                            child: Text(
-                              '현재 위치에서 검색',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(30),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.5),
-                                  spreadRadius: 2,
-                                  blurRadius: 5,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                          )
-                        : Container(),
-                  ),
-                ),
-              ]),
-            );
-          }),
-        ),
-      );
-    }
-    else {
-      return Scaffold(
-        body: Container(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-          color: Colors.black.withOpacity(0.5),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '잠시만 기다려주세요 :)',
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              LoadingAnimationWidget.staggeredDotsWave(
-                  color: Colors.white, size: 60)
-            ],
-          ),
-        ),
-      );
-    }
-  }
 
   Widget placesListView(List<SearchPlacesModel> list) {
     if (list.isEmpty) {
@@ -422,20 +220,25 @@ class _ResponseSearchPlacesState
                                             backgroundColor: GAINSBORO),
                                         onPressed: () {
                                           ref
-                                              .read(routePointProvider
-                                              .notifier)
-                                              .addStartPoint(
-                                              place.locationName,
-                                              place.lat,
-                                              place.lng);
+                                              .read(routePointProvider.notifier)
+                                              .addStartPoint(place.locationName,
+                                                  place.lat, place.lng);
 
-                                          final routePoint = ref
-                                              .read(routePointProvider);
-                                          if(routePoint.startLocationName != '' && routePoint.endLocationName != ''){
-                                            Navigator.of(context).push(MaterialPageRoute(builder: (_) => ResultSearchRouteScreen()));
+                                          final routePoint =
+                                              ref.read(routePointProvider);
+                                          if (routePoint.startLocationName !=
+                                                  '' &&
+                                              routePoint.endLocationName !=
+                                                  '') {
+                                            Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                    builder: (_) =>
+                                                        ResultSearchRouteScreen()));
                                           } else {
                                             Navigator.pop(context);
-                                            showToast(context: context, '도착지를 지정해주세요');
+                                            showToast(
+                                                context: context,
+                                                '도착지를 지정해주세요');
                                           }
                                         },
                                         child: Text(
@@ -452,20 +255,25 @@ class _ResponseSearchPlacesState
                                                 POLICE_MARKER_COLOR),
                                         onPressed: () {
                                           ref
-                                              .read(routePointProvider
-                                              .notifier)
-                                              .addEndPoint(
-                                              place.locationName,
-                                              place.lat,
-                                              place.lng);
+                                              .read(routePointProvider.notifier)
+                                              .addEndPoint(place.locationName,
+                                                  place.lat, place.lng);
 
-                                          final routePoint = ref
-                                              .read(routePointProvider);
-                                          if(routePoint.startLocationName != '' && routePoint.endLocationName != ''){
-                                            Navigator.of(context).push(MaterialPageRoute(builder: (_) => ResultSearchRouteScreen()));
+                                          final routePoint =
+                                              ref.read(routePointProvider);
+                                          if (routePoint.startLocationName !=
+                                                  '' &&
+                                              routePoint.endLocationName !=
+                                                  '') {
+                                            Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                    builder: (_) =>
+                                                        ResultSearchRouteScreen()));
                                           } else {
                                             Navigator.pop(context);
-                                            showToast(context: context, '출발지를 지정해주세요');
+                                            showToast(
+                                                context: context,
+                                                '출발지를 지정해주세요');
                                           }
                                         },
                                         child: Text(
@@ -487,5 +295,228 @@ class _ResponseSearchPlacesState
             itemCount: list.length),
       );
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Future.delayed(Duration.zero, () {
+      if (panelController.isPanelAnimating) {
+        panelPosition = panelController.panelPosition;
+      }
+    });
+
+    final facilityInfo = ref.watch(facilityProvider.notifier);
+    final markerInfo = ref.watch(markerProvider.notifier);
+    final chipInfo = ref.watch(chipProvider.notifier);
+    final cameraMovedInfo = ref.watch(cameraMovedProvider);
+    final searchState = ref.watch(searchRoutePointProvider);
+
+    if (searchState is BaseResponseLoading) {
+      ref.read(searchRoutePointProvider.notifier).getResultSearch(keyword);
+      return LoadingLayout();
+    } else if (searchState is BaseResponse<List<SearchPlacesModel>>) {
+      return Scaffold(
+        body: _locationData != null
+            ? SlidingUpPanel(
+                controller: panelController,
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20)),
+                panel: Center(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20, bottom: 40),
+                        child: Container(
+                          width: MediaQuery.of(context).size.width * 0.2,
+                          height: 5,
+                          decoration: BoxDecoration(
+                              color: Colors.grey[500],
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(12.0))),
+                        ),
+                      ),
+                      placesListView(searchState.data ?? [])
+                    ],
+                  ),
+                ),
+                body: Builder(builder: (context) {
+                  return SafeArea(
+                    child: Stack(alignment: Alignment.topCenter, children: [
+                      GoogleMap(
+                        onMapCreated: _onMapCreated,
+                        markers: markerInfo.state,
+                        initialCameraPosition: CameraPosition(
+                          target: LatLng(_locationData!.latitude!,
+                              _locationData!.longitude!),
+                          zoom: 15.7,
+                        ),
+                        onCameraMove: (CameraPosition position) {
+                          final lat = position.target.latitude;
+                          final lng = position.target.longitude;
+                          final centerLat = lat;
+                          final centerLng = lng;
+                          ref
+                              .read(centerPositionProvider.notifier)
+                              .update((state) {
+                            return state = GetFacilityRequestDto(
+                              centerLat: centerLat,
+                              centerLng: centerLng,
+                              radius: 1000,
+                            );
+                          });
+                          ref
+                              .read(cameraMovedProvider.notifier)
+                              .update((state) => true);
+                        },
+                        myLocationEnabled: true,
+                      ),
+                      ref.read(facilityProvider.notifier).state
+                              is BaseResponseLoading
+                          ? loadingWidget()
+                          : Container(),
+                      Container(
+                        margin: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        width: double.infinity,
+                        height: MediaQuery.of(context).size.height / 14,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              icon: const Icon(Icons.arrow_back),
+                            ),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.pop(context);
+                                },
+                                child: Text(
+                                  keyword,
+                                  style: TextStyle(
+                                      color: Colors.grey, fontSize: 14),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Positioned(
+                        top: MediaQuery.of(context).size.height / 12,
+                        left: MediaQuery.of(context).size.width / 50,
+                        right: MediaQuery.of(context).size.width / 50,
+                        child: Container(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                for (String choice in _choices)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 4.0),
+                                    child: ChoiceChip(
+                                      backgroundColor: Colors.grey,
+                                      label: Text(
+                                        choice,
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      selectedColor: PRIMARY_COLOR,
+                                      selected: chipInfo.state.contains(choice),
+                                      onSelected: (bool selected) {
+                                        chipInfo.toggleChip(choice);
+                                        markerInfo.renderMarker();
+                                        setState(() {});
+                                      },
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: MediaQuery.of(context).size.height / 7,
+                        child: GestureDetector(
+                          onTap: () async {
+                            facilityInfo.getFacility();
+                            ref
+                                .read(cameraMovedProvider.notifier)
+                                .update((state) => false);
+                          },
+                          child: cameraMovedInfo
+                              ? Container(
+                                  alignment: Alignment.center,
+                                  height:
+                                      MediaQuery.of(context).size.height / 25,
+                                  width: MediaQuery.of(context).size.width / 3,
+                                  child: Text(
+                                    '현재 위치에서 검색',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(30),
+                                    color: Colors.white,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.5),
+                                        spreadRadius: 2,
+                                        blurRadius: 5,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : Container(),
+                        ),
+                      ),
+                    ]),
+                  );
+                }),
+              )
+            : Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                color: Colors.black.withOpacity(0.5),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '잠시만 기다려주세요 :)',
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    LoadingAnimationWidget.staggeredDotsWave(
+                        color: Colors.white, size: 60)
+                  ],
+                ),
+              ),
+      );
+    } else {
+      return LoadingLayout();
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    locationSubscription.cancel();
   }
 }

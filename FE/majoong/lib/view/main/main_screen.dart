@@ -183,20 +183,22 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     await setupInteractedMessage(fcmMessaging);
   }
 
+  late StreamSubscription<LocationData> locationSubscription;
+
   @override
   void initState() {
     super.initState();
     final fcmMessaging = FirebaseMessaging.instance;
     initFcm(fcmMessaging);
     _getLocation();
-      location.onLocationChanged.listen((event) {
-        setState(() {
-          _locationData = event;
-          final currentLocation = ref.read(currentLocationProvider);
-          currentLocation[0] = event.latitude!;
-          currentLocation[1] = event.longitude!;
-        });
+    locationSubscription = location.onLocationChanged.listen((event) {
+      setState(() {
+        _locationData = event;
+        final currentLocation = ref.read(currentLocationProvider);
+        currentLocation[0] = event.latitude!;
+        currentLocation[1] = event.longitude!;
       });
+    });
   }
 
   Future<String?> getAddress() async {
@@ -316,7 +318,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         reportDialog(setState);
       }
     });
-    logger.d('message');
 
     return Scaffold(
       drawer: Drawer(
@@ -448,6 +449,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       ),
       body: _locationData != null
           ? Builder(builder: (context) {
+              logger.d('message');
+
               return SafeArea(
                 child: Stack(alignment: Alignment.topCenter, children: [
                   GoogleMap(
@@ -844,6 +847,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               ),
             ),
     );
+  }
+
+  @override
+  void dispose() {
+    logger.d('dispose');
+    locationSubscription.cancel();
+    super.dispose();
   }
 
   Widget createToggleButton(isBright, setState) {

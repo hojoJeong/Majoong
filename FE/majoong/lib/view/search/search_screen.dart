@@ -13,6 +13,7 @@ import 'package:majoong/view/search/favorite_widget.dart';
 import 'package:majoong/view/search/recent_keyword_widget.dart';
 import 'package:majoong/view/search/response_search_places_screen.dart';
 import 'package:majoong/viewmodel/favorite/favorite_list_provider.dart';
+import 'package:majoong/viewmodel/search/recent_keyword_provider.dart';
 import 'package:majoong/viewmodel/search/search_route_point_provider.dart';
 
 class SearchScreen extends ConsumerWidget {
@@ -23,6 +24,9 @@ class SearchScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // final favoriteListState = ref.watch(favoriteListStateProvider);
     final recentKeywordListState = ref.watch(recentKeywordProvider);
+    ref.listen(keywordProvider, (previous, next) {
+      searchKeywordController.text = next;
+    });
 
     ///임시 데이터
     final List<FavoriteResponseDto> favoriteListState = [
@@ -140,7 +144,7 @@ class SearchScreen extends ConsumerWidget {
                     onTap: () {
                       ref
                           .read(recentKeywordProvider.notifier)
-                          .addKeyword('임시1');
+                          .addKeyword('스벅');
                     },
                     child: Text(
                       '최근 검색 기록',
