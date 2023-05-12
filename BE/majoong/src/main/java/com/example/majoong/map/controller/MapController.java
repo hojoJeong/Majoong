@@ -9,6 +9,7 @@ import com.example.majoong.map.service.MapFacilityService;
 import com.example.majoong.map.service.MapService;
 import com.example.majoong.response.ResponseData;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.opencsv.exceptions.CsvValidationException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -59,6 +60,15 @@ public class MapController {
 
         return "Reids에 저장 성공";
     }
+
+    @GetMapping("/save/road")
+    @Operation(summary = "도로 포인트 데이터 Redis로 저장")
+    public String saveCsvToRedis() throws CsvValidationException, IOException {
+        mapDataService.roadPointCsvToRedis();
+        return "Reids에 저장 성공";
+    }
+
+
 
     @PostMapping("/share")
     public ResponseEntity startMoving(@RequestBody LocationShareDto locationRequest) throws IOException {
