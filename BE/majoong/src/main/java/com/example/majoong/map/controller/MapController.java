@@ -1,9 +1,7 @@
 package com.example.majoong.map.controller;
 
-import com.example.majoong.map.dto.LocationShareDto;
-import com.example.majoong.map.dto.LocationShareResponseDto;
-import com.example.majoong.map.dto.MapFacilityRequestDto;
-import com.example.majoong.map.dto.MapFacilityResponseDto;
+import com.example.majoong.map.dto.*;
+import com.example.majoong.map.service.DangerousZoneService;
 import com.example.majoong.map.service.MapDataService;
 import com.example.majoong.map.service.MapFacilityService;
 import com.example.majoong.map.service.MapService;
@@ -15,11 +13,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.Point;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -32,6 +31,9 @@ public class MapController {
     private final MapDataService mapDataService;
 
     private final MapService mapService;
+
+    private final DangerousZoneService dangerousZoneService;
+
 
     @PostMapping("/facility")
     @Operation(summary = "시설물 조회 API", description = "cctv, 가로등, 비상벨, 경찰서, 편의점, 안심귀갓길, 위험지역, 리뷰")
@@ -68,6 +70,10 @@ public class MapController {
         return "Reids에 저장 성공";
     }
 
+    @GetMapping("/test")
+    public List<LocationDto> test(){
+        return  dangerousZoneService.getAllRoadPoints();
+    }
 
 
     @PostMapping("/share")
