@@ -1,10 +1,7 @@
 package com.example.majoong.tools;
 
-import com.example.majoong.map.dto.BellDto;
-import com.example.majoong.map.dto.CctvDto;
-import com.example.majoong.map.dto.StoreDto;
+import com.example.majoong.map.dto.*;
 import com.opencsv.CSVReader;
-import com.example.majoong.map.dto.PoliceDto;
 import com.opencsv.exceptions.CsvValidationException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -120,6 +117,58 @@ public class CsvUtils {
                     .build();
         }).collect(Collectors.toList());
     }
+
+    public static List<LampDto> convertToLampDtoList(String category) {
+
+        String file = "src/main/resources/static/facility/보안등_구미.csv";
+
+        List<List<String>> csvList = new ArrayList<>();
+        try (CSVReader csvReader = new CSVReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
+            String[] values = null;
+            while ((values = csvReader.readNext()) != null) {
+                csvList.add(Arrays.asList(values));
+            }
+        } catch (IOException | CsvValidationException e) {
+            log.error("CsvUtils convertToPharmacyDtoList Fail: {}", e.getMessage());
+        }
+
+        return IntStream.range(0, csvList.size()).mapToObj(index -> {
+            List<String> rowList = csvList.get(index);
+
+            return LampDto.builder()
+                    .lng(Double.parseDouble(rowList.get(0)))
+                    .lat(Double.parseDouble(rowList.get(1)))
+                    .address(rowList.get(2))
+                    .build();
+        }).collect(Collectors.toList());
+    }
+
+    public static List<SafeRoadDto> convertToSafeRoadDtoList(String category) {
+
+        String file = "src/main/resources/static/facility/안심귀갓길_구미.csv";
+
+        List<List<String>> csvList = new ArrayList<>();
+        try (CSVReader csvReader = new CSVReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))) {
+            String[] values = null;
+            while ((values = csvReader.readNext()) != null) {
+                csvList.add(Arrays.asList(values));
+            }
+        } catch (IOException | CsvValidationException e) {
+            log.error("CsvUtils convertToPharmacyDtoList Fail: {}", e.getMessage());
+        }
+
+        return IntStream.range(0, csvList.size()).mapToObj(index -> {
+            List<String> rowList = csvList.get(index);
+
+            return SafeRoadDto.builder()
+                    .lng(Double.parseDouble(rowList.get(0)))
+                    .lat(Double.parseDouble(rowList.get(1)))
+                    .address(rowList.get(2))
+                    .safeRoadNumber(Long.parseLong(rowList.get(3)))
+                    .build();
+        }).collect(Collectors.toList());
+    }
+
 
     // fileName에 사용
     public enum EntityCategory {

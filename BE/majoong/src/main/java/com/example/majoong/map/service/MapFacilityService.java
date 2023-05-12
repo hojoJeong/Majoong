@@ -1,6 +1,8 @@
 package com.example.majoong.map.service;
 
+import com.example.majoong.map.domain.SafeRoad;
 import com.example.majoong.map.dto.*;
+import com.example.majoong.map.repository.SafeRoadRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.*;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @Slf4j
@@ -18,6 +21,7 @@ import java.util.List;
 public class MapFacilityService {
 
     private final RedisOperations<String, String> redisOperations;
+    private final SafeRoadRepository safeRoadRepository;
 
     public MapFacilityResponseDto getMapFacilities(MapFacilityRequestDto position) {
         double centerLng = position.getCenterLng();
@@ -30,7 +34,12 @@ public class MapFacilityService {
         facilities.setStore(getFacilityDtos("store", centerLng, centerLat, radius, StoreDto.class));
         facilities.setBell(getFacilityDtos("bell", centerLng, centerLat, radius, BellDto.class));
         facilities.setCctv(getFacilityDtos("cctv", centerLng, centerLat, radius, CctvDto.class));
-        facilities.setReview(getFacilityDtos("review", centerLng, centerLat,radius, ReviewDto.class));
+        facilities.setLamp(getFacilityDtos("lamp", centerLng, centerLat, radius, LampDto.class));
+
+        facilities.setReview(getFacilityDtos("review", centerLng, centerLat, radius, ReviewDto.class));
+
+        facilities.setSafeRoad(getSafeRoadDtos("saferoad", centerLng, centerLat, radius));
+
         return facilities;
     }
 
@@ -56,6 +65,7 @@ public class MapFacilityService {
             else if (dto instanceof StoreDto) ((StoreDto) dto).setStoreId(Long.parseLong(id));
             else if (dto instanceof CctvDto) ((CctvDto) dto).setCctvId(Long.parseLong(id));
             else if (dto instanceof BellDto) ((BellDto) dto).setBellId(Long.parseLong(id));
+            else if (dto instanceof LampDto) ((LampDto) dto).setLampId(Long.parseLong(id));
             else if (dto instanceof ReviewDto) {
                 ((ReviewDto) dto).setReviewId(Long.parseLong(id));
                 ((ReviewDto) dto).setScore(Integer.parseInt(member[2]));
@@ -67,5 +77,43 @@ public class MapFacilityService {
             dtos.add(dto);
         }
         return dtos;
+    }
+
+    public List<SafeRoadMapDto> getSafeRoadDtos(String key, double centerLng, double centerLat, double radius) {
+        RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().includeCoordinates().includeDistance();
+        GeoResults<RedisGeoCommands.GeoLocation<String>> geoResults = redisOperations.opsForGeo()
+                .radius(key, new Circle(new Point(centerLng, centerLat), new Distance(radius, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+        List<Long> safeRoadNumberList = new ArrayList<>();
+        for (GeoResult<RedisGeoCommands.GeoLocation<String>> geoResult : geoResults) {
+            String[] member = geoResult.getContent().getName().split("_");
+            Long safeRoadNumber = Long.parseLong(member[2]);
+
+            if (!safeRoadNumberList.contains(safeRoadNumber)) {
+                safeRoadNumberList.add(safeRoadNumber);
+            }
+        }
+
+        List<SafeRoadMapDto> safeRoadMapDtoList = new ArrayList<>();
+
+        for (Long num : safeRoadNumberList) {
+            SafeRoadMapDto safeRoadMapDto = new SafeRoadMapDto();
+            List<SafeRoadPointDto> safeRoadPointDtoList = new ArrayList<>();
+            List<SafeRoad> safeRoadList = safeRoadRepository.findBySafeRoadNumber(num);
+            for (SafeRoad safeRoad : safeRoadList){
+                SafeRoadPointDto safeRoadPointDto = new SafeRoadPointDto();
+                safeRoadPointDto.setLng(safeRoad.getLongitude());
+                safeRoadPointDto.setLat(safeRoad.getLatitude());
+                safeRoadPointDtoList.add(safeRoadPointDto);
+
+                safeRoadMapDto.setAddress(safeRoad.getAddress());
+            }
+
+            safeRoadMapDto.setPoint(safeRoadPointDtoList);
+            safeRoadMapDto.setSafeRoadNumber(num);
+            safeRoadMapDtoList.add(safeRoadMapDto);
+        }
+
+        return safeRoadMapDtoList;
     }
 }
