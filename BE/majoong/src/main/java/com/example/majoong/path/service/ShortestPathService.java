@@ -1,5 +1,6 @@
 package com.example.majoong.path.service;
 
+import com.example.majoong.exception.NoFileException;
 import com.example.majoong.map.dto.LocationDto;
 import com.example.majoong.path.dto.NodeDto;
 import com.google.gson.JsonArray;
@@ -27,8 +28,7 @@ public class ShortestPathService {
     @Value("${map.api.key}")
     private String API_KEY;
 
-    public Map<String, Object> getShortestPath(double startLng, double startLat, double endLng, double endLat) {
-        List<NodeDto> shortestPath = new ArrayList<>();
+    public Map<String, Object> getShortestPath(double startLng, double startLat, double endLng, double endLat) throws IOException {
         String startX = Double.toString(startLng);
         String startY = Double.toString(startLat);
         String endX = Double.toString(endLng);
@@ -54,54 +54,50 @@ public class ShortestPathService {
 
         OkHttpClient client = new OkHttpClient();
 
-        try {
-            Response response = client.newCall(request).execute();
-            if (response.isSuccessful()) {
-                String jsonData = response.body().string();
-                JsonElement jsonElement = JsonParser.parseString(jsonData);
-                JsonObject jsonObject = jsonElement.getAsJsonObject();
-                JsonArray features = jsonObject.getAsJsonArray("features");
+        Response response = client.newCall(request).execute();
+        if (response.isSuccessful()) {
+            String jsonData = response.body().string();
+            JsonElement jsonElement = JsonParser.parseString(jsonData);
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            JsonArray features = jsonObject.getAsJsonArray("features");
 
-                List<LocationDto> pointList = new ArrayList<>();
+            List<LocationDto> pointList = new ArrayList<>();
 
-                for (JsonElement featureElement : features) {
-                    JsonObject feature = featureElement.getAsJsonObject();
-                    JsonObject geometry = feature.getAsJsonObject("geometry");
+            for (JsonElement featureElement : features) {
+                JsonObject feature = featureElement.getAsJsonObject();
+                JsonObject geometry = feature.getAsJsonObject("geometry");
 
-                    String geometryType = geometry.get("type").getAsString();
-                    JsonArray coordinates = geometry.getAsJsonArray("coordinates");
+                String geometryType = geometry.get("type").getAsString();
+                JsonArray coordinates = geometry.getAsJsonArray("coordinates");
 
-                    if (geometryType.equals("Point")) {
-                        double longitude = coordinates.get(0).getAsDouble();
-                        double latitude = coordinates.get(1).getAsDouble();
+                if (geometryType.equals("Point")) {
+                    double longitude = coordinates.get(0).getAsDouble();
+                    double latitude = coordinates.get(1).getAsDouble();
+                    LocationDto location = new LocationDto(longitude,latitude);
+                    if (pointList.isEmpty() || !pointList.get(pointList.size() - 1).equals(location)) {
+                        pointList.add(location);
+                    }
+                } else if (geometryType.equals("LineString")) {
+                    distance += feature.getAsJsonObject("properties").get("distance").getAsInt();
+
+                    for (JsonElement coordinateElement : coordinates) {
+                        JsonArray coordinateArray = coordinateElement.getAsJsonArray();
+                        double longitude = coordinateArray.get(0).getAsDouble();
+                        double latitude = coordinateArray.get(1).getAsDouble();
                         LocationDto location = new LocationDto(longitude,latitude);
                         if (pointList.isEmpty() || !pointList.get(pointList.size() - 1).equals(location)) {
                             pointList.add(location);
                         }
-                    } else if (geometryType.equals("LineString")) {
-                        distance += feature.getAsJsonObject("properties").get("distance").getAsInt();
-
-                        for (JsonElement coordinateElement : coordinates) {
-                            JsonArray coordinateArray = coordinateElement.getAsJsonArray();
-                            double longitude = coordinateArray.get(0).getAsDouble();
-                            double latitude = coordinateArray.get(1).getAsDouble();
-                            LocationDto location = new LocationDto(longitude,latitude);
-                            if (pointList.isEmpty() || !pointList.get(pointList.size() - 1).equals(location)) {
-                                pointList.add(location);
-                            }
-                        }
-                    } else {
-                        System.out.println("Request failed: " + response.code() + " - " + response.message());
                     }
+                } else {
+                    System.out.println("Request failed: " + response.code() + " - " + response.message());
                 }
-                Map<String,Object> result = new HashMap<>();
-                result.put("point",pointList);
-                result.put("distance",(int) distance);
-                result.put("time",(int)(distance/1000/5*60));
-                return result;}
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            }
+            Map<String,Object> result = new HashMap<>();
+            result.put("point",pointList);
+            result.put("distance",(int) distance);
+            result.put("time",(int)(distance/1000/5*60));
+            return result;}
         return null;
     }
 }
