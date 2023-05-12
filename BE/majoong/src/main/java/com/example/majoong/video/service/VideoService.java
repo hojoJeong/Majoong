@@ -3,6 +3,7 @@ package com.example.majoong.video.service;
 
 import com.example.majoong.exception.*;
 import com.example.majoong.fcm.service.FCMService;
+import com.example.majoong.map.dto.LocationShareDto;
 import com.example.majoong.map.dto.MovingInfoDto;
 import com.example.majoong.map.service.MapService;
 import com.example.majoong.tools.JwtTool;
@@ -89,7 +90,7 @@ public class VideoService {
 
         // fcm
         User user = userRepository.findById(userId).get();
-        MovingInfoDto movingInfo = mapService.getLocationInfo(userId);
+        LocationShareDto movingInfo = mapService.getLocationInfo(userId);
         List<Integer> guardians = movingInfo.getGuardians();
         for (int guardianId : guardians){
             User guardian = userRepository.findById(guardianId).get();
