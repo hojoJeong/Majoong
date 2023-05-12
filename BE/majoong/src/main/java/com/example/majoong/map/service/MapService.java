@@ -1,5 +1,6 @@
 package com.example.majoong.map.service;
 
+import com.example.majoong.exception.NotExistShareLocationException;
 import com.example.majoong.fcm.service.FCMService;
 import com.example.majoong.map.dto.LocationDto;
 import com.example.majoong.map.dto.LocationShareDto;
@@ -119,7 +120,9 @@ public class MapService {
 
     public LocationShareResponseDto showSharedMoving(int userId) throws JsonProcessingException {
         LocationShareDto movingInfo = getLocationInfo(userId);
-        System.out.println(movingInfo);
+        if (movingInfo == null){
+            throw new NotExistShareLocationException();
+            }
         User user = userRepository.findById(userId).get();
 
         LocationShareResponseDto response = new LocationShareResponseDto();
