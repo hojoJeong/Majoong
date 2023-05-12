@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,7 @@ public class PathController {
 
     @PostMapping("/path")
     @Operation(summary = "경로 추천 API", description = "최단 거리, 안전 거리 반환")
-    public ResponseEntity getPath(@RequestBody PathRequestDto pathRequestDto) {
+    public ResponseEntity getPath(@RequestBody PathRequestDto pathRequestDto) throws IOException {
         double startLng = pathRequestDto.getStartLng();
         double startLat = pathRequestDto.getStartLat();
         double endLng = pathRequestDto.getEndLng();
@@ -44,7 +45,7 @@ public class PathController {
         ResponseData data = new ResponseData();
 
         Map<String,Object> shortPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
-        if (shortPath.get("point")==null){
+        if (shortPath.get("point")==null||shortPath==null){
             data.setStatus(404);
             data.setMessage("최단거리 추천 오류");
         }
