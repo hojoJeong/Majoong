@@ -1,12 +1,14 @@
 package com.example.majoong.map.controller;
 
-import com.example.majoong.map.dto.LocationRequestDto;
+import com.example.majoong.map.dto.LocationShareDto;
+import com.example.majoong.map.dto.LocationShareResponseDto;
 import com.example.majoong.map.dto.MapFacilityRequestDto;
 import com.example.majoong.map.dto.MapFacilityResponseDto;
 import com.example.majoong.map.service.MapDataService;
 import com.example.majoong.map.service.MapFacilityService;
 import com.example.majoong.map.service.MapService;
 import com.example.majoong.response.ResponseData;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +61,7 @@ public class MapController {
     }
 
     @PostMapping("/share")
-    public ResponseEntity startMoving(@RequestBody LocationRequestDto locationRequest) throws IOException {
+    public ResponseEntity startMoving(@RequestBody LocationShareDto locationRequest) throws IOException {
         mapService.startMoving(locationRequest);
         ResponseData data = new ResponseData();
         data.setMessage("위치 공유 시작");
@@ -67,8 +69,8 @@ public class MapController {
     }
 
     @GetMapping("/share/{userId}")
-    public ResponseEntity startMoving(@PathVariable("userId") int userId){
-        Map response = mapService.showSharedMoving(userId);
+    public ResponseEntity startMoving(@PathVariable("userId") int userId) throws JsonProcessingException {
+        LocationShareResponseDto response = mapService.showSharedMoving(userId);
         ResponseData data = new ResponseData();
         data.setData(response);
         return data.builder();
