@@ -72,9 +72,6 @@ public class FCMService {
     ) throws IOException{
 
         User user = userRepository.findById(userId).get();
-        if (user.getFcmToken()==null){
-            throw new NoFcmTokenException();
-        }
         String targetToken = user.getFcmToken();
         String message = makeMessage(targetToken, title, body, dataTitle, dataBody, sessionId);
 
@@ -90,6 +87,7 @@ public class FCMService {
 
         Response response = client.newCall(request).execute();
         log.info(response.body().string());
+
 
     }
 
