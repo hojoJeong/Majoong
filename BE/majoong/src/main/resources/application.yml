@@ -31,7 +31,7 @@ jwt:
   token:
     secret: ${JWT_SECRET_KEY}
   exclude-path: /user/login, /user/signup, /user/phone, /user/phone/verify
-  add-path: /user/**, /map/review, /video/**
+  add-path: /user/**, /map/**, /video/**
 
 naver:
   access-key : ${NAVER_ACCESS_KEY}

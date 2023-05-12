@@ -1,13 +1,7 @@
 package com.example.majoong.map.service;
 
-import com.example.majoong.map.domain.Bell;
-import com.example.majoong.map.domain.Cctv;
-import com.example.majoong.map.domain.Police;
-import com.example.majoong.map.domain.Store;
-import com.example.majoong.map.repository.BellRepository;
-import com.example.majoong.map.repository.CctvRepository;
-import com.example.majoong.map.repository.PoliceRepository;
-import com.example.majoong.map.repository.StoreRepository;
+import com.example.majoong.map.domain.*;
+import com.example.majoong.map.repository.*;
 import com.example.majoong.tools.CsvUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,12 +26,16 @@ public class MapDataService {
     private final StoreRepository storeRepository;
     private final CctvRepository cctvRepository;
     private final BellRepository bellRepository;
+    private final LampRepository lampRepository;
+    private final SafeRoadRepository safeRoadRepository;
 
     public void saveMysqlToRedisGeospatial() {
 //        savePoliceToRedis();
 //        saveStoreToRedis();
 //        saveCctvToRedis();
-        saveBellToRedis();
+//        saveBellToRedis();
+//        saveLampToRedis();
+//        saveSafeRoadToRedis();
         log.info("save success");
     }
 
@@ -45,16 +43,21 @@ public class MapDataService {
 //        List<Police> policeList = loadPoliceList();
 //        List<Store> storeList = loadStoreList();
 //        List<Cctv> cctvList = loadCctvList();
-        List<Bell> bellList = loadBellList();
+//        List<Bell> bellList = loadBellList();
+//        List<Lamp> lampList = loadLampList();
+//        List<SafeRoad> safeRoadList = loadSafeRoadList();
         log.info("load success");
 
 //        saveEntity(policeList, policeRepository);
 //        saveEntity(storeList, storeRepository);
 //        saveEntity(cctvList, cctvRepository);
-        saveEntity(bellList, bellRepository);
+//        saveEntity(bellList, bellRepository);
+//        saveEntity(lampList, lampRepository);
+//        saveEntity(safeRoadList, safeRoadRepository);
         log.info("save success");
     }
 
+    // csv파일에서 Dto List 생성
     public List<Police> loadPoliceList() {
         return CsvUtils.convertToPoliceDtoList("police")
                 .stream().map(policeDto -> Police.builder()
@@ -99,6 +102,30 @@ public class MapDataService {
                 .collect(Collectors.toList());
     }
 
+    public List<Lamp> loadLampList() {
+        return CsvUtils.convertToLampDtoList("lamp")
+                .stream().map(lampDto -> Lamp.builder()
+                        .lampId(lampDto.getLampId())
+                        .longitude(lampDto.getLng())
+                        .latitude(lampDto.getLat())
+                        .address(lampDto.getAddress())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    public List<SafeRoad> loadSafeRoadList() {
+        return CsvUtils.convertToSafeRoadDtoList("safeload")
+                .stream().map(safeRoadDto -> SafeRoad.builder()
+                        .safeRoadId(safeRoadDto.getSafeRoadId())
+                        .longitude(safeRoadDto.getLng())
+                        .latitude(safeRoadDto.getLat())
+                        .address(safeRoadDto.getAddress())
+                        .safeRoadNumber(safeRoadDto.getSafeRoadNumber())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    // csv에서 mysql에 저장
     public <T> List<T> saveEntity(List<T> entityList, JpaRepository<T, Long> repository) {
         if (CollectionUtils.isEmpty(entityList)) {
             return Collections.emptyList();
@@ -106,6 +133,7 @@ public class MapDataService {
         return repository.saveAll(entityList);
     }
 
+    // redis로 저장
     private void savePoliceToRedis() {
         String key = "police";
         List<Police> policeList = policeRepository.findAll();
@@ -188,6 +216,55 @@ public class MapDataService {
             Double latitude = bell.getLatitude();
             String member = id + "_" + address;
             if (Objects.isNull(bell)) {
+                log.error("value가 비었습니다.");
+                return;
+            }
+            try {
+                GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
+                geoOperations.add(key, new Point(longitude, latitude), member);
+                System.out.println(member);
+//                log.info("저장성공", member);
+            } catch (Exception e) {
+                log.error("저장실패", e.getMessage());
+            }
+        }
+    }
+
+    private void saveLampToRedis() {
+        String key = "lamp";
+        List<Lamp> lampList = lampRepository.findAll();
+        for (Lamp lamp : lampList) {
+            String id = lamp.getLampId().toString();
+            String address = lamp.getAddress();
+            Double longitude = lamp.getLongitude();
+            Double latitude = lamp.getLatitude();
+            String member = id + "_" + address;
+            if (Objects.isNull(lamp)) {
+                log.error("value가 비었습니다.");
+                return;
+            }
+            try {
+                GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
+                geoOperations.add(key, new Point(longitude, latitude), member);
+                System.out.println(member);
+//                log.info("저장성공", member);
+            } catch (Exception e) {
+                log.error("저장실패", e.getMessage());
+            }
+        }
+    }
+
+    private void saveSafeRoadToRedis() {
+        String key = "saferoad";
+        List<SafeRoad> safeRoadList = safeRoadRepository.findAll();
+        for (SafeRoad safeRoad : safeRoadList) {
+            String id = safeRoad.getSafeRoadId().toString();
+            String address = safeRoad.getAddress();
+            Double longitude = safeRoad.getLongitude();
+            Double latitude = safeRoad.getLatitude();
+            String number = safeRoad.getSafeRoadNumber().toString();
+            String member = id + "_" + address + "_" + number;
+            if (Objects.isNull(safeRoad)) {
                 log.error("value가 비었습니다.");
                 return;
             }
