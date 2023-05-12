@@ -21,8 +21,8 @@ public enum ErrorEnum {
     WRONG_NUMBER("인증번호가 틀립니다.", 700),
     EXPIRED_NUMBER("인증번호 유효기간 만료", 701),
     NOT_EXIST_FCM_TOKEN("fcm 토큰이 존재하지 않습니다.",404),
-    NO_FILE("파일이 존재하지 않습니다.", 404);
-
+    NO_FILE("파일이 존재하지 않습니다.", 404),
+    NOT_EXIST_SHARE_LOCATION("위치공유 정보가 없습니다.",404);
 
 
     public String message;
