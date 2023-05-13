@@ -42,5 +42,8 @@ out/
 ### VS Code ###
 .vscode/
 
+### firebase ###
+/src/main/resources/firebase
+
 ### fcm ###
 /src/main/resources/fcm
