@@ -13,6 +13,9 @@ class MarkerNotifier extends StateNotifier<Set<Marker>> {
   final cctvMarkerSet = Set();
   final policeMarkerSet = Set();
   final lampMarkerSet = Set();
+  final storeMarkerSet = Set();
+  final bellMarkerSet = Set();
+  final reviewMarkerSet = Set();
   final ChipNotifier chipNotifier;
 
   renderMarker() {
@@ -23,6 +26,9 @@ class MarkerNotifier extends StateNotifier<Set<Marker>> {
     }
     if (chips.contains('경찰서')) {
       addAllMarker(policeMarkerSet);
+    }
+    if (chips.contains('가로등')) {
+      addAllMarker(lampMarkerSet);
     }
   }
 

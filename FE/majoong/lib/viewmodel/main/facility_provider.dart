@@ -93,8 +93,8 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
         ));
       }
 
-      final lampIcon = await BitmapDescriptor.fromAssetImage(
-          ImageConfiguration(), 'res/lamp.png');
+      final lampIcon = await getCustomMarkerIcon();
+      logger.d(lampList.length);
       for (var lamp in lampList) {
         markerNotifier.addLampMarker(Marker(
           markerId: MarkerId(lamp.lampId.toString()),
