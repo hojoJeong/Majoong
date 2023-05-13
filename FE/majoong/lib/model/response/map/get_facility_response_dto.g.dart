@@ -119,11 +119,23 @@ Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
     };
 
 SafeRoad _$SafeRoadFromJson(Map<String, dynamic> json) => SafeRoad(
-      json['safeRoadId'] as int?,
+      (json['point'] as List<dynamic>)
+          .map((e) => Point.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$SafeRoadToJson(SafeRoad instance) => <String, dynamic>{
-      'safeRoadId': instance.safeRoadId,
+      'point': instance.point,
+    };
+
+Point _$PointFromJson(Map<String, dynamic> json) => Point(
+      (json['lng'] as num).toDouble(),
+      (json['lat'] as num).toDouble(),
+    );
+
+Map<String, dynamic> _$PointToJson(Point instance) => <String, dynamic>{
+      'lng': instance.lng,
+      'lat': instance.lat,
     };
 
 DangerZone _$DangerZoneFromJson(Map<String, dynamic> json) => DangerZone(

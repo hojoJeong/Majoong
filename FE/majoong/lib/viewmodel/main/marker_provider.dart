@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -7,6 +9,26 @@ final markerProvider =
     StateNotifierProvider.autoDispose<MarkerNotifier, Set<Marker>>((ref) {
   return MarkerNotifier(chipNotifier: ref.watch(chipProvider.notifier));
 });
+final polyLineProvider = StateNotifierProvider<PolyLineNotifier, Map<PolylineId, Polyline>>((ref) {
+  final chipInfo = ref.watch(chipProvider.notifier);
+  return PolyLineNotifier(chipNotifier: chipInfo);
+});
+
+class PolyLineNotifier extends StateNotifier<Map<PolylineId, Polyline>>{
+  final ChipNotifier chipNotifier;
+  final safeRaod = Map<PolylineId, Polyline>();
+  PolyLineNotifier({required this.chipNotifier}) : super({}) {}
+
+  renderLine(){
+    state.clear();
+    if(chipNotifier.state.contains('여성 안심 귀갓길')){
+      state.addAll(safeRaod);
+    }
+  }
+  addSafeRoad(Polyline polyLine){
+    safeRaod[polyLine.polylineId] = polyLine;
+  }
+}
 
 class MarkerNotifier extends StateNotifier<Set<Marker>> {
   MarkerNotifier({required this.chipNotifier}) : super(Set()) {}
@@ -16,9 +38,11 @@ class MarkerNotifier extends StateNotifier<Set<Marker>> {
   final storeMarkerSet = Set();
   final bellMarkerSet = Set();
   final reviewMarkerSet = Set();
+
   final ChipNotifier chipNotifier;
 
   renderMarker() {
+
     state.clear();
     final chips = chipNotifier.state;
     if (chips.contains('CCTV')) {
@@ -29,6 +53,15 @@ class MarkerNotifier extends StateNotifier<Set<Marker>> {
     }
     if (chips.contains('가로등')) {
       addAllMarker(lampMarkerSet);
+    }
+    if (chips.contains('편의점')) {
+      addAllMarker(storeMarkerSet);
+    }
+    if (chips.contains('안전 비상벨')) {
+      addAllMarker(bellMarkerSet);
+    }
+    if (chips.contains('도로 리뷰')) {
+      addAllMarker(reviewMarkerSet);
     }
   }
 
@@ -52,6 +85,14 @@ class MarkerNotifier extends StateNotifier<Set<Marker>> {
 
   addLampMarker(marker) {
     lampMarkerSet.add(marker);
+  }
+
+  addBellMarker(marker){
+    bellMarkerSet.add(marker);
+  }
+
+  addStoreMarker(marker) {
+    storeMarkerSet.add(marker);
   }
 }
 

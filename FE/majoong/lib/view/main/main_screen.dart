@@ -308,6 +308,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final userInfo = ref.watch(userInfoProvider.notifier).state;
     final facilityInfo = ref.watch(facilityProvider.notifier);
     final markerInfo = ref.watch(markerProvider.notifier);
+    final polyLineInfo = ref.watch(polyLineProvider.notifier);
     final chipInfo = ref.watch(chipProvider.notifier);
     final reviewDialogInfo = ref.watch(reviewDialogProvider.notifier);
     final cameraMovedInfo = ref.watch(cameraMovedProvider);
@@ -454,6 +455,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               return SafeArea(
                 child: Stack(alignment: Alignment.topCenter, children: [
                   GoogleMap(
+                    polylines: Set<Polyline>.of(polyLineInfo.state.values),
                     onMapCreated: _onMapCreated,
                     markers: markerInfo.state,
                     initialCameraPosition: CameraPosition(
@@ -503,6 +505,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                   onSelected: (bool selected) {
                                     chipInfo.toggleChip(choice);
                                     markerInfo.renderMarker();
+                                    polyLineInfo.renderLine();
                                     setState(() {});
                                   },
                                 ),

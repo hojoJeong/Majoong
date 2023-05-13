@@ -31,6 +31,7 @@ final facilityProvider =
   final chipInfo = ref.watch(chipProvider.notifier);
   final reviewDialogInfo = ref.watch(reviewDialogProvider.notifier);
   final centerPositionInfo = ref.watch(centerPositionProvider.notifier);
+  final polyLineInfo = ref.watch(polyLineProvider.notifier);
   final dio = ref.watch(dioProvider);
   final facilityNotifier = FacilityNotifier(
     dio,
@@ -39,6 +40,7 @@ final facilityProvider =
     chipNotifier: chipInfo,
     centerPositionNotifier: centerPositionInfo,
     reviewDialogNotifier: reviewDialogInfo,
+    polyLineNotifier: polyLineInfo,
   );
   return facilityNotifier;
 });
@@ -47,6 +49,7 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
   final MapApiService service;
   final MarkerNotifier markerNotifier;
   final ChipNotifier chipNotifier;
+  final PolyLineNotifier polyLineNotifier;
   final StateNotifier centerPositionNotifier;
   final ReviewDialogNotifier reviewDialogNotifier;
   final Dio dio;
@@ -54,6 +57,7 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
   FacilityNotifier(this.dio,
       {required this.service,
       required this.markerNotifier,
+        required this.polyLineNotifier,
       required this.chipNotifier,
       required this.centerPositionNotifier,
       required this.reviewDialogNotifier})
@@ -70,6 +74,7 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
       final policeList = response.data?.police ?? [];
       final lampList = response.data?.lamp ?? [];
       final storeList = response.data?.store ?? [];
+      final bellList = response.data?.bell ?? [];
       final cctvIcon = await BitmapDescriptor.fromAssetImage(
           ImageConfiguration(), 'res/cctv.png');
 
@@ -103,6 +108,45 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
           infoWindow: InfoWindow(title: lamp.address),
         ));
       }
+
+      final bellIcon = await BitmapDescriptor.fromAssetImage(
+          ImageConfiguration(), 'res/bell.png');
+      for (var bell in bellList) {
+        markerNotifier.addBellMarker(Marker(
+          markerId: MarkerId(bell.bellId.toString()),
+          position: LatLng(bell.lat, bell.lng),
+          icon: bellIcon,
+          infoWindow: InfoWindow(title: bell.address),
+        ));
+      }
+
+      final storeIcon = await BitmapDescriptor.fromAssetImage(
+          ImageConfiguration(), 'res/store.png');
+      for (var store in storeList) {
+        markerNotifier.addStoreMarker(Marker(
+          markerId: MarkerId(store.storeId.toString()),
+          position: LatLng(store.lat, store.lng),
+          icon: storeIcon,
+          infoWindow: InfoWindow(title: store.address),
+        ));
+      }
+
+      if(response.data?.safeRoad?.length != 0){
+        for(int i = 0; i < response.data!.safeRoad!.length; i++){
+          final road = response.data!.safeRoad![i];
+          logger.d((road as SafeRoad).point);
+          final polyLine = Polyline(
+            polylineId: PolylineId('safeRoad$i'),
+            points: [],
+            color: Colors.red,
+            width: 5,);
+          for (var point in road.point) {
+            polyLine.points.add(LatLng(point.lat, point.lng));
+          }
+          polyLineNotifier.addSafeRoad(polyLine);
+        }
+      }
+      polyLineNotifier.renderLine();
       markerNotifier.renderMarker();
     }
   }
