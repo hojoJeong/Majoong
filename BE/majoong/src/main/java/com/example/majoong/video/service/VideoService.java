@@ -88,18 +88,18 @@ public class VideoService {
         InitializeSessionResponseDto responseDto = new InitializeSessionResponseDto();
         responseDto.setSessionId(sessionId);
 
-        // fcm
-        User user = userRepository.findById(userId).get();
-        LocationShareDto movingInfo = mapService.getLocationInfo(userId);
-        List<Integer> guardians = movingInfo.getGuardians();
-        for (int guardianId : guardians){
-            User guardian = userRepository.findById(guardianId).get();
-            guardian.getFcmToken();
-            String title = "[마중] 바디캠 수신 요청";
-            String body = user.getNickname()+"님이 바디캠을 시작했습니다.";
-            fCMService.sendMessage(guardianId,title, body,title,body,sessionId);
-
-        }
+//        // fcm
+//        User user = userRepository.findById(userId).get();
+//        LocationShareDto movingInfo = mapService.getLocationInfo(userId);
+//        List<Integer> guardians = movingInfo.getGuardians();
+//        for (int guardianId : guardians){
+//            User guardian = userRepository.findById(guardianId).get();
+//            guardian.getFcmToken();
+//            String title = "[마중] 바디캠 수신 요청";
+//            String body = user.getNickname()+"님이 바디캠을 시작했습니다.";
+//            fCMService.sendMessage(guardianId,title, body,title,body,sessionId);
+//
+//        }
         return responseDto;
     }
 
