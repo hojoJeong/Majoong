@@ -13,6 +13,7 @@ import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:location/location.dart';
 import 'package:majoong/common/const/app_key.dart';
@@ -674,8 +675,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                                     fontSize: 12),
                                               ),
                                               GestureDetector(
-                                                onTap: () {
+                                                onTap: () async{
                                                   //TODO 사진 촬영
+                                                  final pickedFile = await ImagePicker().pickImage(
+                                                    source: ImageSource.camera,
+                                                  );
+                                                  if (pickedFile != null) {
+                                                    reviewDialogInfo.setPicture(File(XFile(pickedFile.path).path));
+                                                  }
+
                                                 },
                                                 child: Text(
                                                   '촬영하기',

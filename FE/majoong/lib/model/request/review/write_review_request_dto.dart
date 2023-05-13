@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:json_annotation/json_annotation.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -8,7 +10,7 @@ class WriteReviewRequestDto {
   int score;
   bool isBright;
   bool isCrowded;
-  MultiPart? reviewImage;
+  File? reviewImage;
   String content;
 
   WriteReviewRequestDto(this.lng, this.lat, this.address, this.score,

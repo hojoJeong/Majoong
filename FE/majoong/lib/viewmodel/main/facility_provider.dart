@@ -153,7 +153,7 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
 
   postReview() async {
     final request = reviewDialogNotifier.state;
-    logger.d(request.reviewImage.toString());
+    logger.d(request.reviewImage?.path.toString());
 
     final formData = FormData.fromMap({
       'lng': request.lng.toString(),
@@ -164,7 +164,7 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
       'isCrowded': request.isCrowded.toString(),
       'address': request.address,
       'reviewImage': request.reviewImage != null
-          ? await MultipartFile.fromFile('request.reviewImage!.path',
+          ? await MultipartFile.fromFile(request.reviewImage!.path,
               filename: null)
           : null,
     });

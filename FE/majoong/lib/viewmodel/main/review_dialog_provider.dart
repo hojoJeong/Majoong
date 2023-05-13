@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:majoong/model/request/review/write_review_request_dto.dart';
@@ -42,7 +44,9 @@ class ReviewDialogNotifier extends StateNotifier<WriteReviewRequestDto> {
   setAddress(String address) {
     state.address = address;
   }
-
+  setPicture(File file){
+    state.reviewImage = file;
+  }
   clearData() {
     state = WriteReviewRequestDto(0, 0, '', 0, false, false, null, '');
   }
