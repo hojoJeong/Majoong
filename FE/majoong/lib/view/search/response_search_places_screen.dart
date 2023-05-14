@@ -12,9 +12,10 @@ import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/layout/loading_layout.dart';
 import 'package:majoong/model/response/map/search_places_model.dart';
 import 'package:majoong/view/search/select_route_screen.dart';
+import 'package:majoong/viewmodel/search/search_facility_provider.dart';
+import 'package:majoong/viewmodel/search/search_marker_provider.dart';
 import 'package:majoong/viewmodel/search/search_route_point_provider.dart';
 import 'package:majoong/viewmodel/search/route_point_provider.dart';
-import 'package:sensors_plus/sensors_plus.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import '../../common/const/colors.dart';
@@ -75,12 +76,12 @@ class _ResponseSearchPlacesState
     currentLocation[0] = _locationData!.latitude!;
     currentLocation[1] = _locationData!.longitude!;
     logger.d(currentLocation.toString());
-    ref.read(centerPositionProvider.notifier).update((state) =>
+    ref.read(searchCenterPositionProvider.notifier).update((state) =>
         GetFacilityRequestDto(
             centerLng: _locationData!.longitude!,
             centerLat: _locationData!.latitude!,
             radius: 1000));
-    ref.read(facilityProvider.notifier).getFacility();
+    ref.read(searchFacilityProvider.notifier).getFacility();
     setState(() {});
   }
 
@@ -110,14 +111,11 @@ class _ResponseSearchPlacesState
   }
 
   final panelController = PanelController();
-  double panelPosition = 0.8;
-  late StreamSubscription<LocationData> locationSubscription;
+  double panelPosition = 0.5;
 
+  late StreamSubscription<LocationData> locationSubscription;
   @override
   void initState() {
-    Future.delayed(Duration.zero, () {
-      panelController.animatePanelToPosition(panelPosition);
-    });
     super.initState();
     _getLocation();
     locationSubscription = location.onLocationChanged.listen((event) {
@@ -299,19 +297,19 @@ class _ResponseSearchPlacesState
 
   @override
   Widget build(BuildContext context) {
-    Future.delayed(Duration.zero, () {
+    Future.delayed(Duration.zero, (){
       if (panelController.isPanelAnimating) {
         panelPosition = panelController.panelPosition;
       }
     });
-
-    final facilityInfo = ref.watch(facilityProvider.notifier);
-    final markerInfo = ref.watch(markerProvider.notifier);
-    final chipInfo = ref.watch(chipProvider.notifier);
-    final cameraMovedInfo = ref.watch(cameraMovedProvider);
+    final facilityInfo = ref.watch(searchFacilityProvider.notifier);
+    final markerInfo = ref.watch(searchMarkerProvider.notifier);
+    final chipInfo = ref.watch(searchChipProvider.notifier);
+    final cameraMovedInfo = ref.watch(searchCameraMovedProvider);
     final searchState = ref.watch(searchRoutePointProvider);
 
     if (searchState is BaseResponseLoading) {
+
       ref.read(searchRoutePointProvider.notifier).getResultSearch(keyword);
       return LoadingLayout();
     } else if (searchState is BaseResponse<List<SearchPlacesModel>>) {
@@ -357,7 +355,7 @@ class _ResponseSearchPlacesState
                           final centerLat = lat;
                           final centerLng = lng;
                           ref
-                              .read(centerPositionProvider.notifier)
+                              .read(searchCenterPositionProvider.notifier)
                               .update((state) {
                             return state = GetFacilityRequestDto(
                               centerLat: centerLat,
@@ -366,12 +364,12 @@ class _ResponseSearchPlacesState
                             );
                           });
                           ref
-                              .read(cameraMovedProvider.notifier)
+                              .read(searchCameraMovedProvider.notifier)
                               .update((state) => true);
                         },
                         myLocationEnabled: true,
                       ),
-                      ref.read(facilityProvider.notifier).state
+                      ref.read(searchFacilityProvider.notifier).state
                               is BaseResponseLoading
                           ? loadingWidget()
                           : Container(),
@@ -454,7 +452,7 @@ class _ResponseSearchPlacesState
                           onTap: () async {
                             facilityInfo.getFacility();
                             ref
-                                .read(cameraMovedProvider.notifier)
+                                .read(searchCameraMovedProvider.notifier)
                                 .update((state) => false);
                           },
                           child: cameraMovedInfo

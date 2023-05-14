@@ -24,6 +24,12 @@ class SearchScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // final favoriteListState = ref.watch(favoriteListStateProvider);
     final recentKeywordListState = ref.watch(recentKeywordProvider);
+
+    Future.delayed(Duration.zero, () {
+      if (ref.read(keywordProvider) != "") {
+        ref.read(keywordProvider.notifier).update((state) => "");
+      }
+    });
     ref.listen(keywordProvider, (previous, next) {
       searchKeywordController.text = next;
     });
@@ -142,9 +148,7 @@ class SearchScreen extends ConsumerWidget {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      ref
-                          .read(recentKeywordProvider.notifier)
-                          .addKeyword('스벅');
+                      ref.read(recentKeywordProvider.notifier).addKeyword('스벅');
                     },
                     child: Text(
                       '최근 검색 기록',

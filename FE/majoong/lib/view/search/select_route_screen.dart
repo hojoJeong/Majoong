@@ -6,8 +6,10 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:location/location.dart';
 import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/util/logger.dart';
+import 'package:majoong/model/response/map/route_info_response_dto.dart';
 import 'package:majoong/model/response/map/search_route_response_dto.dart';
 import 'package:majoong/view/guardian/guardian_screen.dart';
+import 'package:majoong/view/on_going/on_going_screen.dart';
 import 'package:majoong/viewmodel/search/route_point_provider.dart';
 import 'package:majoong/viewmodel/search/search_route_provider.dart';
 import 'package:majoong/viewmodel/share_loaction/share_location_provider.dart';
@@ -198,7 +200,7 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
       logger.d('이동 준비 완료 : ${shareLocationState.message}');
       Future.delayed(Duration.zero, (){
         Navigator.of(context)
-            .pushReplacement(MaterialPageRoute(builder: (_) => GuardianScreen()));
+            .pushReplacement(MaterialPageRoute(builder: (_) => OnGoingScreen()));
       });
     }
 
@@ -484,7 +486,7 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                                 searchRouteState
                                         .data!.recommendedPath?.distance ??
                                     0,
-                                selectRecommended),
+                                selectRecommended, searchRouteState.data!.recommendedPath),
                           ),
                           GestureDetector(
                             onTap: () {
@@ -498,7 +500,7 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                                 searchRouteState.data!.shortestPath.time ?? 0,
                                 searchRouteState.data!.shortestPath.distance ??
                                     0,
-                                selectShortest),
+                                selectShortest, searchRouteState.data!.shortestPath),
                           ),
                         ],
                       ),
@@ -535,7 +537,7 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
   }
 
   Widget selectRouteButton(
-      String title, int time, int distance, bool selected) {
+      String title, int time, int distance, bool selected, RouteInfoResponseDto? route) {
     return Container(
       width: MediaQuery.of(context).size.width * 0.45,
       decoration: BoxDecoration(
@@ -570,7 +572,8 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                       ? () {
                           ref
                               .read(shareLocationProvider.notifier)
-                              .initChannel(true, 5);
+                              .initChannel(false, -1);
+                          ref.read(searchRouteProvider.notifier).selectRoute(route);
                           showToast(context: context, '경로 탐색을 시작합니다.');
                         }
                       : null,

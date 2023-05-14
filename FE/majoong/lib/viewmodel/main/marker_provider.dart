@@ -4,14 +4,14 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../common/util/logger.dart';
 
 final markerProvider =
-    StateNotifierProvider.autoDispose<MarkerNotifier, Set<Marker>>((ref) {
-  return MarkerNotifier(chipNotifier: ref.watch(chipProvider.notifier));
+    StateNotifierProvider<MarkerNotifier, Set<Marker>>((ref) {
+  return MarkerNotifier(chipNotifier: ref.watch(chipProvider.notifier as AlwaysAliveProviderListenable<ChipNotifier>));
 });
 
 class MarkerNotifier extends StateNotifier<Set<Marker>> {
   MarkerNotifier({required this.chipNotifier}) : super(Set()) {}
-  final cctvMarkerSet = Set();
-  final policeMarkerSet = Set();
+  final cctvMarkerSet = Set<Marker>();
+  final policeMarkerSet = Set<Marker>();
   final lampMarkerSet = Set();
   final ChipNotifier chipNotifier;
 
@@ -26,10 +26,8 @@ class MarkerNotifier extends StateNotifier<Set<Marker>> {
     }
   }
 
-  addAllMarker(Set markers) {
-    for (var marker in markers) {
-      state.add(marker);
-    }
+  addAllMarker(Set<Marker> markers) {
+    state.addAll(markers);
   }
 
   clearMarker() {
@@ -49,7 +47,7 @@ class MarkerNotifier extends StateNotifier<Set<Marker>> {
   }
 }
 
-final chipProvider = StateNotifierProvider<ChipNotifier, Set<String>>((ref) {
+final chipProvider = StateNotifierProvider.autoDispose<ChipNotifier, Set<String>>((ref) {
   return ChipNotifier();
 });
 

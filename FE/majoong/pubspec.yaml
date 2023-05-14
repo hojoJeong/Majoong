@@ -73,6 +73,7 @@ dependencies:
   favorite_button: ^0.0.4
   group_button: ^5.2.2
   dart_amqp: ^0.2.4
+  intl: ^0.17.0
 
 dev_dependencies:
   flutter_test:

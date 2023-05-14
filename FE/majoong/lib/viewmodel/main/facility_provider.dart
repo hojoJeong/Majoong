@@ -14,21 +14,25 @@ import 'package:majoong/viewmodel/main/review_dialog_provider.dart';
 import '../../common/util/logger.dart';
 import '../../model/request/map/get_facility_request_dto.dart';
 import '../../model/response/base_response.dart';
+int cnt = 0;
 
 // 시설물 조회 api RequestDto
-final centerPositionProvider = StateProvider<GetFacilityRequestDto>((ref) {
+final centerPositionProvider =
+    StateProvider<GetFacilityRequestDto>((ref) {
   return GetFacilityRequestDto(centerLng: 0, centerLat: 0, radius: 0);
 });
 
-final cameraMovedProvider = StateProvider<bool>((ref) {
+final cameraMovedProvider = StateProvider.autoDispose<bool>((ref) {
   return false;
 });
 
 final facilityProvider =
-    StateNotifierProvider<FacilityNotifier, BaseResponseState>((ref) {
+    StateNotifierProvider<FacilityNotifier, BaseResponseState>(
+        (ref) {
   final mapService = ref.watch(mapApiServiceProvider);
-  final markerInfo = ref.watch(markerProvider.notifier as AlwaysAliveProviderListenable);
-  final chipInfo = ref.watch(chipProvider.notifier);
+  final markerInfo =
+      ref.watch(markerProvider.notifier);
+  final chipInfo = ref.watch(chipProvider.notifier as AlwaysAliveProviderListenable);
   final reviewDialogInfo = ref.watch(reviewDialogProvider.notifier);
   final centerPositionInfo = ref.watch(centerPositionProvider.notifier);
   final dio = ref.watch(dioProvider);
@@ -60,6 +64,7 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
       : super(BaseResponseLoading()) {}
 
   getFacility() async {
+    logger.d('getFacility');
     state = BaseResponseLoading();
     final request = centerPositionNotifier.state;
     final BaseResponse<GetFacilityResponseDto> response =
@@ -84,6 +89,7 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
 
       final policeIcon = await BitmapDescriptor.fromAssetImage(
           ImageConfiguration(), 'res/police.png');
+
       for (var police in policeList) {
         markerNotifier.addPoliceMarker(Marker(
           markerId: MarkerId(police.policeId.toString()),
@@ -106,6 +112,7 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
       markerNotifier.renderMarker();
     }
   }
+
 
   postReview() async {
     final request = reviewDialogNotifier.state;
