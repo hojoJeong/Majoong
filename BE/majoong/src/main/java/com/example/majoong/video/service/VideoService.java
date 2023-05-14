@@ -58,6 +58,8 @@ public class VideoService {
         String url = OPENVIDU_BASE_PATH + "sessions";
         String customSessionId = userId + "-" + System.currentTimeMillis();
         String recordingMode = "ALWAYS";
+        String resolution = "720x1280";
+
 
         // OPENVIDU REST API 요청
         RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
@@ -70,6 +72,12 @@ public class VideoService {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("customSessionId",customSessionId);
         jsonObject.addProperty("recordingMode",recordingMode);
+
+        JsonObject defaultRecordingProperties = new JsonObject();
+        defaultRecordingProperties.addProperty("resolution", resolution);
+
+        jsonObject.add("defaultRecordingProperties", defaultRecordingProperties);
+
         // Header + Body
         HttpEntity<String> entity = new HttpEntity<String>(jsonObject.toString(), headers);
         // request
