@@ -13,12 +13,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.Circle;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Point;
+import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @RestController
@@ -69,10 +74,17 @@ public class MapController {
         mapDataService.roadPointCsvToRedis();
         return "Reids에 저장 성공";
     }
-
+    @GetMapping("/get/road")
+    public List<RoadDto> getAllRoad(){
+        return dangerousZoneService.getAllRoadPoints();
+    }
     @GetMapping("/test")
-    public List<LocationDto> test(){
-        return  dangerousZoneService.getAllRoadPoints();
+    public List<List<RoadDto>> test(){
+        return dangerousZoneService.findRiskRoads();
+    }
+    @GetMapping("/test2")
+    public List<RoadDto> test2(){
+        return dangerousZoneService.findRiskPoints();
     }
 
 

@@ -65,18 +65,19 @@ public class MapDataService {
     }
 
     public void roadPointCsvToRedis() throws IOException, CsvValidationException {
-        Resource resource = new ClassPathResource("road/point.csv");
+        Resource resource = new ClassPathResource("road/50mPoint.csv");
         String csvFilePath = resource.getFile().getAbsolutePath();
 
         CSVReader reader = new CSVReader(new FileReader(csvFilePath));
         String[] line;
         reader.readNext();
         while ((line = reader.readNext()) != null) {
-            String id = line[0];
-            String longitude = line[2];
-            String latitude = line[3];
+            String roadId = line[0];
+            String id = line[3];
+            String longitude = line[1];
+            String latitude = line[2];
             Point point = new Point(Double.parseDouble(longitude), Double.parseDouble(latitude));
-            redisTemplate.opsForGeo().add("road_points", point, id);
+            redisTemplate.opsForGeo().add("50m_road_points", point, roadId+"_"+id);
         }
     }
 
