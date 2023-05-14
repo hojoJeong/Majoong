@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/request/user/delete_notification_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/service/remote/api/user/user_api_service.dart';
@@ -29,7 +30,7 @@ class NotificationStateNotifier extends StateNotifier<BaseResponseState> {
     final response = await userApi.deleteNotification(
         DeleteNotificationRequestDto(notificationId: notificationId));
     if (response.status == 200) {
-      state = response;
+      getNotificationList();
     }
   }
 }

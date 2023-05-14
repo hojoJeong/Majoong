@@ -8,6 +8,7 @@ import 'package:majoong/model/request/map/get_facility_request_dto.dart';
 import 'package:majoong/model/request/map/search_route_request_dto.dart';
 import 'package:majoong/model/request/map/share_route_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
+import 'package:majoong/model/response/map/accept_share_route_response_dto.dart';
 import 'package:majoong/model/response/map/get_facility_response_dto.dart';
 import 'package:majoong/model/response/map/search_route_response_dto.dart';
 import 'package:majoong/service/remote/dio/dio_provider.dart';
@@ -52,5 +53,9 @@ abstract class MapApiService {
   @Headers({AUTHORIZATION: AUTH})
   @POST('map/share')
   Future<BaseResponse> shareRoute(@Body() ShareRouteRequestDto request);
+
+  @Headers({AUTHORIZATION: AUTH})
+  @GET('map/share/{userId}')
+  Future<BaseResponse<AcceptShareRouteResponseDto>> acceptShareRoute(@Path('userId') int userId);
 
 }

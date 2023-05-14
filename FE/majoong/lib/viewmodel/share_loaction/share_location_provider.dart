@@ -1,5 +1,7 @@
 
 
+import 'dart:async';
+
 import "package:dart_amqp/dart_amqp.dart";
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -33,6 +35,7 @@ class ShareLocationStateNotifier extends StateNotifier<BaseResponseState> {
   late Exchange amqpExchange;
   late Queue amqpQueue;
   late dynamic amqpConsumer;
+  StreamSubscription? amqpSubscription;
   double lat = 0;
   double lng = 0;
   String userId = "";

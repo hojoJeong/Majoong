@@ -38,13 +38,13 @@ class OnGoingScreen extends ConsumerStatefulWidget {
 class _OnGoingState extends ConsumerState<OnGoingScreen> {
   final RouteInfoResponseDto selectedRoute;
   late GoogleMapController mapController;
-  Location location = Location();
   late bool _serviceEnabled;
   late PermissionStatus _permissionGranted;
   LocationData? _locationData;
+  Location location = Location();
   Set<Polyline> route = {};
   List<Marker> marker = [];
-
+  String curAddress = "";
   _OnGoingState({required this.selectedRoute});
 
   makePolyline(List<LocationPointResponseDto> selectedRoutePoints) {
@@ -199,6 +199,7 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     final shareLocationState = ref.watch(shareLocationProvider);
@@ -206,7 +207,6 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
     final markerInfo = ref.watch(searchMarkerProvider.notifier);
     final chipInfo = ref.watch(searchChipProvider.notifier);
     final cameraMovedInfo = ref.watch(searchCameraMovedProvider);
-    final curAddress = ref.watch(curAddressProvider);
     String endTime = "";
     logger.d('amqp share locationstate : $shareLocationState');
 
@@ -228,8 +228,8 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
         final lat = curLocation.latitude!;
         final lng = curLocation.longitude!;
         logger.d('amqp cur location : $lat, $lng');
-        final address = await getAddress(lat, lng) ?? "";
-        ref.read(curAddressProvider.notifier).update((state) => address);
+        //아래처럼 하면 Future를 String 에 넣어서 타입 안맞음
+        // curAddress = ref.read(curAddressProvider.notifier).getAddress(lat, lng);
         logger.d('현재 위치 : $curAddress');
         ref.read(shareLocationProvider.notifier).sendLocation(lat, lng);
       });
@@ -241,7 +241,7 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
                   child: Stack(alignment: Alignment.topCenter, children: [
                     GoogleMap(
                       onMapCreated: _onMapCreated,
-                      markers: markerInfo.state,
+                      markers: Set.from(marker),
                       polylines: route,
                       initialCameraPosition: CameraPosition(
                         target: LatLng(_locationData!.latitude!,
