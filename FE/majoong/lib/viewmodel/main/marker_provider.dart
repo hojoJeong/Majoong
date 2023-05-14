@@ -17,6 +17,7 @@ final polyLineProvider = StateNotifierProvider<PolyLineNotifier, Map<PolylineId,
 class PolyLineNotifier extends StateNotifier<Map<PolylineId, Polyline>>{
   final ChipNotifier chipNotifier;
   final safeRaod = Map<PolylineId, Polyline>();
+  final riskRoad = Map<PolylineId, Polyline>();
   PolyLineNotifier({required this.chipNotifier}) : super({}) {}
 
   renderLine(){
@@ -24,9 +25,17 @@ class PolyLineNotifier extends StateNotifier<Map<PolylineId, Polyline>>{
     if(chipNotifier.state.contains('여성 안심 귀갓길')){
       state.addAll(safeRaod);
     }
+    if(chipNotifier.state.contains('위험 지역')){
+      state.addAll(riskRoad);
+      logger.d(state.length);
+    }
+    logger.d('renderline');
   }
   addSafeRoad(Polyline polyLine){
     safeRaod[polyLine.polylineId] = polyLine;
+  }
+  addRiskRoad(Polyline polyLine){
+    riskRoad[polyLine.polylineId] = polyLine;
   }
 }
 

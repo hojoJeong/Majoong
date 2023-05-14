@@ -24,8 +24,8 @@ GetFacilityResponseDto _$GetFacilityResponseDtoFromJson(
       (json['safeRoad'] as List<dynamic>?)
           ?.map((e) => SafeRoad.fromJson(e as Map<String, dynamic>))
           .toList(),
-      (json['dangerZone'] as List<dynamic>?)
-          ?.map((e) => DangerZone.fromJson(e as Map<String, dynamic>))
+      (json['riskRoad'] as List<dynamic>?)
+          ?.map((e) => SafeRoad.fromJson(e as Map<String, dynamic>))
           .toList(),
       (json['review'] as List<dynamic>?)
           ?.map((e) => Review.fromJson(e as Map<String, dynamic>))
@@ -44,7 +44,7 @@ Map<String, dynamic> _$GetFacilityResponseDtoToJson(
       'store': instance.store,
       'bell': instance.bell,
       'safeRoad': instance.safeRoad,
-      'dangerZone': instance.dangerZone,
+      'riskRoad': instance.riskRoad,
       'review': instance.review,
     };
 

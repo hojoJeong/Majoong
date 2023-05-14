@@ -134,7 +134,6 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
       if(response.data?.safeRoad?.length != 0){
         for(int i = 0; i < response.data!.safeRoad!.length; i++){
           final road = response.data!.safeRoad![i];
-          logger.d((road as SafeRoad).point);
           final polyLine = Polyline(
             polylineId: PolylineId('safeRoad$i'),
             points: [],
@@ -144,6 +143,21 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
             polyLine.points.add(LatLng(point.lat, point.lng));
           }
           polyLineNotifier.addSafeRoad(polyLine);
+        }
+      }
+      if(response.data?.riskRoad?.length != 0){
+        for(int i = 0; i < response.data!.riskRoad!.length; i++){
+          final road = response.data!.riskRoad![i];
+          final polyLine = Polyline(
+            polylineId: PolylineId('riskRoad$i'),
+            points: [],
+            color: Colors.black,
+            width: 5,);
+          for (var point in road.point) {
+            polyLine.points.add(LatLng(point.lat, point.lng));
+
+          }
+          polyLineNotifier.addRiskRoad(polyLine);
         }
       }
       polyLineNotifier.renderLine();
