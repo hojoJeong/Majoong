@@ -1,24 +1,29 @@
 package com.example.majoong.map.controller;
 
-import com.example.majoong.map.dto.LocationShareDto;
-import com.example.majoong.map.dto.LocationShareResponseDto;
-import com.example.majoong.map.dto.MapFacilityRequestDto;
-import com.example.majoong.map.dto.MapFacilityResponseDto;
+import com.example.majoong.map.dto.*;
+import com.example.majoong.map.service.DangerousZoneService;
 import com.example.majoong.map.service.MapDataService;
 import com.example.majoong.map.service.MapFacilityService;
 import com.example.majoong.map.service.MapService;
 import com.example.majoong.response.ResponseData;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.opencsv.exceptions.CsvValidationException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.Circle;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Point;
+import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @RestController
@@ -31,6 +36,9 @@ public class MapController {
     private final MapDataService mapDataService;
 
     private final MapService mapService;
+
+    private final DangerousZoneService dangerousZoneService;
+
 
     @PostMapping("/facility")
     @Operation(summary = "시설물 조회 API", description = "cctv, 가로등, 비상벨, 경찰서, 편의점, 안심귀갓길, 위험지역, 리뷰")
@@ -59,6 +67,26 @@ public class MapController {
 
         return "Reids에 저장 성공";
     }
+
+    @GetMapping("/save/road")
+    @Operation(summary = "도로 포인트 데이터 Redis로 저장")
+    public String saveCsvToRedis() throws CsvValidationException, IOException {
+        mapDataService.roadPointCsvToRedis();
+        return "Reids에 저장 성공";
+    }
+    @GetMapping("/get/road")
+    public List<RoadDto> getAllRoad(){
+        return dangerousZoneService.getAllRoadPoints();
+    }
+    @GetMapping("/test")
+    public List<List<RoadDto>> test(){
+        return dangerousZoneService.findRiskRoads();
+    }
+    @GetMapping("/test2")
+    public List<RoadDto> test2(){
+        return dangerousZoneService.findRiskPoints();
+    }
+
 
     @PostMapping("/share")
     public ResponseEntity startMoving(@RequestBody LocationShareDto locationRequest) throws IOException {

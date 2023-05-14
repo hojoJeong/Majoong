@@ -3,15 +3,22 @@ package com.example.majoong.map.service;
 import com.example.majoong.map.domain.*;
 import com.example.majoong.map.repository.*;
 import com.example.majoong.tools.CsvUtils;
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.geo.Point;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.redis.core.GeoOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -56,6 +63,24 @@ public class MapDataService {
 //        saveEntity(safeRoadList, safeRoadRepository);
         log.info("save success");
     }
+
+    public void roadPointCsvToRedis() throws IOException, CsvValidationException {
+        Resource resource = new ClassPathResource("road/50mPoint.csv");
+        String csvFilePath = resource.getFile().getAbsolutePath();
+
+        CSVReader reader = new CSVReader(new FileReader(csvFilePath));
+        String[] line;
+        reader.readNext();
+        while ((line = reader.readNext()) != null) {
+            String roadId = line[0];
+            String id = line[3];
+            String longitude = line[1];
+            String latitude = line[2];
+            Point point = new Point(Double.parseDouble(longitude), Double.parseDouble(latitude));
+            redisTemplate.opsForGeo().add("50m_road_points", point, roadId+"_"+id);
+        }
+    }
+
 
     // csv파일에서 Dto List 생성
     public List<Police> loadPoliceList() {

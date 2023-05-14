@@ -44,3 +44,6 @@ out/
 
 ### fcm ###
 /src/main/resources/fcm
+
+### 도로 ###
+/src/main/resources/road
