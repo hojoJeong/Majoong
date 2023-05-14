@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -85,6 +86,12 @@ public class MapController {
     @GetMapping("/test2")
     public List<RoadDto> test2(){
         return dangerousZoneService.findRiskPoints();
+    }
+
+    @GetMapping("/test3")
+    public String test3() throws IOException {
+        mapDataService.jsonToRedis();
+        return "redis저장";
     }
 
 

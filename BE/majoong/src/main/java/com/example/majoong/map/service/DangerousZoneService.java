@@ -2,6 +2,8 @@ package com.example.majoong.map.service;
 
 import com.example.majoong.map.dto.LocationDto;
 import com.example.majoong.map.dto.RoadDto;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.*;
@@ -9,9 +11,11 @@ import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.stereotype.Service;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @Service
@@ -21,6 +25,7 @@ public class DangerousZoneService {
 
     private final RedisOperations<String, String> redisOperations;
 
+    private final Gson gson;
 
 
     public List<RoadDto> getAllRoadPoints() {
@@ -88,8 +93,6 @@ public class DangerousZoneService {
     }
 
 
-
-
     public List<RoadDto> findRiskPoints() {
         // 모든 도로 포인트 가져오기
         List<RoadDto> roadPoints = getAllRoadPoints();
@@ -118,23 +121,7 @@ public class DangerousZoneService {
         return road;
     }
 
-    private double calculateDistance(double lng1, double lat1, double lng2, double lat2) {
-        // Haversine 공식을 사용한 거리 계산
-        double earthRadius = 6371; // 지구 반지름 (단위: km)
 
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLng = Math.toRadians(lng2 - lng1);
-
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                        Math.sin(dLng / 2) * Math.sin(dLng / 2);
-
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        double distance = earthRadius * c;
-
-        return distance;
-    }
     private boolean isFacility(double x, double y) {
         RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().includeCoordinates().includeDistance();
 
@@ -159,6 +146,9 @@ public class DangerousZoneService {
         }
         return false;
     }
+
+
+
 
 }
 

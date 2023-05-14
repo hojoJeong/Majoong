@@ -3,6 +3,8 @@ package com.example.majoong.map.service;
 import com.example.majoong.map.domain.*;
 import com.example.majoong.map.repository.*;
 import com.example.majoong.tools.CsvUtils;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +21,10 @@ import org.springframework.stereotype.Service;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -28,7 +32,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class MapDataService {
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate redisTemplate;
     private final PoliceRepository policeRepository;
     private final StoreRepository storeRepository;
     private final CctvRepository cctvRepository;
@@ -81,6 +85,31 @@ public class MapDataService {
         }
     }
 
+    public void jsonToRedis() throws FileNotFoundException {
+        String filePath = "C:/Users/SSAFY/Desktop/S08P31D105/BE/majoong/src/main/resources/road/riskPointList.json";
+
+        FileReader reader = new FileReader(filePath);
+        Gson gson = new Gson();
+
+        Type mapType = new TypeToken<Map<String, Object>>(){}.getType();
+        Map<String, Object> jsonData = gson.fromJson(reader, mapType);
+
+        for (Map.Entry<String, Object> entry : jsonData.entrySet()) {
+            String key = entry.getKey();
+            Point point = parseKeyToPoint(key);
+            Object value = entry.getValue();
+            redisTemplate.opsForGeo().add("risk_road", point, value.toString());
+        }
+
+    }
+
+    private static Point parseKeyToPoint(String key) {
+        // 키를 파싱하여 Point 객체로 변환하는 로직 구현
+        String[] parts = key.substring(1, key.length() - 1).split(", ");
+        double longitude = Double.parseDouble(parts[0]);
+        double latitude = Double.parseDouble(parts[1]);
+        return new Point(longitude, latitude);
+    }
 
     // csv파일에서 Dto List 생성
     public List<Police> loadPoliceList() {
