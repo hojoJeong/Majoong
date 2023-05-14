@@ -15,4 +15,5 @@ public class MapFacilityResponseDto {
     private List<ReviewDto> review;
     private List<LampDto> lamp;
     private List<SafeRoadMapDto> safeRoad;
+    private List<LocationRoadDto> riskRoad;
 }

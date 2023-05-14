@@ -3,6 +3,7 @@ package com.example.majoong.map.service;
 import com.example.majoong.map.domain.SafeRoad;
 import com.example.majoong.map.dto.*;
 import com.example.majoong.map.repository.SafeRoadRepository;
+import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.*;
@@ -18,6 +19,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class MapFacilityService {
+
+    private final Gson gson;
 
     private final RedisOperations<String, String> redisOperations;
     private final SafeRoadRepository safeRoadRepository;
@@ -38,7 +41,7 @@ public class MapFacilityService {
         facilities.setReview(getFacilityDtos("review", centerLng, centerLat, radius, ReviewDto.class));
 
         facilities.setSafeRoad(getSafeRoadDtos("saferoad", centerLng, centerLat, radius));
-
+        facilities.setRiskRoad(getRiskRoad("risk_road", centerLng, centerLat, radius));
         return facilities;
     }
 
@@ -115,4 +118,31 @@ public class MapFacilityService {
 
         return safeRoadMapDtoList;
     }
+
+    public List<LocationRoadDto> getRiskRoad(String key, double centerLng, double centerLat, double radius) {
+        RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().includeCoordinates().includeDistance();
+        GeoResults<RedisGeoCommands.GeoLocation<String>> geoResults = redisOperations.opsForGeo().radius(key, new Circle(new Point(centerLng, centerLat), new Distance(radius, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+        List<LocationRoadDto> result = new ArrayList<>();
+        LocationRoadDto road = new LocationRoadDto();
+
+        for (GeoResult<RedisGeoCommands.GeoLocation<String>> geoResult : geoResults) {
+            String member = geoResult.getContent().getName();
+            List<List<Double>> coordinates = gson.fromJson(member, List.class);
+            List<LocationDto> pointList = new ArrayList<>();
+            for (List<Double> coordinate : coordinates) {
+                double lng = coordinate.get(0);
+                double lat = coordinate.get(1);
+                LocationDto point = new LocationDto();
+                point.setLng(lng);
+                point.setLat(lat);
+                pointList.add(point);
+            }
+            road.setPoint(pointList);
+            result.add(road);
+        }
+
+        return result;
+    }
+
 }

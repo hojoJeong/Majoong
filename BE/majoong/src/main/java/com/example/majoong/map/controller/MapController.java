@@ -69,31 +69,6 @@ public class MapController {
         return "Reids에 저장 성공";
     }
 
-    @GetMapping("/save/road")
-    @Operation(summary = "도로 포인트 데이터 Redis로 저장")
-    public String saveCsvToRedis() throws CsvValidationException, IOException {
-        mapDataService.roadPointCsvToRedis();
-        return "Reids에 저장 성공";
-    }
-    @GetMapping("/get/road")
-    public List<RoadDto> getAllRoad(){
-        return dangerousZoneService.getAllRoadPoints();
-    }
-    @GetMapping("/test")
-    public List<List<RoadDto>> test(){
-        return dangerousZoneService.findRiskRoads();
-    }
-    @GetMapping("/test2")
-    public List<RoadDto> test2(){
-        return dangerousZoneService.findRiskPoints();
-    }
-
-    @GetMapping("/test3")
-    public String test3() throws IOException {
-        mapDataService.jsonToRedis();
-        return "redis저장";
-    }
-
 
     @PostMapping("/share")
     public ResponseEntity startMoving(@RequestBody LocationShareDto locationRequest) throws IOException {

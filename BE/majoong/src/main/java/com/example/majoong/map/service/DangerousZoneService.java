@@ -1,6 +1,7 @@
 package com.example.majoong.map.service;
 
 import com.example.majoong.map.dto.LocationDto;
+import com.example.majoong.map.dto.LocationRoadDto;
 import com.example.majoong.map.dto.RoadDto;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -11,6 +12,7 @@ import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.stereotype.Service;
 
+import javax.xml.stream.Location;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
