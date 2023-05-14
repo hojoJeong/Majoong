@@ -138,6 +138,8 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
             polylineId: PolylineId('safeRoad$i'),
             points: [],
             color: Colors.green.withOpacity(0.5),
+            endCap: Cap.roundCap,
+            startCap: Cap.roundCap,
             width: 5,);
           for (var point in road.point) {
             polyLine.points.add(LatLng(point.lat, point.lng));
@@ -151,7 +153,9 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
           final polyLine = Polyline(
             polylineId: PolylineId('riskRoad$i'),
             points: [],
-            color: Colors.black,
+            color: Color(0xFF535353),
+            endCap: Cap.roundCap,
+            startCap: Cap.roundCap,
             width: 5,);
           for (var point in road.point) {
             polyLine.points.add(LatLng(point.lat, point.lng));

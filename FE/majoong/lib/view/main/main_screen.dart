@@ -42,6 +42,7 @@ import 'package:majoong/viewmodel/main/marker_provider.dart';
 import 'package:majoong/viewmodel/main/review_dialog_provider.dart';
 import 'package:majoong/viewmodel/video/videoProvider.dart';
 import 'package:openvidu_client/openvidu_client.dart';
+import 'package:permission_handler/permission_handler.dart' hide PermissionStatus;
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -212,8 +213,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final fcmMessaging = FirebaseMessaging.instance;
     initFcm(fcmMessaging);
     _getLocation();
-    initOpenVidu();
-    _listenSessionEvents();
+
     locationSubscription = location.onLocationChanged.listen((event) {
       setState(() {
         _locationData = event;
@@ -893,7 +893,21 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                             image: AssetImage('res/body_cam.png'),
                             text: '바디캠',
                             onPressed: () async {
+                              var cameraStatus = await Permission.camera.request();
+                              if (cameraStatus.isGranted) {
+                                // 권한 허용된 경우의 로직
+                              } else {
+                                // 권한 허용되지 않은 경우의 로직
+                              }
+                              var micStatus = await Permission.microphone.request();
+                              if (micStatus.isGranted) {
+                                // 권한 허용된 경우의 로직
+                              } else {
+                                // 권한 허용되지 않은 경우의 로직
+                              }
                               if (!isInside) {
+                                initOpenVidu();
+                                _listenSessionEvents();
                                 await ref
                                     .read(videoProvider.notifier)
                                     .startVideo();

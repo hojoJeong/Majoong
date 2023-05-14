@@ -74,7 +74,6 @@ dependencies:
   group_button: ^5.2.2
   dart_amqp: ^0.2.4
 
-  # openvidu
   plugin_platform_interface: ^2.0.2
   web_socket_channel: ^2.3.0
   openvidu_client: ^0.0.2
