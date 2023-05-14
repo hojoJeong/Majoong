@@ -89,6 +89,32 @@ public class MapDataService {
         }
     }
 
+    public void saveRoadCsvToRedis() throws IOException, CsvValidationException {
+        Resource resource = new ClassPathResource("road/riskRoads.csv");
+        String csvFilePath = resource.getFile().getAbsolutePath();
+
+        CSVReader reader = new CSVReader(new FileReader(csvFilePath));
+        String[] line;
+        reader.readNext();
+        while ((line = reader.readNext()) != null) {
+            String startX = line[1];
+            String startY = line[2];
+            String endX = line[3];
+            String endY = line[4];
+            String midX = line[5];
+            String midY = line[6];
+            String member = startX+"_"+startY+"_"+endX+"_"+endY;
+
+            Point point1 = new Point(Double.parseDouble(startX), Double.parseDouble(startY));
+            Point point2 = new Point(Double.parseDouble(endX), Double.parseDouble(endY));
+            Point point3 = new Point(Double.parseDouble(midX), Double.parseDouble(midY));
+
+            redisTemplate.opsForGeo().add("risk_roads", point1, member);
+            redisTemplate.opsForGeo().add("risk_roads", point2, member);
+            redisTemplate.opsForGeo().add("risk_roads", point3, member);
+
+        }
+    }
     public void jsonToRedis() throws FileNotFoundException {
         String filePath = "C:/Users/SSAFY/Desktop/S08P31D105/BE/majoong/src/main/resources/road/riskPointList.json";
 

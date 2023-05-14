@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -41,7 +43,7 @@ public class MapFacilityService {
         facilities.setReview(getFacilityDtos("review", centerLng, centerLat, radius, ReviewDto.class));
 
         facilities.setSafeRoad(getSafeRoadDtos("saferoad", centerLng, centerLat, radius));
-        facilities.setRiskRoad(getRiskRoad("risk_road", centerLng, centerLat, radius));
+        facilities.setRiskRoad(getRiskRoad("risk_roads", centerLng, centerLat, radius));
         return facilities;
     }
 
@@ -124,25 +126,32 @@ public class MapFacilityService {
         GeoResults<RedisGeoCommands.GeoLocation<String>> geoResults = redisOperations.opsForGeo().radius(key, new Circle(new Point(centerLng, centerLat), new Distance(radius, RedisGeoCommands.DistanceUnit.METERS)), args);
 
         List<LocationRoadDto> result = new ArrayList<>();
-        LocationRoadDto road = new LocationRoadDto();
+        Set<String> processedRoads = new HashSet<>(); // 중복 체크를 위한 Set
 
         for (GeoResult<RedisGeoCommands.GeoLocation<String>> geoResult : geoResults) {
-            String member = geoResult.getContent().getName();
-            List<List<Double>> coordinates = gson.fromJson(member, List.class);
-            List<LocationDto> pointList = new ArrayList<>();
-            for (List<Double> coordinate : coordinates) {
-                double lng = coordinate.get(0);
-                double lat = coordinate.get(1);
-                LocationDto point = new LocationDto();
-                point.setLng(lng);
-                point.setLat(lat);
-                pointList.add(point);
+            String roadName = geoResult.getContent().getName();
+
+            if (!processedRoads.contains(roadName)) {
+                LocationRoadDto road = new LocationRoadDto();
+                List<LocationDto> list = new ArrayList<>();
+
+                String[] member = roadName.split("_");
+                LocationDto start = new LocationDto();
+                start.setLng(Double.parseDouble(member[0]));
+                start.setLat(Double.parseDouble(member[1]));
+                list.add(start);
+                LocationDto end = new LocationDto();
+                end.setLng(Double.parseDouble(member[2]));
+                end.setLat(Double.parseDouble(member[3]));
+                list.add(end);
+                road.setPoint(list);
+                result.add(road);
+                processedRoads.add(roadName);
             }
-            road.setPoint(pointList);
-            result.add(road);
         }
 
         return result;
     }
+
 
 }
