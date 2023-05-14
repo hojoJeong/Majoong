@@ -259,6 +259,7 @@ public class VideoService {
         List<GetRecordingsResponseDto> responseDtos = new ArrayList<>();
         for (JsonElement item : items) {
             String recordingId = item.getAsJsonObject().get("id").getAsString();
+            System.out.println("getRecordings: " + recordingId);
             String[] splitId = recordingId.split("-");
             if (splitId[0].equals(String.valueOf(userId))) {
                 String createdAt = unitConverter.timestampToDate(item.getAsJsonObject().get("createdAt").getAsLong());
