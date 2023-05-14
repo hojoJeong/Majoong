@@ -74,6 +74,19 @@ dependencies:
   group_button: ^5.2.2
   dart_amqp: ^0.2.4
 
+  # openvidu
+  plugin_platform_interface: ^2.0.2
+  web_socket_channel: ^2.3.0
+  openvidu_client: ^0.0.2
+  meta: ^1.8.0
+  flutter_web_plugins:
+    sdk: flutter
+  flutter_webrtc: ^0.9.24
+  collection: ^1.17.0
+  permission_handler: ^10.2.0
+  eva_icons_flutter: ^3.1.0
+  flutter_spinkit: ^5.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -96,6 +109,22 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.nunez.openvidu.openvidu_client
+        pluginClass: OpenviduClientPlugin
+      ios:
+        pluginClass: OpenviduClientPlugin
+      linux:
+        pluginClass: OpenviduClientPlugin
+      macos:
+        pluginClass: OpenviduClientPlugin
+      windows:
+        pluginClass: OpenviduClientPluginCApi
+      web:
+        pluginClass: OpenviduClientWeb
+        fileName: openvidu_client_web.dart
   assets:
     - res/majoong_logo.jpg
     - res/logo_kakao.png

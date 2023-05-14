@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -17,6 +18,7 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:location/location.dart';
 import 'package:majoong/common/const/app_key.dart';
 import 'package:majoong/common/const/colors.dart';
+import 'package:majoong/common/util/extensions.dart';
 import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/main.dart';
 import 'package:majoong/model/request/map/get_facility_request_dto.dart';
@@ -26,6 +28,7 @@ import 'package:majoong/model/response/user/friend_response_dto.dart';
 import 'package:majoong/model/response/user/user_info_response_dto.dart';
 import 'package:majoong/service/local/secure_storage.dart';
 import 'package:majoong/service/remote/api/user/user_api_service.dart';
+import 'package:majoong/service/remote/dio/dio_provider.dart';
 import 'package:majoong/view/edit/edit_pin_number_screen.dart';
 import 'package:majoong/view/edit/edit_user_info_screen.dart';
 import 'package:majoong/view/favorite/favorite_screen.dart';
@@ -37,11 +40,14 @@ import 'package:majoong/viewmodel/friend/friend_provider.dart';
 import 'package:majoong/viewmodel/main/facility_provider.dart';
 import 'package:majoong/viewmodel/main/marker_provider.dart';
 import 'package:majoong/viewmodel/main/review_dialog_provider.dart';
+import 'package:majoong/viewmodel/video/videoProvider.dart';
+import 'package:openvidu_client/openvidu_client.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../common/const/key_value.dart';
 import '../../viewmodel/main/user_info_provider.dart';
+import '../openvidu/media_stream_view.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   MainScreen({Key? key}) : super(key: key);
@@ -98,7 +104,23 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               )));
     }
   }
-
+  Future<void> _onConnect() async {
+    final dio = ref.read(dioProvider);
+    final secureStorage = ref.read(secureStorageProvider);
+    final nickname = await secureStorage.read(key: USER_ID);
+    dio.options.baseUrl = 'https://majoong4u.com/openvidu/api';
+    dio.options.headers['content-Type'] = 'application/json';
+    dio.options.headers["authorization"] =
+    'Basic ${base64Encode(utf8.encode('OPENVIDUAPP:MY_SECRET'))}';
+    localParticipant = await _openvidu.publishLocalStream(
+        token:
+        ref.read(videoProvider.notifier).sessionInfo!.connectionToken,
+        userName: nickname??'user');
+    setState(() {
+      isInside = true;
+    });
+    logger.d('onConnect');
+  }
   Future<void> setupInteractedMessage(FirebaseMessaging fbMsg) async {
     RemoteMessage? initialMessage = await fbMsg.getInitialMessage();
     // 종료상태에서 클릭한 푸시 알림 메세지 핸들링
@@ -190,6 +212,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final fcmMessaging = FirebaseMessaging.instance;
     initFcm(fcmMessaging);
     _getLocation();
+    initOpenVidu();
+    _listenSessionEvents();
     locationSubscription = location.onLocationChanged.listen((event) {
       setState(() {
         _locationData = event;
@@ -197,6 +221,58 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         currentLocation[0] = event.latitude!;
         currentLocation[1] = event.longitude!;
       });
+    });
+  }
+
+  Future<void> initOpenVidu() async {
+    _openvidu = OpenViduClient('https://majoong4u.com/openvidu');
+    localParticipant =
+    await _openvidu.startLocalPreview(context, StreamMode.backCamera);
+    setState(() {});
+    logger.d('initOpenVidu');
+  }
+
+  void _listenSessionEvents() {
+    _openvidu.on(OpenViduEvent.userJoined, (params) async {
+      await _openvidu.subscribeRemoteStream(params["id"]);
+    });
+    _openvidu.on(OpenViduEvent.userPublished, (params) {
+      _openvidu.subscribeRemoteStream(params["id"],
+          video: params["videoActive"], audio: params["audioActive"]);
+    });
+
+    _openvidu.on(OpenViduEvent.addStream, (params) {
+      remoteParticipants = {..._openvidu.participants};
+      setState(() {});
+    });
+
+    _openvidu.on(OpenViduEvent.removeStream, (params) {
+      remoteParticipants = {..._openvidu.participants};
+      setState(() {});
+    });
+
+    _openvidu.on(OpenViduEvent.publishVideo, (params) {
+      remoteParticipants = {..._openvidu.participants};
+      setState(() {});
+    });
+    _openvidu.on(OpenViduEvent.publishAudio, (params) {
+      remoteParticipants = {..._openvidu.participants};
+      setState(() {});
+    });
+    _openvidu.on(OpenViduEvent.updatedLocal, (params) {
+      localParticipant = params['localParticipant'];
+      setState(() {});
+    });
+    _openvidu.on(OpenViduEvent.reciveMessage, (params) {
+      context.showMessageRecivedDialog(params["data"] ?? '');
+    });
+    _openvidu.on(OpenViduEvent.userUnpublished, (params) {
+      remoteParticipants = {..._openvidu.participants};
+      setState(() {});
+    });
+
+    _openvidu.on(OpenViduEvent.error, (params) {
+      context.showErrorDialog(params["error"]);
     });
   }
 
@@ -301,7 +377,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     '위험 지역',
   ];
   bool isReporting = false;
-
+  bool isInside = false;
+  late OpenViduClient _openvidu;
+  LocalParticipant? localParticipant;
+  Map<String, RemoteParticipant> remoteParticipants = {};
   @override
   Widget build(BuildContext context) {
     final userInfo = ref.watch(userInfoProvider.notifier).state;
@@ -813,7 +892,18 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                           bottomComponent(
                             image: AssetImage('res/body_cam.png'),
                             text: '바디캠',
-                            onPressed: () {},
+                            onPressed: () async {
+                              if (!isInside) {
+                                await ref
+                                    .read(videoProvider.notifier)
+                                    .startVideo();
+                                await _onConnect();
+                                isInside = true;
+                              } else {
+                                isInside = false;
+                                //TODO 바디캠 종료
+                              }
+                            },
                           ),
                           bottomComponent(
                             image: AssetImage('res/whistle.png'),
@@ -834,7 +924,25 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         ],
                       ),
                     ),
-                  )
+                  ),
+                  isInside
+                      ? Positioned(
+                          bottom: MediaQuery.of(context).size.height / 6,
+                          left: MediaQuery.of(context).size.width / 20,
+                          child: Container(
+                            width: MediaQuery.of(context).size.width / 5,
+                            height: MediaQuery.of(context).size.height / 5,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.black,
+                            ),
+                            child: MediaStreamView(
+                              borderRadius: BorderRadius.circular(15),
+                              participant: localParticipant!,
+                            ),
+                          ),
+                        )
+                      : Container(),
                 ]),
               );
             })
@@ -945,43 +1053,48 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   guardianDialog(setState) {
-
-    final friends = ref.read(friendProvider.notifier).state as BaseResponse<List<FriendResponseDto>>;
-    List<Widget> guardianWidget = List.generate(friends.data?.length ?? 0, (index) => Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          CircleAvatar(
-            radius: 25,
-            backgroundImage: Image.network(friends.data?[index].profileImage?? "").image,
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(friends.data?[index].nickname ?? ''),
-              Text(
-                friends.data?[index].phoneNumber??'',
-                style: TextStyle(color: Colors.grey),
-              )
-            ],
-          ),
-          IconButton(
-            onPressed: () {
-               canLaunchUrl(
-                       Uri(scheme: 'tel', path: friends.data?[index].phoneNumber??''))
-                   .then((value) => launchUrl(Uri(
-                       scheme: 'tel', path: friends.data?[index].phoneNumber??'')));
-            },
-            icon: Icon(
-              Icons.phone_in_talk_rounded,
-              color: PRIMARY_COLOR,
+    final friends = ref.read(friendProvider.notifier).state
+        as BaseResponse<List<FriendResponseDto>>;
+    List<Widget> guardianWidget = List.generate(
+      friends.data?.length ?? 0,
+      (index) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            CircleAvatar(
+              radius: 25,
+              backgroundImage:
+                  Image.network(friends.data?[index].profileImage ?? "").image,
             ),
-          ),
-        ],
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(friends.data?[index].nickname ?? ''),
+                Text(
+                  friends.data?[index].phoneNumber ?? '',
+                  style: TextStyle(color: Colors.grey),
+                )
+              ],
+            ),
+            IconButton(
+              onPressed: () {
+                canLaunchUrl(Uri(
+                        scheme: 'tel',
+                        path: friends.data?[index].phoneNumber ?? ''))
+                    .then((value) => launchUrl(Uri(
+                        scheme: 'tel',
+                        path: friends.data?[index].phoneNumber ?? '')));
+              },
+              icon: Icon(
+                Icons.phone_in_talk_rounded,
+                color: PRIMARY_COLOR,
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
     );
 
     showDialog(
@@ -998,7 +1111,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               ),
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
                   child: Column(
                     children: [
                       Text(
@@ -1013,8 +1127,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         height: 20,
                       ),
                       Column(
-                        children:
-                          guardianWidget,
+                        children: guardianWidget,
                       ),
                     ],
                   ),
