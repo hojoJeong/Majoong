@@ -13,10 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -66,4 +63,39 @@ public class PathController {
         data.setData(result);
         return data.builder();
     }
+
+    @GetMapping("/path/safety")
+    public void getPath() {
+
+        recommendedPathService.setEdgeSafety();
+
+        log.info("safety 값 설정 성공");
+    }
+
+    @PostMapping("/path/test")
+    @Operation(summary = "경로 추천 API", description = "최단 거리, 안전 거리 반환")
+    public ResponseEntity testPath(@RequestBody PathRequestDto pathRequestDto) throws IOException {
+        double startLng = pathRequestDto.getStartLng();
+        double startLat = pathRequestDto.getStartLat();
+        double endLng = pathRequestDto.getEndLng();
+        double endLat = pathRequestDto.getEndLat();
+
+        ResponseData data = new ResponseData();
+        data.setStatus(200);
+        data.setMessage("경로 추천 성공");
+
+        Map<String, Object> recommendedPath = recommendedPathService.testRecommendedPath(startLng, startLat, endLng, endLat);
+        if (recommendedPath == null) {
+            data.setStatus(404);
+            data.setMessage("안전경로 추천 오류");
+        }
+
+        Map<String,Object> result = new HashMap<>();
+        result.put("recommendedPath", recommendedPath);
+        result.put("shortestPath", null);
+
+        data.setData(result);
+        return data.builder();
+    }
+
 }

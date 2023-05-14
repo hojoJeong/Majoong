@@ -31,7 +31,7 @@ public class GraphDto implements Iterable{
         }
 
         for(EdgeDto e : edgeList){
-            addEdge(e.getSourceId(), e.getTargetId(), e.getDistanceVal() - e.getSafeVal());
+            addEdge(e.getSourceId(), e.getTargetId(), e.getDistance() - e.getSafety());
         }
     }
 

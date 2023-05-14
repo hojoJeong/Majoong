@@ -50,8 +50,8 @@ public class MysqlConfig {
         return builder
                 .dataSource(dataSource)
                 .packages(
-                        "com.example.majoong.friend.domain",
                         "com.example.majoong.user.domain",
+                        "com.example.majoong.friend.domain",
                         "com.example.majoong.map.domain",
                         "com.example.majoong.review.domain"
                         )

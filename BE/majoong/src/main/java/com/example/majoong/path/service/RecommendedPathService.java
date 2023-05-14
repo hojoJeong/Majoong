@@ -1,20 +1,25 @@
 package com.example.majoong.path.service;
 
+import com.example.majoong.map.dto.FacilityDto;
 import com.example.majoong.map.dto.LocationDto;
 import com.example.majoong.path.Repository.EdgeRepository;
 import com.example.majoong.path.Repository.NodeRepository;
 import com.example.majoong.path.domain.Edge;
 import com.example.majoong.path.domain.Node;
-import com.example.majoong.path.dto.EdgeDto;
-import com.example.majoong.path.dto.GraphDto;
-import com.example.majoong.path.dto.NodeDataDto;
-import com.example.majoong.path.dto.NodeDto;
+import com.example.majoong.path.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.geo.Circle;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Point;
+import org.springframework.data.redis.connection.RedisGeoCommands;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+import java.math.BigInteger;
 import java.util.*;
 
 @Slf4j
@@ -27,6 +32,8 @@ public class RecommendedPathService {
     private NodeRepository nodeRepository;
     @Autowired
     private EdgeRepository edgeRepository;
+    private final RedisOperations<String, String> redisOperations;
+
     private final double CAPTURE_PADDING = 0.00015000000;
     private final double PADDING_RATIO = 3.3; //패딩 조절 비율
     private final int STANDARD_DIST = 254; //padding == CAPTURE_PADDING 일 경우, 가장 깔끔 하게 나온 경로 결과 값의 직선 거리
@@ -45,6 +52,25 @@ public class RecommendedPathService {
         // astar 알고리즘
         Map<String, Object> recommendedPath = astar(startNode.getNodeId(), endNode.getNodeId());
 
+        return recommendedPath;
+    }
+
+    public Map<String, Object> testRecommendedPath(double startLng, double startLat, double endLng, double endLat) {
+
+        // 시작점, 도착점과 가장 가까운 노드 탐색
+        NodeDto startNode = findNearestNode(startLng, startLat);
+        NodeDto endNode = findNearestNode(endLng, endLat);
+        System.out.println();
+        System.out.println("startNode : " + startNode.getNodeId() + "              endNode : "+  endNode.getNodeId());
+        System.out.println();
+
+        // 그래프 생성
+        createAstarGraph(startNode, endNode);
+        System.out.println("그래프 생성");
+
+        // astar 알고리즘
+        Map<String, Object> recommendedPath = astar(startNode.getNodeId(), endNode.getNodeId());
+        System.out.println("astar 알고리즘");
         return recommendedPath;
     }
 
@@ -208,7 +234,7 @@ public class RecommendedPathService {
             double centerLat = edge.getCenterLat();
 
             if((lat1 <= centerLat && centerLat <= lat2) && (lng1 <= centerLng && centerLng <= lng2)){
-                sum += edge.getSafeVal();
+                sum += edge.getSafety();
             }
         }
 
@@ -272,35 +298,158 @@ public class RecommendedPathService {
         List<Edge> edges = edgeRepository.findEdgesByArea(lng1, lat1, lng2, lat2);
         List<EdgeDto> edgeList = new ArrayList<>();
         for (Edge edge : edges) {
-            EdgeDto edgeDto = new EdgeDto(edge.getEdgeId(), edge.getSourceId(), edge.getTargetId(),
-                    edge.getDistanceVal(), edge.getSafeVal(), edge.getCenterLng(), edge.getCenterLat());
+            EdgeDto edgeDto = new EdgeDto(edge.getEdgeId(),
+                    edge.getSourceId(), edge.getSourceLng(), edge.getSourceLat(),
+                    edge.getTargetId(), edge.getTargetLng(), edge.getTargetLat(),
+                    edge.getSafety(), edge.getDistance(), edge.getCenterLng(), edge.getCenterLat());
             edgeList.add(edgeDto);
         }
 
         // 불러온 노드와 엣지가 유효한지 검사
-        boolean startFlag = false;
-        boolean endFlag = false;
-
-        List<EdgeDto> checkedEdgeList = new ArrayList<>();
-
-        for(EdgeDto edge : edgeList){
-            for(NodeDto n : nodeList){
-                if(n.getNodeId() == edge.getSourceId()) startFlag = true;
-                if(n.getNodeId() == edge.getTargetId()) endFlag = true;
-            }
-            if (startFlag && endFlag) {
-                checkedEdgeList.add(edge);
-            }
-            startFlag = false;
-            endFlag = false;
-        }
+//        boolean startFlag = false;
+//        boolean endFlag = false;
+//
+//        List<EdgeDto> checkedEdgeList = new ArrayList<>();
+//
+//        for(EdgeDto edge : edgeList){
+//            for(NodeDto node : nodeList){
+//
+//                if(node.getNodeId() == edge.getSourceId()) startFlag = true;
+//                if(node.getNodeId() == edge.getTargetId()) endFlag = true;
+//            }
+//            if (startFlag && endFlag) {
+//                checkedEdgeList.add(edge);
+//            }
+//            startFlag = false;
+//            endFlag = false;
+//        }
 
         Map<String, List<? extends Object>> result= new HashMap<>();
 
         result.put("nodeList", nodeList);
-        result.put("edgeList", checkedEdgeList);
+//        result.put("edgeList", checkedEdgeList);
+        result.put("edgeList", edgeList);
 
         return result;
+    }
+
+    @Transactional
+    public void setEdgeSafety() {
+
+        List<Edge> edgeList = edgeRepository.findEdgeList();
+
+        for(Edge edge : edgeList){
+            Long edgeId = edge.getEdgeId();
+            double centerLng = edge.getCenterLng();
+            double centerLat = edge.getCenterLat();
+            int distance = (int) Math.round(edge.getDistance());
+            if (distance <= 0) distance = 1;
+
+//            System.out.println();
+//            System.out.println(edgeId);
+//            System.out.println(centerLng);
+//            System.out.println(centerLat);
+//            System.out.println(distance);
+//            System.out.println();
+
+            RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().includeCoordinates();
+            GeoResults<RedisGeoCommands.GeoLocation<String>> policeResult = redisOperations.opsForGeo()
+                    .radius("police", new Circle(new Point(centerLng, centerLat), new Distance(distance, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+            GeoResults<RedisGeoCommands.GeoLocation<String>> safeRoadResult = redisOperations.opsForGeo()
+                    .radius("saferoad", new Circle(new Point(centerLng, centerLat), new Distance(distance, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+            GeoResults<RedisGeoCommands.GeoLocation<String>> storeResult = redisOperations.opsForGeo()
+                    .radius("store", new Circle(new Point(centerLng, centerLat), new Distance(distance, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+            GeoResults<RedisGeoCommands.GeoLocation<String>> cctvResult = redisOperations.opsForGeo()
+                    .radius("cctv", new Circle(new Point(centerLng, centerLat), new Distance(distance, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+            GeoResults<RedisGeoCommands.GeoLocation<String>> bellResult = redisOperations.opsForGeo()
+                    .radius("bell", new Circle(new Point(centerLng, centerLat), new Distance(distance, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+            GeoResults<RedisGeoCommands.GeoLocation<String>> lampResult = redisOperations.opsForGeo()
+                    .radius("lamp", new Circle(new Point(centerLng, centerLat), new Distance(distance, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+            int policeNum = policeResult.getContent().size();
+            int safeRoadNum = safeRoadResult.getContent().size();
+            int storeNum = storeResult.getContent().size();
+            int cctvNum = cctvResult.getContent().size();
+            int bellNum = bellResult.getContent().size();
+            int lampNum = lampResult.getContent().size();
+
+            int policeVal = policeNum*10;
+            if (safeRoadNum != 0) safeRoadNum = 5;
+            int storeVal = storeNum*3;
+            int cctvVal = cctvNum*3;
+            int bellVal = bellNum;
+            int lampVal = lampNum;
+
+            int safety = policeNum*10 + safeRoadNum + storeVal + cctvVal + bellVal + lampVal;
+
+//            System.out.println();
+//            System.out.println(safety);
+//            System.out.println();
+
+            edge.setSafety(safety);
+            edgeRepository.save(edge);
+        }
+
+        /*
+        Edge edgePosition = edgeRepository.findEdgePosition();
+        Long edgeId = edgePosition.getEdgeId();
+        double centerLng = edgePosition.getCenterLng();
+        double centerLat = edgePosition.getCenterLat();
+        int distance = (int) Math.round(edgePosition.getDistance());
+        if (distance <= 0) distance = 1;
+
+        System.out.println();
+        System.out.println(edgeId);
+        System.out.println(centerLng);
+        System.out.println(centerLat);
+        System.out.println(distance);
+        System.out.println();
+
+        RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().includeCoordinates();
+        GeoResults<RedisGeoCommands.GeoLocation<String>> policeResult = redisOperations.opsForGeo()
+                .radius("police", new Circle(new Point(centerLng, centerLat), new Distance(distance, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+        GeoResults<RedisGeoCommands.GeoLocation<String>> safeRoadResult = redisOperations.opsForGeo()
+                .radius("saferoad", new Circle(new Point(centerLng, centerLat), new Distance(distance, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+        GeoResults<RedisGeoCommands.GeoLocation<String>> storeResult = redisOperations.opsForGeo()
+                .radius("store", new Circle(new Point(centerLng, centerLat), new Distance(distance, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+        GeoResults<RedisGeoCommands.GeoLocation<String>> cctvResult = redisOperations.opsForGeo()
+                .radius("cctv", new Circle(new Point(centerLng, centerLat), new Distance(distance, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+        GeoResults<RedisGeoCommands.GeoLocation<String>> bellResult = redisOperations.opsForGeo()
+                .radius("bell", new Circle(new Point(centerLng, centerLat), new Distance(distance, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+        GeoResults<RedisGeoCommands.GeoLocation<String>> lampResult = redisOperations.opsForGeo()
+                .radius("lamp", new Circle(new Point(centerLng, centerLat), new Distance(distance, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+        int policeNum = policeResult.getContent().size();
+        int safeRoadNum = safeRoadResult.getContent().size();
+        int storeNum = storeResult.getContent().size();
+        int cctvNum = cctvResult.getContent().size();
+        int bellNum = bellResult.getContent().size();
+        int lampNum = lampResult.getContent().size();
+
+        int policeVal = policeNum*10;
+        if (safeRoadNum != 0) safeRoadNum = 5;
+        int storeVal = storeNum*3;
+        int cctvVal = cctvNum*3;
+
+        int safety = policeNum*10 + safeRoadNum + storeNum + cctvNum + bellNum + lampNum;
+
+        System.out.println();
+        System.out.println(safety);
+        System.out.println();
+
+        edgePosition.setSafety(safety);
+//        edgeRepository.save(edgePosition);
+        */
     }
 
 
