@@ -6,6 +6,7 @@ import com.example.majoong.map.service.MapFacilityService;
 import com.example.majoong.map.service.MapService;
 import com.example.majoong.response.ResponseData;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.opencsv.exceptions.CsvValidationException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +56,12 @@ public class MapController {
     public String saveRedis() {
         mapDataService.saveMysqlToRedisGeospatial();               // DB의 데이터 Redis로 동기화
 
+        return "Reids에 저장 성공";
+    }
+
+    @GetMapping("/save/road")
+    public String saveRedis2() throws CsvValidationException, IOException {
+        mapDataService.saveRoadCsvToRedis();
         return "Reids에 저장 성공";
     }
 
