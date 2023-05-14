@@ -157,8 +157,7 @@ class FriendStateNotifier extends StateNotifier<BaseResponseState> {
   }
 
   editGuardian(int friendId) async {
-    final int userId =
-        int.parse(await secureStorage.read(key: USER_ID).toString());
+    final int userId = int.parse((await secureStorage.read(key: USER_ID)).toString());
     final response = await userApi.editGuardian(
         FriendRequestRequestDto(userId: userId, friendId: friendId));
     if (response.status == 200) {

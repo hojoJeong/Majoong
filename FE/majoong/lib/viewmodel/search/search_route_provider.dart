@@ -30,7 +30,4 @@ class SearchRouteStateNotifier extends StateNotifier<BaseResponseState> {
     }
   }
 
-  selectRoute(RouteInfoResponseDto? route){
-    state = BaseResponse(status: 200, message: '경로 선택됨', data: route);
-  }
 }

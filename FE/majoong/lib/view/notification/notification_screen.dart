@@ -8,6 +8,8 @@ import 'package:majoong/common/layout/loading_layout.dart';
 import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/user/notification_response_dto.dart';
+import 'package:majoong/view/friend/friend_list_screen.dart';
+import 'package:majoong/view/guardian/guardian_screen.dart';
 import 'package:majoong/viewmodel/notification/notification_provider.dart';
 
 class NotificationScreen extends ConsumerWidget {
@@ -42,6 +44,7 @@ class NotificationScreen extends ConsumerWidget {
                                 dismissible: DismissiblePane(
                                   onDismissed: () {
                                     //TODO 삭제
+                                    ref.read(notificationProvider.notifier).deleteNotification(notification.notificationId);
                                     showToast(context: context, '삭제 완료');
                                   },
                                 ),
@@ -49,6 +52,7 @@ class NotificationScreen extends ConsumerWidget {
                                   SlidableAction(
                                     onPressed: (context) {
                                       //TODO 삭제
+                                      ref.read(notificationProvider.notifier).deleteNotification(notification.notificationId);
                                       showToast(context: context, '삭제완료');
                                     },
                                     backgroundColor: Colors.grey,
@@ -57,43 +61,52 @@ class NotificationScreen extends ConsumerWidget {
                                   )
                                 ],
                               ),
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 30,
-                                    backgroundImage:
-                                        NetworkImage(notification.profileImage),
-                                  ),
-                                  SizedBox(
-                                    width: 10,
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(bottom: 4),
-                                        child: Text.rich(
-                                            TextSpan(children: <TextSpan>[
-                                          TextSpan(
-                                              text: notification.nickname,
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize:
-                                                      BASE_TITLE_FONT_SIZE)),
-                                          TextSpan(text: '님이 $notiType을 요청했습니다.')
-                                        ])),
-                                      ),
-                                      Visibility(
-                                          visible: notification.type == 2,
-                                          child: Padding(
-                                            padding:
-                                                const EdgeInsets.only(bottom: 4),
-                                            child: Text('클릭하시면 공유 화면으로 이동합니다.'),
-                                          )),
-                                      Text(notification.phoneNumber)
-                                    ],
-                                  )
-                                ],
+                              child: GestureDetector(
+                                onTap: (){
+                                  if(notification.type == 1){
+                                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => FriendListScreen()));
+                                  } else {
+                                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => GuardianScreen(friendId: notification.userId,)));
+                                  }
+                                },
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 30,
+                                      backgroundImage:
+                                          NetworkImage(notification.profileImage),
+                                    ),
+                                    SizedBox(
+                                      width: 10,
+                                    ),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(bottom: 4),
+                                          child: Text.rich(
+                                              TextSpan(children: <TextSpan>[
+                                            TextSpan(
+                                                text: notification.nickname,
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize:
+                                                        BASE_TITLE_FONT_SIZE)),
+                                            TextSpan(text: '님이 $notiType을 요청했습니다.')
+                                          ])),
+                                        ),
+                                        Visibility(
+                                            visible: notification.type == 2,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.only(bottom: 4),
+                                              child: Text('클릭하시면 공유 화면으로 이동합니다.'),
+                                            )),
+                                        Text(notification.phoneNumber)
+                                      ],
+                                    )
+                                  ],
+                                ),
                               ),
                             );
                           },

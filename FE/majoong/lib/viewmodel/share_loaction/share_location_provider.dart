@@ -9,18 +9,22 @@ import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/map/location_point_response_dto.dart';
 import 'package:majoong/service/local/secure_storage.dart';
+import 'package:majoong/service/remote/api/map/map_api_service.dart';
+
+import '../../model/request/map/share_route_request_dto.dart';
 
 final shareLocationProvider =
 StateNotifierProvider<ShareLocationStateNotifier, BaseResponseState>((ref) {
   final secureStorage = ref.read(secureStorageProvider);
-  final notifier = ShareLocationStateNotifier(secureStorage: secureStorage);
+  final mapApi = ref.read(mapApiServiceProvider);
+  final notifier = ShareLocationStateNotifier(secureStorage: secureStorage, mapApi: mapApi);
   return notifier;
 });
 
 class ShareLocationStateNotifier extends StateNotifier<BaseResponseState> {
   final FlutterSecureStorage secureStorage;
-
-  ShareLocationStateNotifier({required this.secureStorage})
+  final MapApiService mapApi;
+  ShareLocationStateNotifier({required this.secureStorage, required this.mapApi})
       : super(BaseResponseLoading());
 
   late ConnectionSettings amqpSetting;
@@ -102,5 +106,10 @@ class ShareLocationStateNotifier extends StateNotifier<BaseResponseState> {
   closeConnection() async {
     state = BaseResponseLoading();
     amqpChannel.close();
+  }
+
+  requestShare(ShareRouteRequestDto request) async {
+    final response = await mapApi.shareRoute(request);
+    logger.d('위치 공유 요청 : ${response.status}');
   }
 }

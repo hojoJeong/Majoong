@@ -404,7 +404,7 @@ class _UserApiService implements UserApiService {
     _data.addAll(request.toJson());
     final _result = await _dio.fetch<Map<String, dynamic>>(
         _setStreamType<BaseResponse<FriendResponseDto>>(Options(
-      method: 'GET',
+      method: 'POST',
       headers: _headers,
       extra: _extra,
     )

@@ -28,13 +28,15 @@ import '../../viewmodel/search/search_route_provider.dart';
 import 'package:http/http.dart' as http;
 
 class OnGoingScreen extends ConsumerStatefulWidget {
-  const OnGoingScreen({Key? key}) : super(key: key);
+  final RouteInfoResponseDto route;
+  const OnGoingScreen({Key? key, required this.route}) : super(key: key);
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _OnGoingState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _OnGoingState(selectedRoute: route);
 }
 
 class _OnGoingState extends ConsumerState<OnGoingScreen> {
+  final RouteInfoResponseDto selectedRoute;
   late GoogleMapController mapController;
   Location location = Location();
   late bool _serviceEnabled;
@@ -42,6 +44,8 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
   LocationData? _locationData;
   Set<Polyline> route = {};
   List<Marker> marker = [];
+
+  _OnGoingState({required this.selectedRoute});
 
   makePolyline(List<LocationPointResponseDto> selectedRoutePoints) {
     final List<LatLng> selectedRoutePointList = selectedRoutePoints.map((e) {
@@ -53,7 +57,7 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
         polylineId: PolylineId('seleted_route'),
         visible: true,
         points: selectedRoutePointList,
-        color: POLICE_MARKER_COLOR,
+        color: SECOND_PRIMARY_COLOR,
         width: 8));
   }
 
@@ -202,21 +206,20 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
     final markerInfo = ref.watch(searchMarkerProvider.notifier);
     final chipInfo = ref.watch(searchChipProvider.notifier);
     final cameraMovedInfo = ref.watch(searchCameraMovedProvider);
-    final searchRouteState = ref.read(searchRouteProvider);
     final curAddress = ref.watch(curAddressProvider);
     String endTime = "";
     logger.d('amqp share locationstate : $shareLocationState');
 
-    logger.d('ongoing : $_locationData, $shareLocationState, $searchRouteState');
+    logger
+        .d('ongoing : $_locationData, $shareLocationState');
 
     if (_locationData != null &&
-        shareLocationState is BaseResponse<bool> &&
-        searchRouteState is BaseResponse<RouteInfoResponseDto>) {
+        shareLocationState is BaseResponse<bool>) {
       endTime = DateFormat('hh:mm').format(
-          DateTime.now().add(Duration(hours: searchRouteState.data!.time)));
+          DateTime.now().add(Duration(minutes: selectedRoute.time)));
       logger.d('도착시간 : $endTime');
       makePolyline(
-        searchRouteState.data!.point,
+        selectedRoute.point
       );
       makeMarkers(markerInfo.state);
 
@@ -395,8 +398,7 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
                 ),
               ),
       );
-    }
-    else {
+    } else {
       return LoadingLayout();
     }
   }

@@ -4,20 +4,28 @@ import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:location/location.dart';
+import 'package:majoong/common/const/key_value.dart';
 import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/response/map/route_info_response_dto.dart';
 import 'package:majoong/model/response/map/search_route_response_dto.dart';
+import 'package:majoong/service/local/secure_storage.dart';
 import 'package:majoong/view/guardian/guardian_screen.dart';
 import 'package:majoong/view/on_going/on_going_screen.dart';
+import 'package:majoong/view/search/select_guardians_screen.dart';
+import 'package:majoong/viewmodel/friend/friend_provider.dart';
+import 'package:majoong/viewmodel/search/get_guardians_provider.dart';
 import 'package:majoong/viewmodel/search/route_point_provider.dart';
 import 'package:majoong/viewmodel/search/search_route_provider.dart';
 import 'package:majoong/viewmodel/share_loaction/share_location_provider.dart';
+import 'package:ndialog/ndialog.dart';
 
 import '../../common/const/colors.dart';
 import '../../model/request/map/get_facility_request_dto.dart';
+import '../../model/request/map/share_route_request_dto.dart';
 import '../../model/response/base_response.dart';
 import '../../model/response/map/location_point_response_dto.dart';
+import '../../model/response/user/friend_response_dto.dart';
 import '../../viewmodel/main/facility_provider.dart';
 import '../../viewmodel/main/marker_provider.dart';
 import '../../viewmodel/main/review_dialog_provider.dart';
@@ -105,14 +113,14 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
   void initState() {
     super.initState();
     _getLocation();
-    // location.onLocationChanged.listen((event) {
-    //   setState(() {
-    //     _locationData = event;
-    //     final currentLocation = ref.read(currentLocationProvider);
-    //     currentLocation[0] = event.latitude!;
-    //     currentLocation[1] = event.longitude!;
-    //   });
-    // });
+    location.onLocationChanged.listen((event) {
+      setState(() {
+        _locationData = event;
+        final currentLocation = ref.read(currentLocationProvider);
+        currentLocation[0] = event.latitude!;
+        currentLocation[1] = event.longitude!;
+      });
+    });
   }
 
   List<String> _choices = [
@@ -195,14 +203,6 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
     final cameraMovedInfo = ref.watch(cameraMovedProvider);
     final resultRoutePoint = ref.watch(routePointProvider);
     final searchRouteState = ref.watch(searchRouteProvider);
-    final shareLocationState = ref.watch(shareLocationProvider);
-    if (shareLocationState is BaseResponse) {
-      logger.d('이동 준비 완료 : ${shareLocationState.message}');
-      Future.delayed(Duration.zero, (){
-        Navigator.of(context)
-            .pushReplacement(MaterialPageRoute(builder: (_) => OnGoingScreen()));
-      });
-    }
 
     if (searchRouteState is BaseResponseLoading) {
       ref.read(searchRouteProvider.notifier).getRoute(
@@ -217,9 +217,10 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
     if (_locationData != null &&
         searchRouteState is BaseResponse<SearchRouteResponseDto>) {
       final shortestPath = searchRouteState.data!.shortestPath.point;
-
-      final initialLat = searchRouteState.data!.shortestPath.point[shortestPath.length~/2].lat;
-      final initialLng = searchRouteState.data!.shortestPath.point[shortestPath.length~/2].lng;
+      final initialLat = searchRouteState
+          .data!.shortestPath.point[shortestPath.length ~/ 2].lat;
+      final initialLng = searchRouteState
+          .data!.shortestPath.point[shortestPath.length ~/ 2].lng;
 
       makePolyline(
           searchRouteState.data!.recommendedPath?.point ?? [],
@@ -242,8 +243,7 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                 onMapCreated: _onMapCreated,
                 markers: Set.from(marker),
                 initialCameraPosition: CameraPosition(
-                  target: LatLng(
-                      initialLat, initialLng),
+                  target: LatLng(initialLat, initialLng),
                   zoom: 15.7,
                 ),
                 onCameraMove: (CameraPosition position) {
@@ -486,7 +486,8 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                                 searchRouteState
                                         .data!.recommendedPath?.distance ??
                                     0,
-                                selectRecommended, searchRouteState.data!.recommendedPath),
+                                selectRecommended,
+                                searchRouteState.data!.recommendedPath),
                           ),
                           GestureDetector(
                             onTap: () {
@@ -500,7 +501,8 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                                 searchRouteState.data!.shortestPath.time ?? 0,
                                 searchRouteState.data!.shortestPath.distance ??
                                     0,
-                                selectShortest, searchRouteState.data!.shortestPath),
+                                selectShortest,
+                                searchRouteState.data!.shortestPath),
                           ),
                         ],
                       ),
@@ -536,8 +538,7 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
     }
   }
 
-  Widget selectRouteButton(
-      String title, int time, int distance, bool selected, RouteInfoResponseDto? route) {
+  Widget selectRouteButton(String title, int time, int distance, bool selected, RouteInfoResponseDto? path) {
     return Container(
       width: MediaQuery.of(context).size.width * 0.45,
       decoration: BoxDecoration(
@@ -570,11 +571,8 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                 GestureDetector(
                   onTap: selected
                       ? () {
-                          ref
-                              .read(shareLocationProvider.notifier)
-                              .initChannel(false, -1);
-                          ref.read(searchRouteProvider.notifier).selectRoute(route);
-                          showToast(context: context, '경로 탐색을 시작합니다.');
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => SelectGuardiansScreen(path: path!,)));
                         }
                       : null,
                   child: Image(
