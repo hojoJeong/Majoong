@@ -1,6 +1,7 @@
 package com.example.majoong.map.service;
 
 import com.example.majoong.map.domain.*;
+import com.example.majoong.map.dto.RoadDto;
 import com.example.majoong.map.repository.*;
 import com.example.majoong.tools.CsvUtils;
 import com.google.common.reflect.TypeToken;
@@ -12,9 +13,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.data.geo.Point;
+import org.springframework.data.geo.*;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.GeoOperations;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -22,10 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -39,6 +39,10 @@ public class MapDataService {
     private final BellRepository bellRepository;
     private final LampRepository lampRepository;
     private final SafeRoadRepository safeRoadRepository;
+
+    private final RedisOperations<String, String> redisOperations;
+
+    private final Gson gson;
 
     public void saveMysqlToRedisGeospatial() {
 //        savePoliceToRedis();
@@ -110,6 +114,85 @@ public class MapDataService {
         double latitude = Double.parseDouble(parts[1]);
         return new Point(longitude, latitude);
     }
+
+
+    public List<RoadDto> getAllRoadPoints() {
+        List<RoadDto> points = new ArrayList<>();
+
+        RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().includeCoordinates().includeDistance();
+        GeoResults<RedisGeoCommands.GeoLocation<String>> geoResults = redisOperations.opsForGeo()
+                .radius("50m_road_points", new Circle(new Point(128.41915,36.1033), new Distance(9999999999.0, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+        for (GeoResult<RedisGeoCommands.GeoLocation<String>> geoResult : geoResults) {
+            RedisGeoCommands.GeoLocation<String> geoLocation = geoResult.getContent();
+            Point geoPoint = geoLocation.getPoint();
+            double longitude = geoPoint.getX();
+            double latitude = geoPoint.getY();
+            String[] member = geoResult.getContent().getName().split("_");
+            int roadId = Integer.parseInt(member[0]);
+            int id =Integer.parseInt(member[1]);
+            RoadDto road = new RoadDto(id,roadId,longitude, latitude);
+            points.add(road);
+        }
+
+        return points;
+    }
+
+
+    public List<RoadDto> findRiskPoints() {
+        // 모든 도로 포인트 가져오기
+        List<RoadDto> roadPoints = getAllRoadPoints();
+
+        // 처리한 포인트들을 저장하는 Set
+        Set<RoadDto> processedPoints = new HashSet<>();
+
+        int len = roadPoints.size();
+
+        List<RoadDto> road = new ArrayList<>();
+        for (int i = 0; i < len; i++) {
+            System.out.println(i);
+            RoadDto roadPoint = roadPoints.get(i);
+
+            if (processedPoints.contains(roadPoint)) {
+                continue;
+            }
+
+            processedPoints.add(roadPoint);
+
+            if (isFacility(roadPoint.getLng(), roadPoint.getLat())) {
+                continue;
+            }
+            road.add(roadPoint);
+        }
+        return road;
+    }
+
+
+    private boolean isFacility(double x, double y) {
+        RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().includeCoordinates().includeDistance();
+
+        GeoResults<RedisGeoCommands.GeoLocation<String>> police = redisOperations.opsForGeo()
+                .radius("police", new Circle(new Point(x, y), new Distance(500, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+        GeoResults<RedisGeoCommands.GeoLocation<String>> store = redisOperations.opsForGeo()
+                .radius("store", new Circle(new Point(x, y), new Distance(150, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+        GeoResults<RedisGeoCommands.GeoLocation<String>> lamp = redisOperations.opsForGeo()
+                .radius("lamp", new Circle(new Point(x, y), new Distance(5, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+        GeoResults<RedisGeoCommands.GeoLocation<String>> cctv = redisOperations.opsForGeo()
+                .radius("cctv", new Circle(new Point(x, y), new Distance(10, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+        GeoResults<RedisGeoCommands.GeoLocation<String>> bell = redisOperations.opsForGeo()
+                .radius("bell", new Circle(new Point(x, y), new Distance(5, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+        if (!police.getContent().isEmpty() || !store.getContent().isEmpty() || !lamp.getContent().isEmpty()
+                || !cctv.getContent().isEmpty()|| !bell.getContent().isEmpty()) {
+            return true;
+        }
+        return false;
+    }
+
 
     // csv파일에서 Dto List 생성
     public List<Police> loadPoliceList() {

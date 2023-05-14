@@ -1,30 +1,20 @@
 package com.example.majoong.map.controller;
 
 import com.example.majoong.map.dto.*;
-import com.example.majoong.map.service.DangerousZoneService;
 import com.example.majoong.map.service.MapDataService;
 import com.example.majoong.map.service.MapFacilityService;
 import com.example.majoong.map.service.MapService;
 import com.example.majoong.response.ResponseData;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.opencsv.exceptions.CsvValidationException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.geo.Circle;
-import org.springframework.data.geo.Distance;
-import org.springframework.data.geo.GeoResults;
-import org.springframework.data.geo.Point;
-import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @RestController
