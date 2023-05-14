@@ -36,6 +36,7 @@ import 'package:majoong/view/friend/friend_list_screen.dart';
 import 'package:majoong/view/login/login_screen.dart';
 import 'package:majoong/view/notification/notification_screen.dart';
 import 'package:majoong/view/search/search_screen.dart';
+import 'package:majoong/view/video/video_screen.dart';
 import 'package:majoong/viewmodel/friend/friend_provider.dart';
 import 'package:majoong/viewmodel/main/facility_provider.dart';
 import 'package:majoong/viewmodel/main/marker_provider.dart';
@@ -477,7 +478,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         MaterialPageRoute(builder: (_) => FriendListScreen()));
                   },
                   child: drawerMenu(title: '친구 관리')),
-              drawerMenu(title: '녹화기록'),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => VideoScreen()));
+                },
+                  child: drawerMenu(title: '녹화기록')),
               GestureDetector(
                   onTap: () {
                     Navigator.of(context).push(MaterialPageRoute(
@@ -916,9 +922,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                 isInside = true;
                               } else {
                                 isInside = false;
+                                localParticipant = null;
                                 await ref
                                     .read(videoProvider.notifier)
                                     .stopVideo();
+                                await _openvidu.disconnect();
                               }
                             },
                           ),
