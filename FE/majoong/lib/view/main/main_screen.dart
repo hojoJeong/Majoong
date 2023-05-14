@@ -894,16 +894,16 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                             text: '바디캠',
                             onPressed: () async {
                               var cameraStatus = await Permission.camera.request();
-                              if (cameraStatus.isGranted) {
-                                // 권한 허용된 경우의 로직
-                              } else {
-                                // 권한 허용되지 않은 경우의 로직
+                              if (!cameraStatus.isGranted) {
+                                showToast(context: context, '권한 사용을 허용 해주세요');
+                                openAppSettings();
+                                return;
                               }
                               var micStatus = await Permission.microphone.request();
-                              if (micStatus.isGranted) {
-                                // 권한 허용된 경우의 로직
-                              } else {
-                                // 권한 허용되지 않은 경우의 로직
+                              if (!micStatus.isGranted) {
+                                showToast(context: context,'권한 사용을 허용 해주세요');
+                                openAppSettings();
+                                return;
                               }
                               if (!isInside) {
                                 initOpenVidu();
@@ -915,7 +915,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                 isInside = true;
                               } else {
                                 isInside = false;
-                                //TODO 바디캠 종료
+                                await ref
+                                    .read(videoProvider.notifier)
+                                    .stopVideo();
                               }
                             },
                           ),

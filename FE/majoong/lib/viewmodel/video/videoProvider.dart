@@ -31,4 +31,12 @@ class VideoStateNotifier extends StateNotifier<BaseResponseState>{
       state = response;
     }
   }
+
+  stopVideo() async {
+    state = BaseResponseLoading();
+    final BaseResponse response = await videoService.stopVideo(sessionInfo.sessionId, sessionInfo.connectionId);
+    if(response.status == 204){
+      state = response;
+    }
+  }
 }
