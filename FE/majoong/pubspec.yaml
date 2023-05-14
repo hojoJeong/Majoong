@@ -108,22 +108,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-  plugin:
-    platforms:
-      android:
-        package: com.nunez.openvidu.openvidu_client
-        pluginClass: OpenviduClientPlugin
-      ios:
-        pluginClass: OpenviduClientPlugin
-      linux:
-        pluginClass: OpenviduClientPlugin
-      macos:
-        pluginClass: OpenviduClientPlugin
-      windows:
-        pluginClass: OpenviduClientPluginCApi
-      web:
-        pluginClass: OpenviduClientWeb
-        fileName: openvidu_client_web.dart
+
   assets:
     - res/majoong_logo.jpg
     - res/logo_kakao.png
