@@ -13,7 +13,7 @@ final videoProvider = StateNotifierProvider<VideoStateNotifier, BaseResponseStat
 class VideoStateNotifier extends StateNotifier<BaseResponseState>{
   final VideoApiService videoService;
   late StartVideoResponseDto sessionInfo ;
-  VideoStateNotifier({required this.videoService}): super(BaseResponseLoading());
+  VideoStateNotifier({required this.videoService}): super(BaseResponse(status: 200, message: 'message', data: null));
 
   getRecordings() async {
     state = BaseResponseLoading();
@@ -35,7 +35,7 @@ class VideoStateNotifier extends StateNotifier<BaseResponseState>{
   stopVideo() async {
     state = BaseResponseLoading();
     final BaseResponse response = await videoService.stopVideo(sessionInfo.sessionId, sessionInfo.connectionId);
-    if(response.status == 204){
+    if(response.status == 200){
       state = response;
     }
   }

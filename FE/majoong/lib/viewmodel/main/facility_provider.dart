@@ -105,7 +105,6 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
           markerId: MarkerId(lamp.lampId.toString()),
           position: LatLng(lamp.lat, lamp.lng),
           icon: lampIcon,
-          infoWindow: InfoWindow(title: lamp.address),
         ));
       }
 

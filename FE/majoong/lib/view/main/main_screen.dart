@@ -864,6 +864,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       ),
                     ),
                   ),
+                  ref.read(videoProvider.notifier).state is BaseResponseLoading?loadingWidget():Container(),
                   Positioned(
                     left: 10,
                     right: 10,
