@@ -1,30 +1,29 @@
-import 'dart:io';
-
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
-import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:location/location.dart';
 import 'package:majoong/common/const/app_key.dart';
 import 'package:majoong/common/const/colors.dart';
-import 'package:majoong/main.dart';
 import 'package:majoong/common/util/logger.dart';
+import 'package:majoong/main.dart';
 import 'package:majoong/model/request/map/get_facility_request_dto.dart';
 import 'package:majoong/model/request/user/ReportRequestDto.dart';
 import 'package:majoong/model/response/base_response.dart';
+import 'package:majoong/model/response/user/friend_response_dto.dart';
 import 'package:majoong/model/response/user/user_info_response_dto.dart';
-import 'package:majoong/service/local/secure_storage.dart';
 import 'package:majoong/service/local/secure_storage.dart';
 import 'package:majoong/service/remote/api/user/user_api_service.dart';
 import 'package:majoong/view/edit/edit_pin_number_screen.dart';
@@ -34,14 +33,13 @@ import 'package:majoong/view/friend/friend_list_screen.dart';
 import 'package:majoong/view/login/login_screen.dart';
 import 'package:majoong/view/notification/notification_screen.dart';
 import 'package:majoong/view/search/search_screen.dart';
+import 'package:majoong/viewmodel/friend/friend_provider.dart';
 import 'package:majoong/viewmodel/main/facility_provider.dart';
 import 'package:majoong/viewmodel/main/marker_provider.dart';
 import 'package:majoong/viewmodel/main/review_dialog_provider.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:http/http.dart' as http;
 
-import '../../common/util/logger.dart';
 import '../../common/const/key_value.dart';
 import '../../viewmodel/main/user_info_provider.dart';
 
@@ -675,15 +673,19 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                                     fontSize: 12),
                                               ),
                                               GestureDetector(
-                                                onTap: () async{
+                                                onTap: () async {
                                                   //TODO 사진 촬영
-                                                  final pickedFile = await ImagePicker().pickImage(
+                                                  final pickedFile =
+                                                      await ImagePicker()
+                                                          .pickImage(
                                                     source: ImageSource.camera,
                                                   );
                                                   if (pickedFile != null) {
-                                                    reviewDialogInfo.setPicture(File(XFile(pickedFile.path).path));
+                                                    reviewDialogInfo.setPicture(
+                                                        File(XFile(
+                                                                pickedFile.path)
+                                                            .path));
                                                   }
-
                                                 },
                                                 child: Text(
                                                   '촬영하기',
@@ -801,12 +803,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                           bottomComponent(
                             image: AssetImage('res/call.png'),
                             text: '보호자 통화',
-                            onPressed: () {
-                              logger.d('Tab!');
-                              canLaunchUrl(
-                                      Uri(scheme: 'tel', path: '010-2638-5713'))
-                                  .then((value) => launchUrl(Uri(
-                                      scheme: 'tel', path: '010-2638-5713')));
+                            onPressed: () async {
+                              final friendInfo =
+                                  ref.read(friendProvider.notifier);
+                              await friendInfo.getFriendList(1);
+                              guardianDialog(setState);
                             },
                           ),
                           bottomComponent(
@@ -940,6 +941,89 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  guardianDialog(setState) {
+
+    final friends = ref.read(friendProvider.notifier).state as BaseResponse<List<FriendResponseDto>>;
+    List<Widget> guardianWidget = List.generate(friends.data?.length ?? 0, (index) => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          CircleAvatar(
+            radius: 25,
+            backgroundImage: Image.network(friends.data?[index].profileImage?? "").image,
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(friends.data?[index].nickname ?? ''),
+              Text(
+                friends.data?[index].phoneNumber??'',
+                style: TextStyle(color: Colors.grey),
+              )
+            ],
+          ),
+          IconButton(
+            onPressed: () {
+               canLaunchUrl(
+                       Uri(scheme: 'tel', path: friends.data?[index].phoneNumber??''))
+                   .then((value) => launchUrl(Uri(
+                       scheme: 'tel', path: friends.data?[index].phoneNumber??'')));
+            },
+            icon: Icon(
+              Icons.phone_in_talk_rounded,
+              color: PRIMARY_COLOR,
+            ),
+          ),
+        ],
+      ),
+    ),
+    );
+
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              insetPadding: EdgeInsets.all(60),
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
+                  child: Column(
+                    children: [
+                      Text(
+                        '보호자 목록',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Column(
+                        children:
+                          guardianWidget,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 

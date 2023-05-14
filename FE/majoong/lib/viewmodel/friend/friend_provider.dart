@@ -9,6 +9,8 @@ import 'package:majoong/model/response/user/friend_response_dto.dart';
 import 'package:majoong/service/local/secure_storage.dart';
 import 'package:majoong/service/remote/api/user/user_api_service.dart';
 
+import '../../common/util/logger.dart';
+
 final friendProvider =
     StateNotifierProvider<FriendStateNotifier, BaseResponseState>((ref) {
   final userApi = ref.read(userApiServiceProvider);
@@ -134,6 +136,7 @@ class FriendStateNotifier extends StateNotifier<BaseResponseState> {
     final response = await userApi.requestFriend(
         FriendRequestRequestDto(userId: userId, friendId: friendId));
     state = response;
+    logger.d(response.message);
   }
 
   acceptFriend(int friendId) async {

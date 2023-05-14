@@ -100,7 +100,7 @@ abstract class UserApiService {
       @Path('isGuardian') int isGuardian);
 
   @Headers({AUTHORIZATION: AUTH})
-  @GET('user/search')
+  @POST('user/search')
   Future<BaseResponse<FriendResponseDto>> searchFriend(
       @Body() SearchFriendRequestDto request);
 

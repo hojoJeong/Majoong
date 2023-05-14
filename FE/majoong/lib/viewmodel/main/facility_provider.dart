@@ -138,7 +138,7 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
           final polyLine = Polyline(
             polylineId: PolylineId('safeRoad$i'),
             points: [],
-            color: Colors.red,
+            color: Colors.pinkAccent.withOpacity(0.5),
             width: 5,);
           for (var point in road.point) {
             polyLine.points.add(LatLng(point.lat, point.lng));
