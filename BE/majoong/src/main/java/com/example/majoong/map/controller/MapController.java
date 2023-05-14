@@ -38,7 +38,6 @@ public class MapController {
 
     private final MapService mapService;
 
-    private final DangerousZoneService dangerousZoneService;
 
 
     @PostMapping("/facility")

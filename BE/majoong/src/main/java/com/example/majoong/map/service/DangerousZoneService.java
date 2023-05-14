@@ -52,48 +52,6 @@ public class DangerousZoneService {
         return points;
     }
 
-    public List<List<RoadDto>> findRiskRoads() {
-        System.out.println("시작");
-        // 모든 도로 포인트 가져오기
-        List<RoadDto> roadPoints = getAllRoadPoints();
-
-        // 처리한 포인트들을 저장하는 Set
-        Set<RoadDto> processedPoints = new HashSet<>();
-
-        int len = roadPoints.size();
-
-        List<List<RoadDto>> riskRoads = new ArrayList<>();
-        Map<Integer, List<RoadDto>> roadIdMap = new HashMap<>();
-
-        for (int i = 0; i < len; i++) {
-            System.out.println(i);
-            RoadDto roadPoint = roadPoints.get(i);
-
-            if (processedPoints.contains(roadPoint)) {
-                continue;
-            }
-
-            processedPoints.add(roadPoint);
-
-            if (isFacility(roadPoint.getLng(), roadPoint.getLat())) {
-                continue;
-            }
-
-            int roadId = roadPoint.getRoadId();
-            List<RoadDto> roadIdPoints = roadIdMap.getOrDefault(roadId, new ArrayList<>());
-            roadIdPoints.add(roadPoint);
-            roadIdMap.put(roadId, roadIdPoints);
-        }
-
-        for (List<RoadDto> roadIdPoints : roadIdMap.values()) {
-            if (roadIdPoints.size() >= 5) {
-                riskRoads.add(roadIdPoints);
-            }
-        }
-
-        return riskRoads;
-    }
-
 
     public List<RoadDto> findRiskPoints() {
         // 모든 도로 포인트 가져오기
