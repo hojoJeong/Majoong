@@ -3,6 +3,7 @@ package com.example.majoong.map.service;
 import com.example.majoong.map.domain.SafeRoad;
 import com.example.majoong.map.dto.*;
 import com.example.majoong.map.repository.SafeRoadRepository;
+import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.*;
@@ -14,11 +15,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MapFacilityService {
+
+    private final Gson gson;
 
     private final RedisOperations<String, String> redisOperations;
     private final SafeRoadRepository safeRoadRepository;
@@ -39,7 +43,7 @@ public class MapFacilityService {
         facilities.setReview(getFacilityDtos("review", centerLng, centerLat, radius, ReviewDto.class));
 
         facilities.setSafeRoad(getSafeRoadDtos("saferoad", centerLng, centerLat, radius));
-
+        facilities.setRiskRoad(getRiskRoad("risk_roads", centerLng, centerLat, radius));
         return facilities;
     }
 
@@ -116,4 +120,38 @@ public class MapFacilityService {
 
         return safeRoadMapDtoList;
     }
+
+    public List<LocationRoadDto> getRiskRoad(String key, double centerLng, double centerLat, double radius) {
+        RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().includeCoordinates().includeDistance();
+        GeoResults<RedisGeoCommands.GeoLocation<String>> geoResults = redisOperations.opsForGeo().radius(key, new Circle(new Point(centerLng, centerLat), new Distance(radius, RedisGeoCommands.DistanceUnit.METERS)), args);
+
+        List<LocationRoadDto> result = new ArrayList<>();
+        Set<String> processedRoads = new HashSet<>(); // 중복 체크를 위한 Set
+
+        for (GeoResult<RedisGeoCommands.GeoLocation<String>> geoResult : geoResults) {
+            String roadName = geoResult.getContent().getName();
+
+            if (!processedRoads.contains(roadName)) {
+                LocationRoadDto road = new LocationRoadDto();
+                List<LocationDto> list = new ArrayList<>();
+
+                String[] member = roadName.split("_");
+                LocationDto start = new LocationDto();
+                start.setLng(Double.parseDouble(member[0]));
+                start.setLat(Double.parseDouble(member[1]));
+                list.add(start);
+                LocationDto end = new LocationDto();
+                end.setLng(Double.parseDouble(member[2]));
+                end.setLat(Double.parseDouble(member[3]));
+                list.add(end);
+                road.setPoint(list);
+                result.add(road);
+                processedRoads.add(roadName);
+            }
+        }
+
+        return result;
+    }
+
+
 }

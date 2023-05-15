@@ -2,13 +2,13 @@ package com.example.majoong.map.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
-@NoArgsConstructor
 @Data
-public class LocationDto {
+public class RoadDto {
 
+    int id;
+    int roadId;
     double lng;
     double lat;
 }

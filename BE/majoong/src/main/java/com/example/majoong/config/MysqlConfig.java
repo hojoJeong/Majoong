@@ -44,7 +44,7 @@ public class MysqlConfig {
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(EntityManagerFactoryBuilder builder, @Qualifier("dataSource") DataSource dataSource) {
 
         Map<String, String> properties = new HashMap<String, String>();
-//        properties.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
+//        properties.put("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
         properties.put("hibernate.hbm2ddl.auto", "update");
 
         return builder

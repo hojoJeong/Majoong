@@ -1,9 +1,8 @@
 package com.example.majoong.path.controller;
 
-import com.example.majoong.map.dto.LocationDto;
+import com.example.majoong.path.dto.PathInfoDto;
 import com.example.majoong.path.dto.PathRequestDto;
 import com.example.majoong.path.dto.PathResponseDto;
-import com.example.majoong.path.dto.NodeDto;
 import com.example.majoong.path.service.RecommendedPathService;
 import com.example.majoong.path.service.ShortestPathService;
 import com.example.majoong.response.ResponseData;
@@ -43,24 +42,23 @@ public class PathController {
         data.setStatus(200);
         data.setMessage("경로 추천 성공");
 
-        Map<String,Object> shortPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
-
-        if (shortPath.get("point")==null||shortPath==null){
+        PathInfoDto shortPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
+        if (shortPath.getPoint()==null||shortPath==null){
             data.setStatus(404);
             data.setMessage("최단거리 추천 오류");
         }
 
-        Map<String, Object> recommendedPath = recommendedPathService.getRecommendedPath(startLng, startLat, endLng, endLat);
+        PathInfoDto recommendedPath = recommendedPathService.getRecommendedPath(startLng, startLat, endLng, endLat);
         if (recommendedPath == null) {
             data.setStatus(404);
             data.setMessage("안전경로 추천 오류");
         }
 
-        Map<String,Object> result = new HashMap<>();
-        result.put("recommendedPath", recommendedPath);
-        result.put("shortestPath", shortPath);
+        PathResponseDto path = new PathResponseDto();
+        path.setRecommendedPath(recommendedPath);
+        path.setShortestPath(shortPath);
+        data.setData(path);
 
-        data.setData(result);
         return data.builder();
     }
 
@@ -84,17 +82,18 @@ public class PathController {
         data.setStatus(200);
         data.setMessage("경로 추천 성공");
 
-        Map<String, Object> recommendedPath = recommendedPathService.testRecommendedPath(startLng, startLat, endLng, endLat);
+        PathInfoDto recommendedPath = recommendedPathService.testRecommendedPath(startLng, startLat, endLng, endLat);
         if (recommendedPath == null) {
             data.setStatus(404);
             data.setMessage("안전경로 추천 오류");
         }
 
-        Map<String,Object> result = new HashMap<>();
-        result.put("recommendedPath", recommendedPath);
-        result.put("shortestPath", null);
+        PathResponseDto path = new PathResponseDto();
+        path.setRecommendedPath(recommendedPath);
+        path.setShortestPath(null);
 
-        data.setData(result);
+        data.setData(path);
+
         return data.builder();
     }
 

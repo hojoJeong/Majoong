@@ -1,6 +1,5 @@
 package com.example.majoong.path.service;
 
-import com.example.majoong.map.dto.FacilityDto;
 import com.example.majoong.map.dto.LocationDto;
 import com.example.majoong.path.Repository.EdgeRepository;
 import com.example.majoong.path.Repository.NodeRepository;
@@ -19,7 +18,6 @@ import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.math.BigInteger;
 import java.util.*;
 
 @Slf4j
@@ -40,7 +38,7 @@ public class RecommendedPathService {
 
 
 
-    public Map<String, Object> getRecommendedPath(double startLng, double startLat, double endLng, double endLat) {
+    public PathInfoDto getRecommendedPath(double startLng, double startLat, double endLng, double endLat) {
 
         // 시작점, 도착점과 가장 가까운 노드 탐색
         NodeDto startNode = findNearestNode(startLng, startLat);
@@ -50,12 +48,12 @@ public class RecommendedPathService {
         createAstarGraph(startNode, endNode);
 
         // astar 알고리즘
-        Map<String, Object> recommendedPath = astar(startNode.getNodeId(), endNode.getNodeId());
+        PathInfoDto recommendedPath = astar(startNode.getNodeId(), endNode.getNodeId());
 
         return recommendedPath;
     }
 
-    public Map<String, Object> testRecommendedPath(double startLng, double startLat, double endLng, double endLat) {
+    public PathInfoDto testRecommendedPath(double startLng, double startLat, double endLng, double endLat) {
 
         // 시작점, 도착점과 가장 가까운 노드 탐색
         NodeDto startNode = findNearestNode(startLng, startLat);
@@ -69,7 +67,7 @@ public class RecommendedPathService {
         System.out.println("그래프 생성");
 
         // astar 알고리즘
-        Map<String, Object> recommendedPath = astar(startNode.getNodeId(), endNode.getNodeId());
+        PathInfoDto recommendedPath = astar(startNode.getNodeId(), endNode.getNodeId());
         System.out.println("astar 알고리즘");
         return recommendedPath;
     }
@@ -128,9 +126,9 @@ public class RecommendedPathService {
         astarGraph = new GraphDto(nodeList, edgeList, heuristicMap);
     }
 
-    public Map<String, Object> astar(Long sourceId, Long destinationId) {
+    public PathInfoDto astar(Long sourceId, Long destinationId) {
 
-        System.out.println("START : " + sourceId + "              END : "+  destinationId);
+//        System.out.println("START : " + sourceId + "              END : "+  destinationId);
 
         /**
          * http://stackoverflow.com/questions/20344041/why-does-priority-queue-has-default-initial-capacity-of-11
@@ -152,7 +150,7 @@ public class RecommendedPathService {
         final Set<Long> closedList = new HashSet<>(); // 닫힌 목록 -> 더 이상 볼 필요 없는 목록
 
         // 반환값
-        Map<String, Object> result = new HashMap<>();
+        PathInfoDto result = new PathInfoDto();
 
         // 큐 : 열린 목록
         // 큐가 비기 전 까지 무한 반복 -> 큐가 빈거면 경로가 없다는 뜻
@@ -175,9 +173,14 @@ public class RecommendedPathService {
                     nodeLng1 = nodeLng2;
                     nodeLat1 = nodeLat2;
                 }
-                result.put("point", pointList);
-                result.put("distance", (int) distance);
-                result.put("time", (int)(distance/1000/5*60));
+                result.setPoint(pointList);
+                result.setDistance((int) distance);
+                result.setTime((int)(distance/1000/5*60));
+
+                for (long id : pathList){
+                    System.out.println(id);
+                }
+
                 return result;
             }
 
