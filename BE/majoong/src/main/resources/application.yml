@@ -5,23 +5,28 @@ server:
 
 spring:
   datasource:
-    url: ${MAJOONG_MYSQL_URL}
-    username: ${MAJOONG_MYSQL_USERNAME}
-    password: ${MAJOONG_MYSQL_PASSWORD}
-  jpa:
-    hibernate:
-      ddl-auto: update
-      show-sql: true
-rabbitmq:
-  host: ${RABBITMQ_HOST}
-  port: ${RABBITMQ_PORT}
-  username: ${RABBITMQ_USERNAME}
-  password: ${RABBITMQ_PASSWORD}
+    mysql:
+      jdbc-url: ${MAJOONG_MYSQL_URL}
+      username: ${MAJOONG_MYSQL_USERNAME}
+      password: ${MAJOONG_MYSQL_PASSWORD}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+
+    postgresql:
+      jdbc-url: ${MAJOONG_POSTGRESQL_URL}
+      username: ${MAJOONG_POSTGRESQL_USERNAME}
+      password: ${MAJOONG_POSTGRESQL_PASSWORD}
+      driverClassName: org.postgresql.Driver
+
+#  jpa:
+#    hibernate:
+#      ddl-auto: update
+#      show-sql: true
 
   redis:
     host: ${REDIS_HOST}
     port: ${REDIS_PORT}
     password: ${REDIS_PASSWORD}
+
   servlet:
     multipart:
       maxFileSize: 10MB
@@ -34,10 +39,10 @@ jwt:
   add-path: /user/**, /map/**, /video/**
 
 naver:
-  access-key : ${NAVER_ACCESS_KEY}
-  secret-key : ${NAVER_SERVICE_KEY}
-  sms :
-    service-id : ${SMS_SERVICE_ID}
+  access-key: ${NAVER_ACCESS_KEY}
+  secret-key: ${NAVER_SERVICE_KEY}
+  sms:
+    service-id: ${SMS_SERVICE_ID}
 
 springdoc:
   packages-to-scan: com.example.majoong
@@ -73,3 +78,9 @@ google:
 map:
   api:
     key: ${MAP_API_KEY}
+
+rabbitmq:
+  host: ${RABBITMQ_HOST}
+  port: ${RABBITMQ_PORT}
+  username: ${RABBITMQ_USERNAME}
+  password: ${RABBITMQ_PASSWORD}

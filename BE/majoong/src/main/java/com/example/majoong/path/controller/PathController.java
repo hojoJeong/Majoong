@@ -1,9 +1,8 @@
 package com.example.majoong.path.controller;
 
-import com.example.majoong.map.dto.LocationDto;
+import com.example.majoong.path.dto.PathInfoDto;
 import com.example.majoong.path.dto.PathRequestDto;
 import com.example.majoong.path.dto.PathResponseDto;
-import com.example.majoong.path.dto.NodeDto;
 import com.example.majoong.path.service.RecommendedPathService;
 import com.example.majoong.path.service.ShortestPathService;
 import com.example.majoong.response.ResponseData;
@@ -13,10 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -43,20 +39,62 @@ public class PathController {
         double endLat = pathRequestDto.getEndLat();
 
         ResponseData data = new ResponseData();
+        data.setStatus(200);
+        data.setMessage("경로 추천 성공");
 
-        Map<String,Object> shortPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
-        if (shortPath.get("point")==null||shortPath==null){
+        PathInfoDto shortPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
+        if (shortPath.getPoint()==null||shortPath==null){
             data.setStatus(404);
             data.setMessage("최단거리 추천 오류");
         }
 
-        Map<String,Object> result = new HashMap<>();
-        result.put("recommendedPath",null); //추천경로 넣기!
-        result.put("shortestPath",shortPath);
+        PathInfoDto recommendedPath = recommendedPathService.getRecommendedPath(startLng, startLat, endLng, endLat);
+        if (recommendedPath == null) {
+            data.setStatus(404);
+            data.setMessage("안전경로 추천 오류");
+        }
 
-        data.setStatus(200);
-        data.setData(result);
-        data.setMessage("경로 추천 성공");
+        PathResponseDto path = new PathResponseDto();
+        path.setRecommendedPath(recommendedPath);
+        path.setShortestPath(shortPath);
+        data.setData(path);
+
         return data.builder();
     }
+
+    @GetMapping("/path/safety")
+    public void getPath() {
+
+        recommendedPathService.setEdgeSafety();
+
+        log.info("safety 값 설정 성공");
+    }
+
+    @PostMapping("/path/test")
+    @Operation(summary = "경로 추천 API", description = "최단 거리, 안전 거리 반환")
+    public ResponseEntity testPath(@RequestBody PathRequestDto pathRequestDto) throws IOException {
+        double startLng = pathRequestDto.getStartLng();
+        double startLat = pathRequestDto.getStartLat();
+        double endLng = pathRequestDto.getEndLng();
+        double endLat = pathRequestDto.getEndLat();
+
+        ResponseData data = new ResponseData();
+        data.setStatus(200);
+        data.setMessage("경로 추천 성공");
+
+        PathInfoDto recommendedPath = recommendedPathService.testRecommendedPath(startLng, startLat, endLng, endLat);
+        if (recommendedPath == null) {
+            data.setStatus(404);
+            data.setMessage("안전경로 추천 오류");
+        }
+
+        PathResponseDto path = new PathResponseDto();
+        path.setRecommendedPath(recommendedPath);
+        path.setShortestPath(null);
+
+        data.setData(path);
+
+        return data.builder();
+    }
+
 }

@@ -133,4 +133,10 @@ public class ErrorHandler {
         ResponseData data = new ResponseData(ErrorEnum.NOT_EXIST_FCM_TOKEN);
         return data.builder();
     }
+
+    @ExceptionHandler(NotExistShareLocationException.class)
+    public ResponseEntity<?> NotExistShareLocationException(){
+        ResponseData data = new ResponseData(ErrorEnum.NOT_EXIST_SHARE_LOCATION);
+        return data.builder();
+    }
 }

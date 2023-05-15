@@ -1,8 +1,7 @@
 package com.example.majoong.path.service;
 
-import com.example.majoong.exception.NoFileException;
 import com.example.majoong.map.dto.LocationDto;
-import com.example.majoong.path.dto.NodeDto;
+import com.example.majoong.path.dto.PathInfoDto;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -28,7 +27,7 @@ public class ShortestPathService {
     @Value("${map.api.key}")
     private String API_KEY;
 
-    public Map<String, Object> getShortestPath(double startLng, double startLat, double endLng, double endLat) throws IOException {
+    public PathInfoDto getShortestPath(double startLng, double startLat, double endLng, double endLat) throws IOException {
         String startX = Double.toString(startLng);
         String startY = Double.toString(startLat);
         String endX = Double.toString(endLng);
@@ -93,11 +92,11 @@ public class ShortestPathService {
                     System.out.println("Request failed: " + response.code() + " - " + response.message());
                 }
             }
-            Map<String,Object> result = new HashMap<>();
-            result.put("point",pointList);
-            result.put("distance",(int) distance);
-            result.put("time",(int)(distance/1000/5*60));
-            return result;}
+            PathInfoDto path = new PathInfoDto();
+            path.setDistance((int) distance);
+            path.setTime((int)(distance/1000/5*60));
+            path.setPoint(pointList);
+            return path;}
         return null;
-    }}
-
+    }
+}

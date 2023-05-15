@@ -13,6 +13,7 @@ import javax.persistence.*;
 public class Police {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "police_id")
     private Long policeId;
     private double longitude;
     private double latitude;
