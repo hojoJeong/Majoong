@@ -484,6 +484,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   child: drawerMenu(title: '친구 관리')),
               GestureDetector(
                   onTap: () {
+                    ref.read(videoProvider.notifier).getRecordings();
                     Navigator.of(context)
                         .push(MaterialPageRoute(builder: (_) => VideoScreen()));
                   },
@@ -927,6 +928,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                     .read(videoProvider.notifier)
                                     .startVideo();
                                 await _onConnect();
+
                                 isInside = true;
                               } else {
                                 isInside = false;

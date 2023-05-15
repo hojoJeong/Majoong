@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:majoong/common/util/extensions.dart';
 import 'package:openvidu_client/openvidu_client.dart';
 
-
+import '../../common/util/logger.dart';
 
 class ControlsWidget extends StatefulWidget {
   //
@@ -26,7 +26,7 @@ class ControlsWidget extends StatefulWidget {
 
 class _ControlsWidgetState extends State<ControlsWidget> {
   //
-  StreamMode position = StreamMode.frontCamera;
+  StreamMode position = StreamMode.backCamera;
 
   List<MediaDevice>? _audioInputs;
   List<MediaDevice>? _audioOutputs;
@@ -62,8 +62,9 @@ class _ControlsWidgetState extends State<ControlsWidget> {
     _audioInputs = devices.where((d) => d.kind == 'audioinput').toList();
     _audioOutputs = devices.where((d) => d.kind == 'audiooutput').toList();
     _videoInputs = devices.where((d) => d.kind == 'videoinput').toList();
+    logger.d('여기: ${_videoInputs.toString()}');
     selectedAudioInput = _audioInputs?.first;
-    selectedVideoInput = _videoInputs?.first;
+    selectedVideoInput = _videoInputs?[1];
     setState(() {});
   }
 
