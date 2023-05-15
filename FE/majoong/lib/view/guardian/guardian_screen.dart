@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
@@ -69,6 +68,8 @@ class _GuardianState extends ConsumerState<GuardianScreen> {
     route.add(Polyline(
         polylineId: PolylineId('seleted_route'),
         visible: true,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
         points: selectedRoutePointList,
         color: SECOND_PRIMARY_COLOR,
         width: 8));
@@ -366,8 +367,7 @@ class _GuardianState extends ConsumerState<GuardianScreen> {
           .data!.path.point[acceptShareState.data!.path.point.length - 1].lng;
       final userName = acceptShareState.data!.nickname;
       final userPhoneNumber = acceptShareState.data!.phoneNumber;
-      final curAddress =
-          ref.read(curAddressProvider.notifier).getAddress(curLat, curLng);
+      final curAddress = shareLocationState.message;
 
       makeMarkers(
           markerInfo.state, curLat, curLng, startLat, startLng, endLat, endLng);
@@ -430,12 +430,19 @@ class _GuardianState extends ConsumerState<GuardianScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        '$userName님의 현재위치\n$curAddress',
+                        '$userName님의 현재위치',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: BASE_TITLE_FONT_SIZE,),
+                      ),
+                      Text(
+                        curAddress,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             fontSize: BASE_TITLE_FONT_SIZE,
                             fontWeight: FontWeight.bold),
                       ),
+                      SizedBox(height: 4,),
                       Text(
                         '$endTime 도착 예정',
                         style: TextStyle(
@@ -446,7 +453,7 @@ class _GuardianState extends ConsumerState<GuardianScreen> {
                     ],
                   )),
               Positioned(
-                top: MediaQuery.of(context).size.height / 10,
+                top: MediaQuery.of(context).size.height / 9,
                 left: MediaQuery.of(context).size.width / 50,
                 right: MediaQuery.of(context).size.width / 50,
                 child: Container(
@@ -479,7 +486,7 @@ class _GuardianState extends ConsumerState<GuardianScreen> {
                 ),
               ),
               Positioned(
-                top: MediaQuery.of(context).size.height / 7,
+                top: MediaQuery.of(context).size.height / 6,
                 child: GestureDetector(
                   onTap: () async {
                     facilityInfo.getFacility();
@@ -533,9 +540,9 @@ class _GuardianState extends ConsumerState<GuardianScreen> {
                         onPressed: () {
                           logger.d('Tab!');
                           canLaunchUrl(
-                                  Uri(scheme: 'tel', path: '010-2638-5713'))
+                                  Uri(scheme: 'tel', path: userPhoneNumber))
                               .then((value) => launchUrl(
-                                  Uri(scheme: 'tel', path: '010-2638-5713')));
+                                  Uri(scheme: 'tel', path: userPhoneNumber)));
                         },
                       ),
                       bottomComponent(

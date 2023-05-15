@@ -46,7 +46,7 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
   LocationData? _locationData;
   bool selectShortest = false;
   bool selectRecommended = true;
-  Set<Polyline> route = {};
+  List<Polyline> route = [];
   List<Marker> marker = [];
 
   void _onMapCreated(GoogleMapController controller) {
@@ -149,20 +149,49 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
     }).toList();
 
     route.clear();
+    if (recommendedSelected) {
+      route.add(Polyline(
+          polylineId: PolylineId('shortest'),
+          visible: true,
+          points: shortestRouteList,
+          startCap: Cap.roundCap,
+          endCap: Cap.roundCap,
+          color: Colors.grey,
+          width: 8));
+      route.add(
+        Polyline(
+          polylineId: PolylineId('recommended'),
+          visible: true,
+          startCap: Cap.roundCap,
+          endCap: Cap.roundCap,
+          points: recommendedRouteList,
+          color: POLICE_MARKER_COLOR,
+          width: 8,
+          zIndex: 1,
+        ),
+      );
+    } else if (shortestSelected) {
+      route.add(Polyline(
+          polylineId: PolylineId('recommended'),
+          visible: true,
+          startCap: Cap.roundCap,
+          endCap: Cap.roundCap,
+          points: recommendedRouteList,
+          color: Colors.grey,
+          width: 8));
 
-    route.add(Polyline(
-        polylineId: PolylineId('recommended'),
-        visible: true,
-        points: recommendedRouteList,
-        color: recommendedSelected ? POLICE_MARKER_COLOR : Colors.grey,
-        width: 4));
-
-    route.add(Polyline(
+      route.add(Polyline(
         polylineId: PolylineId('shortest'),
         visible: true,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
         points: shortestRouteList,
-        color: shortestSelected ? POLICE_MARKER_COLOR : Colors.grey,
-        width: 8));
+        color: SECOND_PRIMARY_COLOR,
+        width: 8,
+        zIndex: 1,
+      ));
+    }
+    logger.d('${route[0].polylineId}, ${route[1].polylineId}');
   }
 
   makeMarkers(Set<Marker> facilities, double startLat, double startLng,
@@ -239,7 +268,7 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
           return SafeArea(
             child: Stack(alignment: Alignment.topCenter, children: [
               GoogleMap(
-                polylines: route,
+                polylines: Set.from(route),
                 onMapCreated: _onMapCreated,
                 markers: Set.from(marker),
                 initialCameraPosition: CameraPosition(
@@ -538,14 +567,20 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
     }
   }
 
-  Widget selectRouteButton(String title, int time, int distance, bool selected, RouteInfoResponseDto? path) {
+  Widget selectRouteButton(String title, int time, int distance, bool selected,
+      RouteInfoResponseDto? path) {
     return Container(
       width: MediaQuery.of(context).size.width * 0.45,
       decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-              color: selected ? POLICE_MARKER_COLOR : Colors.grey, width: 1)),
+              color: selected
+                  ? (title == '추천 경로'
+                      ? POLICE_MARKER_COLOR
+                      : SECOND_PRIMARY_COLOR)
+                  : Colors.grey,
+              width: 1)),
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Column(
@@ -557,7 +592,11 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    color: selected ? POLICE_MARKER_COLOR : Colors.grey,
+                    color: selected
+                        ? (title == '추천 경로'
+                            ? POLICE_MARKER_COLOR
+                            : SECOND_PRIMARY_COLOR)
+                        : Colors.grey,
                     borderRadius: BorderRadius.circular(80),
                   ),
                   child: Padding(
@@ -572,12 +611,17 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                   onTap: selected
                       ? () {
                           Navigator.of(context).push(MaterialPageRoute(
-                              builder: (_) => SelectGuardiansScreen(path: path!,)));
+                              builder: (_) => SelectGuardiansScreen(
+                                    path: path!,
+                                  )));
                         }
                       : null,
                   child: Image(
                     image: selected
-                        ? AssetImage('res/icon_search_route_selected.png')
+                        ? (title == '추천 경로'
+                            ? AssetImage(
+                                'res/icon_search_route_selected_recommended.png')
+                            : AssetImage('res/icon_search_route_selected_shortest.png'))
                         : AssetImage('res/icon_search_route_unselected.png'),
                     width: 50,
                   ),
@@ -593,7 +637,11 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                   style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: selected ? POLICE_MARKER_COLOR : Colors.grey),
+                      color: selected
+                          ? (title == '추천 경로'
+                              ? POLICE_MARKER_COLOR
+                              : SECOND_PRIMARY_COLOR)
+                          : Colors.grey),
                 ),
                 SizedBox(
                   width: 4,

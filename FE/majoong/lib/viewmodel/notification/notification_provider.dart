@@ -5,7 +5,7 @@ import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/service/remote/api/user/user_api_service.dart';
 
 final notificationProvider =
-    StateNotifierProvider<NotificationStateNotifier, BaseResponseState>((ref) {
+    StateNotifierProvider.autoDispose<NotificationStateNotifier, BaseResponseState>((ref) {
   final userApi = ref.read(userApiServiceProvider);
   final notifier = NotificationStateNotifier(userApi: userApi);
   return notifier;

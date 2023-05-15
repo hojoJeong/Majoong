@@ -136,7 +136,7 @@ Map<String, dynamic> _$DangerZoneToJson(DangerZone instance) =>
     };
 
 Review _$ReviewFromJson(Map<String, dynamic> json) => Review(
-      json['id'] as int,
+      json['reviewId'] as int,
       (json['lng'] as num).toDouble(),
       (json['lat'] as num).toDouble(),
       json['address'] as String,
@@ -144,7 +144,7 @@ Review _$ReviewFromJson(Map<String, dynamic> json) => Review(
     );
 
 Map<String, dynamic> _$ReviewToJson(Review instance) => <String, dynamic>{
-      'id': instance.id,
+      'reviewId': instance.reviewId,
       'lng': instance.lng,
       'lat': instance.lat,
       'address': instance.address,

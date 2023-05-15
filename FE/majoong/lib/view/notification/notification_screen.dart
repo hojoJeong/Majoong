@@ -80,6 +80,7 @@ class NotificationScreen extends ConsumerWidget {
                               child: GestureDetector(
                                 onTap: () {
                                   if (notification.type == 1) {
+                                    ref.read(notificationProvider.notifier).deleteNotification(notification.notificationId);
                                     Navigator.of(context).push(
                                         MaterialPageRoute(
                                             builder: (_) =>

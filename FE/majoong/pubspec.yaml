@@ -116,8 +116,9 @@ flutter:
     - res/icon_camera.png
     - assets/whistle.mp3
     - res/icon_star_line.png
-    - res/icon_search_route_selected.png
+    - res/icon_search_route_selected_recommended.png
     - res/icon_search_route_unselected.png
+    - res/icon_search_route_selected_shortest.png
     - res/icon_start.png
     - res/icon_end.png
     - res/icon_start_2.png

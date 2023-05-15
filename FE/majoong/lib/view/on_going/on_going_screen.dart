@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -11,6 +12,7 @@ import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/layout/loading_layout.dart';
 import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/response/map/route_info_response_dto.dart';
+import 'package:majoong/view/main/main_screen.dart';
 import 'package:majoong/viewmodel/on_going/cur_address_provider.dart';
 import 'package:majoong/viewmodel/search/route_point_provider.dart';
 import 'package:majoong/viewmodel/share_loaction/share_location_provider.dart';
@@ -44,9 +46,9 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
   Location location = Location();
   Set<Polyline> route = {};
   List<Marker> marker = [];
-  String curAddress = "";
   _OnGoingState({required this.selectedRoute});
-
+  int backBtnCnt = 0;
+  
   makePolyline(List<LocationPointResponseDto> selectedRoutePoints) {
     final List<LatLng> selectedRoutePointList = selectedRoutePoints.map((e) {
       return LatLng(e.lat, e.lng);
@@ -56,6 +58,8 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
     route.add(Polyline(
         polylineId: PolylineId('seleted_route'),
         visible: true,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
         points: selectedRoutePointList,
         color: SECOND_PRIMARY_COLOR,
         width: 8));
@@ -198,6 +202,7 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
       return null;
     }
   }
+  String curAddress = "";
 
 
   @override
@@ -229,16 +234,36 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
         final lng = curLocation.longitude!;
         logger.d('amqp cur location : $lat, $lng');
         //아래처럼 하면 Future를 String 에 넣어서 타입 안맞음
-        // curAddress = ref.read(curAddressProvider.notifier).getAddress(lat, lng);
-        logger.d('현재 위치 : $curAddress');
+        curAddress = await getAddress(lat, lng) ?? "";
+        logger.d('curAddress 현재 위치 : $curAddress');
         ref.read(shareLocationProvider.notifier).sendLocation(lat, lng);
       });
 
+      logger.d('curAddress : $curAddress');
       return Scaffold(
         body: _locationData != null
             ? Builder(builder: (context) {
                 return SafeArea(
                   child: Stack(alignment: Alignment.topCenter, children: [
+                    WillPopScope(
+                      onWillPop: () async {
+                        // 뒤로 가기 버튼 클릭 시 수행할 동작
+                        if(backBtnCnt == 0){
+                          showToast(context: context, '뒤로가기를 한 번 더 누르면 공유가 종료됩니다.');
+                          backBtnCnt++;
+                          return false;
+                        }
+                        if(backBtnCnt == 1){
+                          backBtnCnt = 0;
+                          showToast(context: context, '공유가 종료되었습니다.');
+                          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => MainScreen()), (route) => false);
+                        }
+                        return false; // true 반환 시 뒤로 가기 동작 수행, false 반환 시 동작 수행하지 않음
+                      },
+                      child: Scaffold(
+                        // Scaffold 내용 작성
+                      ),
+                    ),
                     GoogleMap(
                       onMapCreated: _onMapCreated,
                       markers: Set.from(marker),

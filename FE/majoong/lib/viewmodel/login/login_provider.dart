@@ -1,6 +1,3 @@
-import 'dart:math';
-
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:majoong/common/const/key_value.dart';
