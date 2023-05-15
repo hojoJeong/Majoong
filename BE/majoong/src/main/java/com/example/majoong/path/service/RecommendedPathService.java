@@ -124,6 +124,7 @@ public class RecommendedPathService {
         }
 
         astarGraph = new GraphDto(nodeList, edgeList, heuristicMap);
+//        return new GraphDto(nodeList, edgeList, heuristicMap);
     }
 
     public PathInfoDto astar(Long sourceId, Long destinationId) {
@@ -134,7 +135,14 @@ public class RecommendedPathService {
          * http://stackoverflow.com/questions/20344041/why-does-priority-queue-has-default-initial-capacity-of-11
          */
         // 우선선위 큐(초기 용량, 비교수단 Comparator)
-        final Queue<NodeDataDto> openQueue = new PriorityQueue<NodeDataDto>(11, new NodeComparator());
+//        final Queue<NodeDataDto> openQueue = new PriorityQueue<NodeDataDto>(11, new NodeComparator());
+        // 초기값을 노드의 크기로 설정
+        final Queue<NodeDataDto> openQueue = new PriorityQueue<NodeDataDto>(astarGraph.getNodeList().size(), new NodeComparator());
+
+
+//        // 우선순위 큐 선언
+//        PriorityQueue<Node> openQueue = new PriorityQueue<>(Comparator.comparingDouble(node -> node.f));
+
 
         // 그래프의 소스노드 부터 시작
         NodeDataDto sourceNodeDataDto = astarGraph.getNodeData(sourceId);
@@ -156,10 +164,10 @@ public class RecommendedPathService {
         // 큐가 비기 전 까지 무한 반복 -> 큐가 빈거면 경로가 없다는 뜻
         while (!openQueue.isEmpty()) {
 
-            final NodeDataDto nodeDataDto = openQueue.poll();  // 큐에서 하나 poll
+            final NodeDataDto currentNode = openQueue.poll();  // 큐에서 하나 poll
 
             // 도착지 노드 발견하면 경로에 추가하고 종료
-            if (nodeDataDto.getNodeId().equals(destinationId)) {
+            if (currentNode.getNodeId().equals(destinationId)) {
                 List<Long> pathList = getPathList(cameFrom, destinationId);
                 List<LocationDto> pointList = new ArrayList<>();
                 double distance = 0.0;
@@ -185,29 +193,29 @@ public class RecommendedPathService {
             }
 
             // poll한 노드 닫힌 목록에 추가
-            closedList.add(nodeDataDto.getNodeId());
+            closedList.add(currentNode.getNodeId());
 
             // poll한 노드의 인접 노드를 하나씩 뽑아서 진행
-            for (Map.Entry<NodeDataDto, Double> neighborEntry : astarGraph.edgesFrom(nodeDataDto.getNodeId()).entrySet()) {
+            for (Map.Entry<NodeDataDto, Double> neighborEntry : astarGraph.edgesFrom(currentNode.getNodeId()).entrySet()) {
                 // 인접 노드
-                NodeDataDto neighbor = neighborEntry.getKey();
+                NodeDataDto neighborNode = neighborEntry.getKey();
 
                 // 닫힌 목록에 있으면 볼 필요 없음
-                if (closedList.contains(neighbor.getNodeId())) continue;
+                if (closedList.contains(neighborNode.getNodeId())) continue;
 
                 double distanceBetweenTwoNodes = neighborEntry.getValue();  // 두 노드 사이의 비용
-                double tentativeG = distanceBetweenTwoNodes + nodeDataDto.getG();  // 두 노드 사이의 비용 + poll한 노드의 G값
+                double tentativeG = distanceBetweenTwoNodes + currentNode.getG();  // 두 노드 사이의 비용 + poll한 노드의 G값
 
                 // poll한 노드 거쳐서 온 G값이 더 작으면 G값 변경
-                if (tentativeG < neighbor.getG()) {
-                    neighbor.setG(tentativeG);
-                    neighbor.calcF(destinationId);
+                if (tentativeG < neighborNode.getG()) {
+                    neighborNode.setG(tentativeG);
+                    neighborNode.calcF(destinationId);
 
                     // 경로 map에 추가 -> 내가 어디서 왔는가 ( 부모 노드 입력 )
-                    cameFrom.put(neighbor.getNodeId(), nodeDataDto.getNodeId());
+                    cameFrom.put(neighborNode.getNodeId(), currentNode.getNodeId());
                     // 큐에 이웃이 포함 안되어 있으면 추가
-                    if (!openQueue.contains(neighbor)) {
-                        openQueue.add(neighbor);
+                    if (!openQueue.contains(neighborNode)) {
+                        openQueue.add(neighborNode);
                     }
                 }
             }
@@ -330,8 +338,8 @@ public class RecommendedPathService {
         Map<String, List<? extends Object>> result= new HashMap<>();
 
         result.put("nodeList", nodeList);
-//        result.put("edgeList", checkedEdgeList);
         result.put("edgeList", edgeList);
+//        result.put("edgeList", checkedEdgeList);
 
         return result;
     }
