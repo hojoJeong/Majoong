@@ -49,6 +49,9 @@ class _ResponseSearchPlacesState
   late bool _serviceEnabled;
   late PermissionStatus _permissionGranted;
   LocationData? _locationData;
+  final panelController = PanelController();
+  double panelPosition = 0.5;
+  List<Marker> marker = [];
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
@@ -110,10 +113,8 @@ class _ResponseSearchPlacesState
     );
   }
 
-  final panelController = PanelController();
-  double panelPosition = 0.5;
-
   late StreamSubscription<LocationData> locationSubscription;
+
   @override
   void initState() {
     super.initState();
@@ -295,13 +296,27 @@ class _ResponseSearchPlacesState
     }
   }
 
+  makeMarkers(Set<Marker> facilities, List<SearchPlacesModel> places) async {
+    final markerIcon = await BitmapDescriptor.fromAssetImage(
+      ImageConfiguration(size: Size(50, 50)),
+      'res/icon_place_location.png',
+    );
+
+    marker.clear();
+    marker.addAll(facilities);
+    for (var place in places) {
+      final placeMarker = Marker(
+          markerId: MarkerId('startPoint'),
+          position: LatLng(place.lat, place.lng),
+          icon: markerIcon);
+      marker.add(placeMarker);
+    }
+    logger.d(
+        '마커 생성 - 크기 : ${marker.length}, start : ${marker[marker.length - 2]}, end : ${marker[marker.length - 1]}');
+  }
+
   @override
   Widget build(BuildContext context) {
-    Future.delayed(Duration.zero, (){
-      if (panelController.isPanelAnimating) {
-        panelPosition = panelController.panelPosition;
-      }
-    });
     final facilityInfo = ref.watch(searchFacilityProvider.notifier);
     final markerInfo = ref.watch(searchMarkerProvider.notifier);
     final chipInfo = ref.watch(searchChipProvider.notifier);
@@ -309,14 +324,16 @@ class _ResponseSearchPlacesState
     final searchState = ref.watch(searchRoutePointProvider);
 
     if (searchState is BaseResponseLoading) {
-
       ref.read(searchRoutePointProvider.notifier).getResultSearch(keyword);
       return LoadingLayout();
     } else if (searchState is BaseResponse<List<SearchPlacesModel>>) {
+      makeMarkers(markerInfo.state, searchState.data ?? []);
       return Scaffold(
         body: _locationData != null
             ? SlidingUpPanel(
                 controller: panelController,
+                maxHeight: MediaQuery.of(context).size.height * 0.8,
+                minHeight: MediaQuery.of(context).size.height * 0.3,
                 borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(20),
                     topRight: Radius.circular(20)),
@@ -343,7 +360,7 @@ class _ResponseSearchPlacesState
                     child: Stack(alignment: Alignment.topCenter, children: [
                       GoogleMap(
                         onMapCreated: _onMapCreated,
-                        markers: markerInfo.state,
+                        markers: Set.from(marker),
                         initialCameraPosition: CameraPosition(
                           target: LatLng(_locationData!.latitude!,
                               _locationData!.longitude!),

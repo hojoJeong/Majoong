@@ -126,6 +126,7 @@ flutter:
     - res/icon_start_3.png
     - res/icon_end_3.png
     - res/icon_user_position.png
+    - res/icon_place_location.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
