@@ -22,18 +22,18 @@ class FriendListScreen extends ConsumerWidget {
     final searchTextFieldController = TextEditingController();
     final friendState = ref.watch(friendProvider);
     final requestFriendState = ref.watch(requestFriendProvider);
-    if(requestFriendState is BaseResponse){
-      if(requestFriendState.status == 200){
-        Future.delayed(Duration.zero, (){
+
+    Future.delayed(Duration.zero, () {
+      if (requestFriendState is BaseResponse) {
+        if (requestFriendState.status == 200) {
           showToast(context: context, '요청이 완료되었습니다.');
-        });
-      } else if(requestFriendState.status == 603){
-        Future.delayed(Duration.zero, (){
+        } else if (requestFriendState.status == 603) {
           showToast(context: context, '이미 친구입니다.');
-        });
+        }
+        ref.read(requestFriendProvider.notifier).refreshState();
+        ref.read(loadingVisibilityProvider.notifier).update((state) => false);
       }
-      ref.read(loadingVisibilityProvider.notifier).update((state) => false);
-    }
+    });
 
     ref.listen(friendRequestListProvider, (previous, next) {
       ref.read(friendProvider.notifier).refreshFriendList();
@@ -45,13 +45,13 @@ class FriendListScreen extends ConsumerWidget {
       ref.read(friendProvider.notifier).refreshFriendList();
     });
     ref.listen(searchFriendProvider, (previous, response) {
-      if (response is BaseResponse<FriendResponseDto> &&
-          response.status == 200) {
+      if ((response is BaseResponse && response.status == 200) ||
+          (response is BaseResponse && response.status == 601)) {
         ref.read(loadingVisibilityProvider.notifier).update((state) => false);
-        ResultSearchFriendDialog(friendInfo: response.data!, isSuccess: true);
-      } else if (response is BaseResponse && response.status == 601) {
-        ref.read(loadingVisibilityProvider.notifier).update((state) => false);
-        ResultSearchFriendDialog(friendInfo: response.data, isSuccess: false);
+        ResultSearchFriendDialog(
+                friendInfo: response.data,
+                isSuccess: response.status == 200 ? true : false)
+            .showDialog(context, ref);
       }
     });
 
@@ -73,12 +73,16 @@ class FriendListScreen extends ConsumerWidget {
                             OutlineInputBorder(borderSide: BorderSide.none),
                         suffixIcon: GestureDetector(
                           onTap: () {
-                            ref
-                                .read(loadingVisibilityProvider.notifier)
-                                .update((state) => true);
-                            ref
-                                .read(searchFriendProvider.notifier)
-                                .searchFriend(searchTextFieldController.text);
+                            if (searchTextFieldController.text.isEmpty) {
+                              showToast(context: context, '전화번호를 입력해주세요');
+                            } else {
+                              ref
+                                  .read(loadingVisibilityProvider.notifier)
+                                  .update((state) => true);
+                              ref
+                                  .read(searchFriendProvider.notifier)
+                                  .searchFriend(searchTextFieldController.text);
+                            }
                           },
                           child: Icon(
                             Icons.search,
