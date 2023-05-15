@@ -14,7 +14,7 @@ import java.util.*;
 public class GraphDto implements Iterable{
     private Map<Long, Map<NodeDataDto, Double>> graph;          // NodeId, Map<노드정보, 가중치>
     private Map<Long, Map<Long, Double>> heuristicMap;          // 그래프에서 노드간의 휴리스틱 값 Map
-    private Map<Long, NodeDataDto> nodeIdNodeData;              // 노드 id와 노드 data사이의 Map
+    private Map<Long, NodeDataDto> nodeIdNodeData;              // 노드 id와 노드 data의 Map
     private List<NodeDto> nodeList;
     private List<EdgeDto> edgeList;
 
@@ -23,7 +23,7 @@ public class GraphDto implements Iterable{
         this.edgeList = edgeList;
         this.heuristicMap = heuristicMap;
 
-        this.graph =new HashMap<>();
+        this.graph = new HashMap<>();
         this.nodeIdNodeData = new HashMap<>();
 
         for (NodeDto n : nodeList){
@@ -31,7 +31,7 @@ public class GraphDto implements Iterable{
         }
 
         for(EdgeDto e : edgeList){
-            addEdge(e.getSourceId(), e.getTargetId(), e.getDistanceVal() - e.getSafeVal());
+            addEdge(e.getSourceId(), e.getTargetId(), e.getDistance() - e.getSafety());
         }
     }
 

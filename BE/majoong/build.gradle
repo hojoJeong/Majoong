@@ -51,6 +51,12 @@ dependencies {
 	implementation 'com.squareup.okhttp3:okhttp:4.9.2'
 	// google maps
 	implementation 'com.google.maps:google-maps-services:0.9.1'
+	// postgis
+	implementation 'org.postgresql:postgresql' // PostgreSQL JDBC 드라이버
+	implementation 'org.hibernate:hibernate-core' // Hibernate Core
+	implementation 'org.hibernate:hibernate-spatial' // Hibernate Spatial
+	implementation 'org.locationtech.jts:jts-core' // JTS Core
+	implementation 'net.postgis:postgis-jdbc:2.5.1'// PostGIS JDBC
 }
 
 tasks.named('test') {

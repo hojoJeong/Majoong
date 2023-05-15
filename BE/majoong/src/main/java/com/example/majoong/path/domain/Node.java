@@ -1,10 +1,9 @@
 package com.example.majoong.path.domain;
 
 import lombok.*;
+import org.springframework.data.geo.Point;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity(name = "node")
 @Getter
@@ -14,9 +13,13 @@ import javax.persistence.Id;
 @AllArgsConstructor
 public class Node {
     @Id
-    @Column(name = "id", unique = true, nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long nodeId;
     private double lng;
     private double lat;
     private String address;
+
+    @Transient
+    @Column(columnDefinition = "geometry(Point, 4326)")
+    private Point geom;
 }

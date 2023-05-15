@@ -12,10 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -42,6 +39,8 @@ public class PathController {
         double endLat = pathRequestDto.getEndLat();
 
         ResponseData data = new ResponseData();
+        data.setStatus(200);
+        data.setMessage("경로 추천 성공");
 
         PathInfoDto shortPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
         if (shortPath.getPoint()==null||shortPath==null){
@@ -49,13 +48,53 @@ public class PathController {
             data.setMessage("최단거리 추천 오류");
         }
 
-        PathResponseDto path = new PathResponseDto();
-        path.setRecommendedPath(null);
-        path.setShortestPath(shortPath);
+        PathInfoDto recommendedPath = recommendedPathService.getRecommendedPath(startLng, startLat, endLng, endLat);
+        if (recommendedPath == null) {
+            data.setStatus(404);
+            data.setMessage("안전경로 추천 오류");
+        }
 
-        data.setStatus(200);
+        PathResponseDto path = new PathResponseDto();
+        path.setRecommendedPath(recommendedPath);
+        path.setShortestPath(shortPath);
         data.setData(path);
-        data.setMessage("경로 추천 성공");
+
         return data.builder();
     }
+
+    @GetMapping("/path/safety")
+    public void getPath() {
+
+        recommendedPathService.setEdgeSafety();
+
+        log.info("safety 값 설정 성공");
+    }
+
+    @PostMapping("/path/test")
+    @Operation(summary = "경로 추천 API", description = "최단 거리, 안전 거리 반환")
+    public ResponseEntity testPath(@RequestBody PathRequestDto pathRequestDto) throws IOException {
+        double startLng = pathRequestDto.getStartLng();
+        double startLat = pathRequestDto.getStartLat();
+        double endLng = pathRequestDto.getEndLng();
+        double endLat = pathRequestDto.getEndLat();
+
+        ResponseData data = new ResponseData();
+        data.setStatus(200);
+        data.setMessage("경로 추천 성공");
+
+        PathInfoDto recommendedPath = recommendedPathService.testRecommendedPath(startLng, startLat, endLng, endLat);
+        if (recommendedPath == null) {
+            data.setStatus(404);
+            data.setMessage("안전경로 추천 오류");
+        }
+
+        PathResponseDto path = new PathResponseDto();
+        path.setRecommendedPath(recommendedPath);
+        path.setShortestPath(null);
+
+        data.setData(path);
+
+        return data.builder();
+    }
+
 }

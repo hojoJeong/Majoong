@@ -98,5 +98,5 @@ public class ShortestPathService {
             path.setPoint(pointList);
             return path;}
         return null;
-    }}
-
+    }
+}
