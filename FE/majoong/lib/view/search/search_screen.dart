@@ -23,7 +23,7 @@ class SearchScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final favoriteListState = ref.watch(favoriteListStateProvider);
+    final favoriteListState = ref.watch(favoriteListStateProvider);
     final recentKeywordListState = ref.watch(recentKeywordProvider);
 
     Future.delayed(Duration.zero, () {
@@ -35,20 +35,7 @@ class SearchScreen extends ConsumerWidget {
       searchKeywordController.text = next;
     });
 
-    ///임시 데이터
-    final List<FavoriteResponseDto> favoriteListState = [
-      FavoriteResponseDto(
-          favoriteId: 1, locationName: '사피', address: '경북 구미시 진평5길 23'),
-      FavoriteResponseDto(
-          favoriteId: 1, locationName: '사피', address: '경북 구미시 진평5길 23'),
-      FavoriteResponseDto(
-          favoriteId: 1, locationName: '사피', address: '경북 구미시 진평5길 23'),
-      FavoriteResponseDto(
-          favoriteId: 1, locationName: '사피', address: '경북 구미시 진평5길 23'),
-    ];
-
-    // if (favoriteListState is BaseResponse && recentKeywordListState is BaseResponse) {
-    if (recentKeywordListState is BaseResponse) {
+    if (favoriteListState is BaseResponse && recentKeywordListState is BaseResponse) {
       return Scaffold(
           body: SafeArea(
         child: Column(
@@ -143,7 +130,7 @@ class SearchScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            favoriteListView(favoriteListState, context),
+            favoriteListView(favoriteListState.data, context),
             // Expanded(child: makeFavoriteList(favoriteListState.data))
 
             SizedBox(
