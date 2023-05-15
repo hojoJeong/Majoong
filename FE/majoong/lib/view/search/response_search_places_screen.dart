@@ -80,7 +80,7 @@ class _ResponseSearchPlacesState
             centerLng: _locationData!.longitude!,
             centerLat: _locationData!.latitude!,
             radius: 1000));
-    ref.read(facilityProvider.notifier).getFacility();
+    ref.read(facilityProvider.notifier).getFacility(context);
     setState(() {});
   }
 
@@ -452,7 +452,7 @@ class _ResponseSearchPlacesState
                         top: MediaQuery.of(context).size.height / 7,
                         child: GestureDetector(
                           onTap: () async {
-                            facilityInfo.getFacility();
+                            facilityInfo.getFacility(context);
                             ref
                                 .read(cameraMovedProvider.notifier)
                                 .update((state) => false);

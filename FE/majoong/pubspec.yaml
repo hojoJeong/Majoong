@@ -138,6 +138,9 @@ flutter:
     - res/icon_end_3.png
     - res/notification-bell.png
     - res/store.png
+    - res/good.png
+    - res/bad.png
+    - res/soso.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

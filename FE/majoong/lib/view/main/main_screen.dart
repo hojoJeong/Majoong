@@ -43,7 +43,8 @@ import 'package:majoong/viewmodel/main/marker_provider.dart';
 import 'package:majoong/viewmodel/main/review_dialog_provider.dart';
 import 'package:majoong/viewmodel/video/videoProvider.dart';
 import 'package:openvidu_client/openvidu_client.dart';
-import 'package:permission_handler/permission_handler.dart' hide PermissionStatus;
+import 'package:permission_handler/permission_handler.dart'
+    hide PermissionStatus;
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -106,6 +107,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               )));
     }
   }
+
   Future<void> _onConnect() async {
     final dio = ref.read(dioProvider);
     final secureStorage = ref.read(secureStorageProvider);
@@ -113,16 +115,16 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     dio.options.baseUrl = 'https://majoong4u.com/openvidu/api';
     dio.options.headers['content-Type'] = 'application/json';
     dio.options.headers["authorization"] =
-    'Basic ${base64Encode(utf8.encode('OPENVIDUAPP:MY_SECRET'))}';
+        'Basic ${base64Encode(utf8.encode('OPENVIDUAPP:MY_SECRET'))}';
     localParticipant = await _openvidu.publishLocalStream(
-        token:
-        ref.read(videoProvider.notifier).sessionInfo!.connectionToken,
-        userName: nickname??'user');
+        token: ref.read(videoProvider.notifier).sessionInfo!.connectionToken,
+        userName: nickname ?? 'user');
     setState(() {
       isInside = true;
     });
     logger.d('onConnect');
   }
+
   Future<void> setupInteractedMessage(FirebaseMessaging fbMsg) async {
     RemoteMessage? initialMessage = await fbMsg.getInitialMessage();
     // 종료상태에서 클릭한 푸시 알림 메세지 핸들링
@@ -228,7 +230,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   Future<void> initOpenVidu() async {
     _openvidu = OpenViduClient('https://majoong4u.com/openvidu');
     localParticipant =
-    await _openvidu.startLocalPreview(context, StreamMode.backCamera);
+        await _openvidu.startLocalPreview(context, StreamMode.backCamera);
     setState(() {});
     logger.d('initOpenVidu');
   }
@@ -320,7 +322,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             centerLng: _locationData!.longitude!,
             centerLat: _locationData!.latitude!,
             radius: 1000));
-    ref.read(facilityProvider.notifier).getFacility();
+    ref.read(facilityProvider.notifier).getFacility(context);
     setState(() {});
   }
 
@@ -382,6 +384,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   late OpenViduClient _openvidu;
   LocalParticipant? localParticipant;
   Map<String, RemoteParticipant> remoteParticipants = {};
+
   @override
   Widget build(BuildContext context) {
     final userInfo = ref.watch(userInfoProvider.notifier).state;
@@ -479,10 +482,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   },
                   child: drawerMenu(title: '친구 관리')),
               GestureDetector(
-                onTap: () {
-                  Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => VideoScreen()));
-                },
+                  onTap: () {
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (_) => VideoScreen()));
+                  },
                   child: drawerMenu(title: '녹화기록')),
               GestureDetector(
                   onTap: () {
@@ -603,7 +606,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     top: MediaQuery.of(context).size.height / 7,
                     child: GestureDetector(
                       onTap: () async {
-                        facilityInfo.getFacility();
+                        facilityInfo.getFacility(context);
                         ref
                             .read(cameraMovedProvider.notifier)
                             .update((state) => false);
@@ -870,7 +873,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       ),
                     ),
                   ),
-                  ref.read(videoProvider.notifier).state is BaseResponseLoading?loadingWidget():Container(),
+                  ref.read(videoProvider.notifier).state is BaseResponseLoading
+                      ? loadingWidget()
+                      : Container(),
                   Positioned(
                     left: 10,
                     right: 10,
@@ -900,15 +905,17 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                             image: AssetImage('res/body_cam.png'),
                             text: '바디캠',
                             onPressed: () async {
-                              var cameraStatus = await Permission.camera.request();
+                              var cameraStatus =
+                                  await Permission.camera.request();
                               if (!cameraStatus.isGranted) {
                                 showToast(context: context, '권한 사용을 허용 해주세요');
                                 openAppSettings();
                                 return;
                               }
-                              var micStatus = await Permission.microphone.request();
+                              var micStatus =
+                                  await Permission.microphone.request();
                               if (!micStatus.isGranted) {
-                                showToast(context: context,'권한 사용을 허용 해주세요');
+                                showToast(context: context, '권한 사용을 허용 해주세요');
                                 openAppSettings();
                                 return;
                               }

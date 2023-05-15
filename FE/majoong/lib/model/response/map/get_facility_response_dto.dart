@@ -96,7 +96,6 @@ class Store {
 class SafeRoad {
   final List<Point> point;
 
-
   factory SafeRoad.fromJson(Map<String, dynamic> json) =>
       _$SafeRoadFromJson(json);
 
@@ -116,6 +115,7 @@ class Point {
 
   Map<String, dynamic> toJson() => _$PointToJson(this);
 }
+
 @JsonSerializable()
 class DangerZone {
   final int dangerZoneId;
@@ -130,13 +130,13 @@ class DangerZone {
 
 @JsonSerializable()
 class Review {
-  final int id;
+  final int reviewId;
   final double lng;
   final double lat;
   final String address;
   final int score;
 
-  Review(this.id, this.lng, this.lat, this.address, this.score);
+  Review(this.reviewId, this.lng, this.lat, this.address, this.score);
 
   factory Review.fromJson(Map<String, dynamic> json) => _$ReviewFromJson(json);
 

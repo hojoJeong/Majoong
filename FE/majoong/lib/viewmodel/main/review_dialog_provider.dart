@@ -33,8 +33,8 @@ class ReviewDialogNotifier extends StateNotifier<WriteReviewRequestDto> {
   }
 
   setCurrentLocation() {
-    state.lng = currentLocation[0];
-    state.lat = currentLocation[1];
+    state.lat = currentLocation[0];
+    state.lng = currentLocation[1];
   }
 
   setContent(String content) {
@@ -44,9 +44,11 @@ class ReviewDialogNotifier extends StateNotifier<WriteReviewRequestDto> {
   setAddress(String address) {
     state.address = address;
   }
-  setPicture(File file){
+
+  setPicture(File file) {
     state.reviewImage = file;
   }
+
   clearData() {
     state = WriteReviewRequestDto(0, 0, '', 0, false, false, null, '');
   }

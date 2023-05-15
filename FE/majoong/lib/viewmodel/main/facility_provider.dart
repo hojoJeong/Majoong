@@ -3,7 +3,9 @@ import 'dart:ui';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/common/const/key_value.dart';
 import 'package:majoong/model/response/map/get_facility_response_dto.dart';
 import 'package:majoong/service/remote/api/map/map_api_service.dart';
@@ -14,6 +16,7 @@ import 'package:majoong/viewmodel/main/review_dialog_provider.dart';
 import '../../common/util/logger.dart';
 import '../../model/request/map/get_facility_request_dto.dart';
 import '../../model/response/base_response.dart';
+import '../../model/response/map/get_review_response_dto.dart';
 
 // 시설물 조회 api RequestDto
 final centerPositionProvider = StateProvider<GetFacilityRequestDto>((ref) {
@@ -27,7 +30,8 @@ final cameraMovedProvider = StateProvider<bool>((ref) {
 final facilityProvider =
     StateNotifierProvider<FacilityNotifier, BaseResponseState>((ref) {
   final mapService = ref.watch(mapApiServiceProvider);
-  final markerInfo = ref.watch(markerProvider.notifier as AlwaysAliveProviderListenable);
+  final markerInfo =
+      ref.watch(markerProvider.notifier as AlwaysAliveProviderListenable);
   final chipInfo = ref.watch(chipProvider.notifier);
   final reviewDialogInfo = ref.watch(reviewDialogProvider.notifier);
   final centerPositionInfo = ref.watch(centerPositionProvider.notifier);
@@ -57,13 +61,13 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
   FacilityNotifier(this.dio,
       {required this.service,
       required this.markerNotifier,
-        required this.polyLineNotifier,
+      required this.polyLineNotifier,
       required this.chipNotifier,
       required this.centerPositionNotifier,
       required this.reviewDialogNotifier})
       : super(BaseResponseLoading()) {}
 
-  getFacility() async {
+  getFacility(context) async {
     state = BaseResponseLoading();
     final request = centerPositionNotifier.state;
     final BaseResponse<GetFacilityResponseDto> response =
@@ -75,6 +79,8 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
       final lampList = response.data?.lamp ?? [];
       final storeList = response.data?.store ?? [];
       final bellList = response.data?.bell ?? [];
+      final reviewList = response.data?.review ?? [];
+
       final cctvIcon = await BitmapDescriptor.fromAssetImage(
           ImageConfiguration(), 'res/cctv.png');
 
@@ -130,8 +136,182 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
         ));
       }
 
-      if(response.data?.safeRoad?.length != 0){
-        for(int i = 0; i < response.data!.safeRoad!.length; i++){
+      final goodReviewIcon = await BitmapDescriptor.fromAssetImage(
+          ImageConfiguration(), 'res/good.png');
+      final badReviewIcon = await BitmapDescriptor.fromAssetImage(
+          ImageConfiguration(), 'res/bad.png');
+      final sosoReviewIcon = await BitmapDescriptor.fromAssetImage(
+          ImageConfiguration(), 'res/soso.png');
+      for (var review in reviewList) {
+        BitmapDescriptor icon;
+        if (review.score <= 2) {
+          icon = badReviewIcon;
+        } else if (review.score == 3) {
+          icon = sosoReviewIcon;
+        } else {
+          icon = goodReviewIcon;
+        }
+
+        markerNotifier.addReviewMarker(
+          Marker(
+            markerId: MarkerId(review.reviewId.toString()),
+            position: LatLng(review.lat, review.lng),
+            icon: icon,
+            infoWindow: InfoWindow(title: review.address),
+            onTap: () async {
+              final response = await service.getReview(review.reviewId);
+              if (response.status == 200) {
+                response.data as GetReviewResponseDto;
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return StatefulBuilder(
+                      builder: (context, setState) {
+                        return Dialog(
+                          backgroundColor: PRIMARY_COLOR,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: SingleChildScrollView(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 20, horizontal: 20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: double.infinity,
+                                    child: Text(
+                                      '리뷰 정보',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  response.data!.reviewImage == null
+                                      ? Container()
+                                      : Container(
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          height: 200,
+                                          child: Image(
+                                              image: Image.network(response
+                                                          .data!.reviewImage ??
+                                                      '')
+                                                  .image),
+                                        ),
+                                  SizedBox(
+                                    height: 20,
+                                  ),
+                                  Text(
+                                    response.data!.address,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          response.data!.crowded
+                                              ? Container(
+                                                  padding: EdgeInsets.all(4),
+                                                  decoration: BoxDecoration(
+                                                    color: Color(0xFF469C5E),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            15),
+                                                  ),
+                                                  child: Text(
+                                                    '사람이 많아요',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                )
+                                              : Container(),
+                                          SizedBox(
+                                            width: 5,
+                                          ),
+                                          response.data!.bright
+                                              ? Container(
+                                                  padding: EdgeInsets.all(4),
+                                                  decoration: BoxDecoration(
+                                                    color: Color(0xFFFFBA6A),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            15),
+                                                  ),
+                                                  child: Text(
+                                                    '밝아요',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                )
+                                              : Container(),
+                                        ],
+                                      ),
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: PRIMARY_COLOR,
+                                          border:
+                                              Border.all(color: Colors.yellow),
+                                          borderRadius:
+                                              BorderRadius.circular(15),
+                                        ),
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 2, horizontal: 4),
+                                        child: Text(
+                                          '⭐ x ${response.data!.score}',
+                                          style:
+                                              TextStyle(color: Colors.yellow),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Divider(
+                                    color: Colors.grey,
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Text(
+                                    response.data!.content,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              } else {
+                showToast(context: context, '리뷰를 불러오는데 실패했습니다.');
+              }
+            },
+          ),
+        );
+      }
+      if (response.data?.safeRoad?.length != 0) {
+        for (int i = 0; i < response.data!.safeRoad!.length; i++) {
           final road = response.data!.safeRoad![i];
           final polyLine = Polyline(
             polylineId: PolylineId('safeRoad$i'),
@@ -139,15 +319,16 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
             color: Colors.green.withOpacity(0.5),
             endCap: Cap.roundCap,
             startCap: Cap.roundCap,
-            width: 5,);
+            width: 5,
+          );
           for (var point in road.point) {
             polyLine.points.add(LatLng(point.lat, point.lng));
           }
           polyLineNotifier.addSafeRoad(polyLine);
         }
       }
-      if(response.data?.riskRoad?.length != 0){
-        for(int i = 0; i < response.data!.riskRoad!.length; i++){
+      if (response.data?.riskRoad?.length != 0) {
+        for (int i = 0; i < response.data!.riskRoad!.length; i++) {
           final road = response.data!.riskRoad![i];
           final polyLine = Polyline(
             polylineId: PolylineId('riskRoad$i'),
@@ -155,10 +336,10 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
             color: Color(0xFF535353),
             endCap: Cap.roundCap,
             startCap: Cap.roundCap,
-            width: 5,);
+            width: 5,
+          );
           for (var point in road.point) {
             polyLine.points.add(LatLng(point.lat, point.lng));
-
           }
           polyLineNotifier.addRiskRoad(polyLine);
         }

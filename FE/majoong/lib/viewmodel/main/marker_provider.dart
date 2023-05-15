@@ -6,35 +6,39 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../common/util/logger.dart';
 
 final markerProvider =
-    StateNotifierProvider.autoDispose<MarkerNotifier, Set<Marker>>((ref) {
+StateNotifierProvider.autoDispose<MarkerNotifier, Set<Marker>>((ref) {
   return MarkerNotifier(chipNotifier: ref.watch(chipProvider.notifier));
 });
-final polyLineProvider = StateNotifierProvider<PolyLineNotifier, Map<PolylineId, Polyline>>((ref) {
+final polyLineProvider = StateNotifierProvider<PolyLineNotifier,
+    Map<PolylineId, Polyline>>((ref) {
   final chipInfo = ref.watch(chipProvider.notifier);
   return PolyLineNotifier(chipNotifier: chipInfo);
 });
 
-class PolyLineNotifier extends StateNotifier<Map<PolylineId, Polyline>>{
+class PolyLineNotifier extends StateNotifier<Map<PolylineId, Polyline>> {
   final ChipNotifier chipNotifier;
   final safeRaod = Map<PolylineId, Polyline>();
   final riskRoad = Map<PolylineId, Polyline>();
+
   PolyLineNotifier({required this.chipNotifier}) : super({}) {}
 
-  renderLine(){
+  renderLine() {
     state.clear();
-    if(chipNotifier.state.contains('여성 안심 귀갓길')){
+    if (chipNotifier.state.contains('여성 안심 귀갓길')) {
       state.addAll(safeRaod);
     }
-    if(chipNotifier.state.contains('위험 지역')){
+    if (chipNotifier.state.contains('위험 지역')) {
       state.addAll(riskRoad);
       logger.d(state.length);
     }
     logger.d('renderline');
   }
-  addSafeRoad(Polyline polyLine){
+
+  addSafeRoad(Polyline polyLine) {
     safeRaod[polyLine.polylineId] = polyLine;
   }
-  addRiskRoad(Polyline polyLine){
+
+  addRiskRoad(Polyline polyLine) {
     riskRoad[polyLine.polylineId] = polyLine;
   }
 }
@@ -51,7 +55,6 @@ class MarkerNotifier extends StateNotifier<Set<Marker>> {
   final ChipNotifier chipNotifier;
 
   renderMarker() {
-
     state.clear();
     final chips = chipNotifier.state;
     if (chips.contains('CCTV')) {
@@ -96,12 +99,16 @@ class MarkerNotifier extends StateNotifier<Set<Marker>> {
     lampMarkerSet.add(marker);
   }
 
-  addBellMarker(marker){
+  addBellMarker(marker) {
     bellMarkerSet.add(marker);
   }
 
   addStoreMarker(marker) {
     storeMarkerSet.add(marker);
+  }
+
+  addReviewMarker(marker) {
+    reviewMarkerSet.add(marker);
   }
 }
 

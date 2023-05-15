@@ -70,7 +70,7 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
             centerLng: _locationData!.longitude!,
             centerLat: _locationData!.latitude!,
             radius: 1000));
-    ref.read(facilityProvider.notifier).getFacility();
+    ref.read(facilityProvider.notifier).getFacility(context);
     setState(() {});
   }
 
@@ -196,9 +196,9 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
     final shareLocationState = ref.watch(shareLocationProvider);
     if (shareLocationState is BaseResponse) {
       logger.d('이동 준비 완료 : ${shareLocationState.message}');
-      Future.delayed(Duration.zero, (){
-        Navigator.of(context)
-            .pushReplacement(MaterialPageRoute(builder: (_) => GuardianScreen()));
+      Future.delayed(Duration.zero, () {
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => GuardianScreen()));
       });
     }
 
@@ -216,8 +216,10 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
         searchRouteState is BaseResponse<SearchRouteResponseDto>) {
       final shortestPath = searchRouteState.data!.shortestPath.point;
 
-      final initialLat = searchRouteState.data!.shortestPath.point[shortestPath.length~/2].lat;
-      final initialLng = searchRouteState.data!.shortestPath.point[shortestPath.length~/2].lng;
+      final initialLat = searchRouteState
+          .data!.shortestPath.point[shortestPath.length ~/ 2].lat;
+      final initialLng = searchRouteState
+          .data!.shortestPath.point[shortestPath.length ~/ 2].lng;
 
       makePolyline(
           searchRouteState.data!.recommendedPath?.point ?? [],
@@ -240,8 +242,7 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                 onMapCreated: _onMapCreated,
                 markers: Set.from(marker),
                 initialCameraPosition: CameraPosition(
-                  target: LatLng(
-                      initialLat, initialLng),
+                  target: LatLng(initialLat, initialLng),
                   zoom: 15.7,
                 ),
                 onCameraMove: (CameraPosition position) {
@@ -429,7 +430,7 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                 top: MediaQuery.of(context).size.height / 3.8,
                 child: GestureDetector(
                   onTap: () async {
-                    facilityInfo.getFacility();
+                    facilityInfo.getFacility(context);
                     ref
                         .read(cameraMovedProvider.notifier)
                         .update((state) => false);
