@@ -426,10 +426,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       height: MediaQuery.of(context).size.width / 2.5,
                       child: CircleAvatar(
                         backgroundColor: Colors.transparent,
-                        backgroundImage: NetworkImage(
-                            (userInfo as BaseResponse<UserInfoResponseDto>)
-                                .data!
-                                .profileImage!),
+                        backgroundImage: Image.network(
+                                (userInfo as BaseResponse<UserInfoResponseDto>)
+                                    .data!
+                                    .profileImage!)
+                            .image,
                         radius: 100, // 동그란 영역의 반지름
                       ),
                     ),

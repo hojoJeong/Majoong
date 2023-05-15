@@ -1,10 +1,12 @@
 import 'dart:ui';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/common/const/key_value.dart';
 import 'package:majoong/model/response/map/get_facility_response_dto.dart';
@@ -177,7 +179,7 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
                               padding: const EdgeInsets.symmetric(
                                   vertical: 20, horizontal: 20),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Container(
                                     width: double.infinity,
@@ -195,24 +197,28 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
                                   ),
                                   response.data!.reviewImage == null
                                       ? Container()
-                                      : Container(
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          height: 200,
-                                          child: Image(
-                                              image: Image.network(response
-                                                          .data!.reviewImage ??
-                                                      '')
-                                                  .image),
+                                      : CachedNetworkImage(
+                                          imageUrl: response.data!.reviewImage!,
+                                          placeholder: (context, url) =>
+                                              LoadingAnimationWidget
+                                                  .staggeredDotsWave(
+                                                      color: Colors.white,
+                                                      size: 60),
+                                          errorWidget: (context, url, error) =>
+                                              Icon(Icons.error),
                                         ),
                                   SizedBox(
                                     height: 20,
                                   ),
-                                  Text(
-                                    response.data!.address,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
+                                  Container(
+                                    width: double.infinity,
+                                    child: Text(
+                                      response.data!.address,
+                                      textAlign: TextAlign.start,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                      ),
                                     ),
                                   ),
                                   SizedBox(
@@ -287,11 +293,15 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
                                   SizedBox(
                                     height: 10,
                                   ),
-                                  Text(
-                                    response.data!.content,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
+                                  Container(
+                                    width: double.infinity,
+                                    child: Text(
+                                      response.data!.content,
+                                      textAlign: TextAlign.start,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
                                     ),
                                   ),
                                 ],
