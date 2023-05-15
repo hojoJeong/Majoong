@@ -18,12 +18,10 @@ public interface NodeRepository extends JpaRepository<Node, Long> {
      * 4326으로 WGS84 좌표계 설정
      * 검색 속도를 고려해서 where절 추가 고려하기
      */
-    @Query(value = "SELECT * FROM node ORDER BY geom <-> ST_SetSRID(ST_MakePoint(:lng, :lat), 4326) LIMIT 1",
-            nativeQuery = true)
+    @Query(value = "SELECT * FROM node ORDER BY geom <-> ST_SetSRID(ST_MakePoint(:lng, :lat), 4326) LIMIT 1", nativeQuery = true)
     Node findNearestNode(@Param("lng") Double lng, @Param("lat") Double lat);
 
-    @Query(value = "SELECT * FROM node WHERE ST_Within(geom, ST_MakeEnvelope(:lng1, :lat1, :lng2, :lat2, 4326))",
-            nativeQuery = true)
+    @Query(value = "SELECT * FROM node WHERE ST_Within(geom, ST_MakeEnvelope(:lng1, :lat1, :lng2, :lat2, 4326))", nativeQuery = true)
     List<Node> findNodesByArea(@Param("lng1") double lng1, @Param("lat1") double lat1, @Param("lng2") double lng2, @Param("lat2") double lat2);
 
     @Query(value = "SELECT * FROM node WHERE nodeId = 3327180", nativeQuery = true)

@@ -1,8 +1,6 @@
 package com.example.majoong.path.controller;
 
-import com.example.majoong.path.dto.PathInfoDto;
-import com.example.majoong.path.dto.PathRequestDto;
-import com.example.majoong.path.dto.PathResponseDto;
+import com.example.majoong.path.dto.*;
 import com.example.majoong.path.service.RecommendedPathService;
 import com.example.majoong.path.service.ShortestPathService;
 import com.example.majoong.response.ResponseData;
@@ -87,6 +85,12 @@ public class PathController {
             data.setStatus(404);
             data.setMessage("안전경로 추천 오류");
         }
+
+        ////////
+//        NodeDto startNode = recommendedPathService.findNearestNode(startLng, startLat);
+//        NodeDto endNode = recommendedPathService.findNearestNode(endLng, endLat);
+//        GraphDto astarGraph = recommendedPathService.createAstarGraph(startNode, endNode);
+        ///////////////
 
         PathResponseDto path = new PathResponseDto();
         path.setRecommendedPath(recommendedPath);
