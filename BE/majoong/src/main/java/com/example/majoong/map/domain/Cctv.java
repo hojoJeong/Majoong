@@ -2,10 +2,7 @@ package com.example.majoong.map.domain;
 
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity(name = "cctv")
 @Getter
@@ -16,6 +13,7 @@ import javax.persistence.Id;
 public class Cctv {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "cctv_id")
     private Long cctvId;
     private double longitude;
     private double latitude;

@@ -2,10 +2,7 @@ package com.example.majoong.map.domain;
 
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity(name = "saferoad")
 @Getter
@@ -16,9 +13,11 @@ import javax.persistence.Id;
 public class SafeRoad {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "safe_road_id")
     private Long safeRoadId;
     private double longitude;
     private double latitude;
     private String address;
+    @Column(name = "safe_road_number")
     private Long safeRoadNumber;
 }
