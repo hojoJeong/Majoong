@@ -4,9 +4,11 @@ import com.example.majoong.path.domain.Node;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public interface NodeRepository extends JpaRepository<Node, Long> {
 
     // postGIS 에서 입력 좌표 반경 1km에서 가장 가까운 도로 노드 검색
