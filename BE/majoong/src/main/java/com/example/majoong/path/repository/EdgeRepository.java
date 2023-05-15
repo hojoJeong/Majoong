@@ -1,15 +1,13 @@
-package com.example.majoong.path.Repository;
+package com.example.majoong.path.repository;
 
 import com.example.majoong.path.domain.Edge;
-import com.example.majoong.path.dto.EdgePositionDto;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
+
 @Repository
 public interface EdgeRepository extends JpaRepository<Edge, Long> {
 //    @Query(value = "SELECT * FROM edge WHERE ST_Within(geom, ST_MakeEnvelope(:lng1, :lat1, :lng2, :lat2, 4326))", nativeQuery = true)

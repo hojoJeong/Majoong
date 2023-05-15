@@ -1,4 +1,4 @@
-package com.example.majoong.path.Repository;
+package com.example.majoong.path.repository;
 
 import com.example.majoong.path.domain.Node;
 import io.lettuce.core.dynamic.annotation.Param;

@@ -1,8 +1,8 @@
 package com.example.majoong.path.service;
 
 import com.example.majoong.map.dto.LocationDto;
-import com.example.majoong.path.Repository.EdgeRepository;
-import com.example.majoong.path.Repository.NodeRepository;
+import com.example.majoong.path.repository.EdgeRepository;
+import com.example.majoong.path.repository.NodeRepository;
 import com.example.majoong.path.domain.Edge;
 import com.example.majoong.path.domain.Node;
 import com.example.majoong.path.dto.*;
