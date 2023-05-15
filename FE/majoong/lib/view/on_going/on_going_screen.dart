@@ -13,7 +13,7 @@ import 'package:majoong/common/layout/loading_layout.dart';
 import 'package:majoong/common/util/logger.dart';
 import 'package:majoong/model/response/map/route_info_response_dto.dart';
 import 'package:majoong/view/main/main_screen.dart';
-import 'package:majoong/viewmodel/on_going/cur_address_provider.dart';
+import 'package:majoong/viewmodel/on_going/cancel_share_provider.dart';
 import 'package:majoong/viewmodel/search/route_point_provider.dart';
 import 'package:majoong/viewmodel/share_loaction/share_location_provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -31,10 +31,12 @@ import 'package:http/http.dart' as http;
 
 class OnGoingScreen extends ConsumerStatefulWidget {
   final RouteInfoResponseDto route;
+
   const OnGoingScreen({Key? key, required this.route}) : super(key: key);
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _OnGoingState(selectedRoute: route);
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _OnGoingState(selectedRoute: route);
 }
 
 class _OnGoingState extends ConsumerState<OnGoingScreen> {
@@ -46,9 +48,11 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
   Location location = Location();
   Set<Polyline> route = {};
   List<Marker> marker = [];
+
   _OnGoingState({required this.selectedRoute});
+
   int backBtnCnt = 0;
-  
+
   makePolyline(List<LocationPointResponseDto> selectedRoutePoints) {
     final List<LatLng> selectedRoutePointList = selectedRoutePoints.map((e) {
       return LatLng(e.lat, e.lng);
@@ -202,8 +206,8 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
       return null;
     }
   }
-  String curAddress = "";
 
+  String curAddress = "";
 
   @override
   Widget build(BuildContext context) {
@@ -212,20 +216,26 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
     final markerInfo = ref.watch(searchMarkerProvider.notifier);
     final chipInfo = ref.watch(searchChipProvider.notifier);
     final cameraMovedInfo = ref.watch(searchCameraMovedProvider);
+    final cancelShareState = ref.watch(cancelShareProvider);
     String endTime = "";
     logger.d('amqp share locationstate : $shareLocationState');
 
-    logger
-        .d('ongoing : $_locationData, $shareLocationState');
+    logger.d('ongoing : $_locationData, $shareLocationState');
 
-    if (_locationData != null &&
-        shareLocationState is BaseResponse<bool>) {
-      endTime = DateFormat('hh:mm').format(
-          DateTime.now().add(Duration(minutes: selectedRoute.time)));
+    if (cancelShareState is BaseResponse) {
+      Future.delayed(Duration.zero, () {
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => MainScreen()),
+            (route) => false);
+      });
+    }
+
+    if (_locationData != null && shareLocationState is BaseResponse<bool>) {
+      endTime = DateFormat('hh:mm')
+          .format(DateTime.now().add(Duration(minutes: selectedRoute.time)));
       logger.d('도착시간 : $endTime');
-      makePolyline(
-        selectedRoute.point
-      );
+      makePolyline(selectedRoute.point);
       makeMarkers(markerInfo.state);
 
       Timer.periodic(Duration(seconds: 1), (timer) async {
@@ -248,21 +258,22 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
                     WillPopScope(
                       onWillPop: () async {
                         // 뒤로 가기 버튼 클릭 시 수행할 동작
-                        if(backBtnCnt == 0){
-                          showToast(context: context, '뒤로가기를 한 번 더 누르면 공유가 종료됩니다.');
+                        if (backBtnCnt == 0) {
+                          showToast(
+                              context: context, '뒤로가기를 한 번 더 누르면 공유가 종료됩니다.');
                           backBtnCnt++;
                           return false;
                         }
-                        if(backBtnCnt == 1){
+                        if (backBtnCnt == 1) {
                           backBtnCnt = 0;
                           showToast(context: context, '공유가 종료되었습니다.');
-                          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => MainScreen()), (route) => false);
+                          ref.read(cancelShareProvider.notifier).cancelShare();
                         }
                         return false; // true 반환 시 뒤로 가기 동작 수행, false 반환 시 동작 수행하지 않음
                       },
                       child: Scaffold(
-                        // Scaffold 내용 작성
-                      ),
+                          // Scaffold 내용 작성
+                          ),
                     ),
                     GoogleMap(
                       onMapCreated: _onMapCreated,

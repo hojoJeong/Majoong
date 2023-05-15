@@ -29,7 +29,6 @@ import '../../service/remote/api/user/user_api_service.dart';
 import '../../viewmodel/main/facility_provider.dart';
 import '../../viewmodel/main/review_dialog_provider.dart';
 import '../../viewmodel/main/user_info_provider.dart';
-import '../../viewmodel/on_going/cur_address_provider.dart';
 import '../../viewmodel/search/search_facility_provider.dart';
 import '../../viewmodel/search/search_marker_provider.dart';
 

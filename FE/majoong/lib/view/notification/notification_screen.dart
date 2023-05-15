@@ -23,10 +23,15 @@ class NotificationScreen extends ConsumerWidget {
     final notificationListState = ref.watch(notificationProvider);
     final acceptShareState = ref.watch(acceptShareProvider);
     final shareLocationState = ref.watch(shareLocationProvider);
-    if (acceptShareState is BaseResponse && shareLocationState is BaseResponse<bool>) {
+    if (acceptShareState is BaseResponse &&
+        shareLocationState is BaseResponse<bool>) {
       Future.delayed(Duration.zero, () {
-        Navigator.of(context)
-            .push(MaterialPageRoute(builder: (_) => GuardianScreen()));
+        if (acceptShareState.status == 404) {
+          showToast(context: context, '유효하지 않는 마중 요청입니다.');
+        } else {
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (_) => GuardianScreen()));
+        }
       });
     }
 
@@ -80,7 +85,10 @@ class NotificationScreen extends ConsumerWidget {
                               child: GestureDetector(
                                 onTap: () {
                                   if (notification.type == 1) {
-                                    ref.read(notificationProvider.notifier).deleteNotification(notification.notificationId);
+                                    ref
+                                        .read(notificationProvider.notifier)
+                                        .deleteNotification(
+                                            notification.notificationId);
                                     Navigator.of(context).push(
                                         MaterialPageRoute(
                                             builder: (_) =>

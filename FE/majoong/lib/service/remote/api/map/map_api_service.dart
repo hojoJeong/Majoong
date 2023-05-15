@@ -58,4 +58,8 @@ abstract class MapApiService {
   @GET('map/share/{userId}')
   Future<BaseResponse<AcceptShareRouteResponseDto>> acceptShareRoute(@Path('userId') int userId);
 
+  @Headers({AUTHORIZATION: AUTH})
+  @POST('map/share/{userId}')
+  Future<BaseResponse> cancelShare(@Path('userId') int userId);
+
 }
