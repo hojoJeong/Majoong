@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:majoong/common/const/key_value.dart';
 import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/layout/default_layout.dart';
@@ -90,10 +91,16 @@ class SearchScreen extends ConsumerWidget {
                               UnderlineInputBorder(borderSide: BorderSide.none),
                           suffixIcon: GestureDetector(
                               onTap: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (_) => ResponseSearchPlacesScreen(
-                                        keyword:
-                                            searchKeywordController.text)));
+                                if(searchKeywordController.text.isEmpty){
+                                  showToast(context: context, '검색어를 입력해주세요.');
+                                } else {
+                                  ref.read(recentKeywordProvider.notifier).addKeyword(searchKeywordController.text);
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (_) => ResponseSearchPlacesScreen(
+                                          keyword:
+                                          searchKeywordController.text)));
+                                }
+                                
                               },
                               child: Icon(Icons.search))),
                     ),
