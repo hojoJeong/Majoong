@@ -26,7 +26,7 @@ public class S3UploadImpl implements S3Upload{
     public String uploadFile(int userId, String fileType, MultipartFile multipartFile) throws IOException {
         if (multipartFile == null) {
             log.error("파일이 비었습니다. : {}", multipartFile);
-            throw new NoFileException();
+            return null;
         }
 
         String originalFilename = multipartFile.getOriginalFilename();

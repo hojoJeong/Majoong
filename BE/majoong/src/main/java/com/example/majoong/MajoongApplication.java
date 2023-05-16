@@ -13,5 +13,4 @@ public class MajoongApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(MajoongApplication.class, args);
 	}
-
 }

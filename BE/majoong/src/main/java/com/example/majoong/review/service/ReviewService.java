@@ -82,7 +82,6 @@ public class ReviewService {
         }
 
         log.info("requestDto 전달 받음 : {}", createReviewDto.getContent());
-        log.info("멀티파트 확인 : {}, {}", reviewImage.getName(), reviewImage.getContentType());
 
         String fileType = "review";
         String reviewImageURL = s3Upload.uploadFile(userId, fileType, reviewImage);

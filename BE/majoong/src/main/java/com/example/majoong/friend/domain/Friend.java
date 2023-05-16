@@ -23,10 +23,11 @@ public class Friend {
     @ManyToOne
     @JoinColumn(name = "friend_id")
     private User friend;
+    @Column(name = "friend_name")
     private String friendName;
     private int state;
 
-    @Column(columnDefinition = "BOOLEAN DEFAULT false")
+    @Column(columnDefinition = "BOOLEAN DEFAULT false", name = "is_guardian")
     private boolean isGuardian;
 
     public Friend(User user, User friend, int state) {

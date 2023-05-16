@@ -58,9 +58,9 @@ public class VideoController {
     @Operation(summary = "바디캠 종료", description = "사용자가 바디캠을 종료합니다")
     public ResponseEntity<?> videoStop(HttpServletRequest request, @PathVariable("sessionId")String sessionId, @PathVariable("connectionId")String connectionId) {
 
-        videoService.stopRecording(request, sessionId);         // 녹화 종료
-        videoService.closeConnection(sessionId, connectionId);  // 연결 종료
-        videoService.closeSession(request, sessionId);          // 세션 종료
+//        videoService.stopRecording(request, sessionId);         // 녹화 종료
+//        videoService.closeConnection(sessionId, connectionId);  // 연결 종료
+        videoService.closeSession(request, sessionId);          // 세션 종료: 세션을 종료하면 녹화, 연결도 모두 해제됩니다.
 
         ResponseData data = new ResponseData();
         data.setMessage("videoStop 성공");

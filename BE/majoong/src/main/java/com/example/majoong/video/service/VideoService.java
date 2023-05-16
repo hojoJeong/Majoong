@@ -58,6 +58,8 @@ public class VideoService {
         String url = OPENVIDU_BASE_PATH + "sessions";
         String customSessionId = userId + "-" + System.currentTimeMillis();
         String recordingMode = "ALWAYS";
+        String resolution = "720x1280";
+
 
         // OPENVIDU REST API 요청
         RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
@@ -70,6 +72,12 @@ public class VideoService {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("customSessionId",customSessionId);
         jsonObject.addProperty("recordingMode",recordingMode);
+
+        JsonObject defaultRecordingProperties = new JsonObject();
+        defaultRecordingProperties.addProperty("resolution", resolution);
+
+        jsonObject.add("defaultRecordingProperties", defaultRecordingProperties);
+
         // Header + Body
         HttpEntity<String> entity = new HttpEntity<String>(jsonObject.toString(), headers);
         // request
@@ -88,18 +96,18 @@ public class VideoService {
         InitializeSessionResponseDto responseDto = new InitializeSessionResponseDto();
         responseDto.setSessionId(sessionId);
 
-        // fcm
-        User user = userRepository.findById(userId).get();
-        LocationShareDto movingInfo = mapService.getLocationInfo(userId);
-        List<Integer> guardians = movingInfo.getGuardians();
-        for (int guardianId : guardians){
-            User guardian = userRepository.findById(guardianId).get();
-            guardian.getFcmToken();
-            String title = "[마중] 바디캠 수신 요청";
-            String body = user.getNickname()+"님이 바디캠을 시작했습니다.";
-            fCMService.sendMessage(guardianId,title, body,title,body,sessionId);
-
-        }
+//        // fcm
+//        User user = userRepository.findById(userId).get();
+//        LocationShareDto movingInfo = mapService.getLocationInfo(userId);
+//        List<Integer> guardians = movingInfo.getGuardians();
+//        for (int guardianId : guardians){
+//            User guardian = userRepository.findById(guardianId).get();
+//            guardian.getFcmToken();
+//            String title = "[마중] 바디캠 수신 요청";
+//            String body = user.getNickname()+"님이 바디캠을 시작했습니다.";
+//            fCMService.sendMessage(guardianId,title, body,title,body,sessionId);
+//
+//        }
         return responseDto;
     }
 
@@ -259,6 +267,7 @@ public class VideoService {
         List<GetRecordingsResponseDto> responseDtos = new ArrayList<>();
         for (JsonElement item : items) {
             String recordingId = item.getAsJsonObject().get("id").getAsString();
+            System.out.println("getRecordings: " + recordingId);
             String[] splitId = recordingId.split("-");
             if (splitId[0].equals(String.valueOf(userId))) {
                 String createdAt = unitConverter.timestampToDate(item.getAsJsonObject().get("createdAt").getAsLong());

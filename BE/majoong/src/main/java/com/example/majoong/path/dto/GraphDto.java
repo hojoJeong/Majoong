@@ -14,7 +14,7 @@ import java.util.*;
 public class GraphDto implements Iterable{
     private Map<Long, Map<NodeDataDto, Double>> graph;          // NodeId, Map<노드정보, 가중치>
     private Map<Long, Map<Long, Double>> heuristicMap;          // 그래프에서 노드간의 휴리스틱 값 Map
-    private Map<Long, NodeDataDto> nodeIdNodeData;              // 노드 id와 노드 data사이의 Map
+    private Map<Long, NodeDataDto> nodeIdNodeData;              // 노드 id와 노드 data의 Map
     private List<NodeDto> nodeList;
     private List<EdgeDto> edgeList;
 
@@ -23,24 +23,24 @@ public class GraphDto implements Iterable{
         this.edgeList = edgeList;
         this.heuristicMap = heuristicMap;
 
-        this.graph =new HashMap<>();
-        this.nodeIdNodeData = new HashMap<>();
+        this.graph = new LinkedHashMap<>();
+        this.nodeIdNodeData = new LinkedHashMap<>();
 
         for (NodeDto n : nodeList){
             addNode(n.getNodeId(), n.getLng(), n.getLat());
         }
 
         for(EdgeDto e : edgeList){
-            addEdge(e.getSourceId(), e.getTargetId(), e.getDistanceVal() - e.getSafeVal());
+            addEdge(e.getSourceId(), e.getTargetId(), e.getDistance() - e.getSafety());
         }
     }
 
     public Map<NodeDataDto, Double> edgesFrom (Long nodeId) {
         if (nodeId == null) throw new NullPointerException("The input node should not be null.");
-        if (!heuristicMap.containsKey(nodeId)) throw new NoSuchElementException("This node is not a part of hueristic map");
+//        if (!heuristicMap.containsKey(nodeId)) throw new NoSuchElementException("This node is not a part of hueristic map");
         if (!graph.containsKey(nodeId)) throw new NoSuchElementException("The node should not be null.");
 
-        return Collections.unmodifiableMap(graph.get(nodeId));
+        return Collections.unmodifiableMap(graph.get(nodeId)); // 읽기 전용으로 반환
     }
 
     /**
@@ -52,9 +52,9 @@ public class GraphDto implements Iterable{
     // 그래프에 새로운 노드 추가. 노드에 대한 heuristic map을 노드 데이터에 채운다
     public void addNode(Long nodeId, double lng, double lat) {
         if (nodeId == null) throw new NullPointerException("The node cannot be null");
-        if (!heuristicMap.containsKey(nodeId)) throw new NoSuchElementException("This node is not a part of hueristic map");
+//        if (!heuristicMap.containsKey(nodeId)) throw new NoSuchElementException("This node is not a part of hueristic map");
 
-        graph.put(nodeId, new HashMap<NodeDataDto, Double>());
+        graph.put(nodeId, new LinkedHashMap<NodeDataDto, Double>());
         nodeIdNodeData.put(nodeId, new NodeDataDto(nodeId, heuristicMap.get(nodeId), lng, lat));
     }
 
