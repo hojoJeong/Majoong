@@ -32,6 +32,15 @@ class VideoStateNotifier extends StateNotifier<BaseResponseState> {
     }
   }
 
+  deleteRecording(recordingId) async {
+    state = BaseResponseLoading();
+    final BaseResponse response =
+        await videoService.deleteRecording(recordingId);
+    if (response.status == 200) {
+      getRecordings();
+    }
+  }
+
   startVideo() async {
     state = BaseResponseLoading();
     final BaseResponse<StartVideoResponseDto> response =

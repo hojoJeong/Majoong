@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:collection/collection.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -78,17 +76,16 @@ class _MainScreenState extends ConsumerState<MainScreen> {
    */
   Future<void> fcmHandlerInBackground(RemoteMessage message) async {
     logger.d(
-        "[FCM - Background] MESSAGE notification title: ${message.notification!
-            .title}, ${message.notification!.body}");
+        "[FCM - Background] MESSAGE notification title: ${message.notification!.title}, ${message.notification!.body}");
     logger.d(
-        "[FCM - Background] MESSAGE title: ${message.data['title']}, ${message
-            .data['body']}, ${message.data['sessionId']}");
+        "[FCM - Background] MESSAGE title: ${message.data['title']}, ${message.data['body']}, ${message.data['sessionId']}");
   }
 
   /**
    * Firebase Foreground Messaging 핸들러
    */
-  Future<void> notificationHandlerInForeground(RemoteMessage message,
+  Future<void> notificationHandlerInForeground(
+      RemoteMessage message,
       FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin,
       AndroidNotificationChannel? channel) async {
     if (message.notification != null) {
@@ -118,12 +115,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     dio.options.baseUrl = 'https://majoong4u.com/openvidu/api';
     dio.options.headers['content-Type'] = 'application/json';
     dio.options.headers["authorization"] =
-    'Basic ${base64Encode(utf8.encode('OPENVIDUAPP:MY_SECRET'))}';
+        'Basic ${base64Encode(utf8.encode('OPENVIDUAPP:MY_SECRET'))}';
     localParticipant = await _openvidu.publishLocalStream(
-        token: ref
-            .read(videoProvider.notifier)
-            .sessionInfo!
-            .connectionToken,
+        token: ref.read(videoProvider.notifier).sessionInfo!.connectionToken,
         userName: nickname ?? 'user');
     setState(() {
       isInside = true;
@@ -145,8 +139,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   void clickMessageEvent(RemoteMessage message) {
     final sessionId = message.data['sessionId'].toString();
     logger.d(
-        'background message click : ${message.data['title']}, ${message
-            .data['body']}, ${message.data['sessionId']}');
+        'background message click : ${message.data['title']}, ${message.data['body']}, ${message.data['sessionId']}');
     if (sessionId != '') {
       //TODO 화면 공유
     } else {
@@ -160,25 +153,23 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
     // 플랫폼 확인후 권한요청 및 Flutter Local Notification Plugin 설정
     FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
+        FlutterLocalNotificationsPlugin();
 
     await flutterLocalNotificationsPlugin.initialize(
         const InitializationSettings(
             android: AndroidInitializationSettings('@drawable/app_logo'),
             iOS: DarwinInitializationSettings()),
         onDidReceiveNotificationResponse: (NotificationResponse details) async {
-          final sessionId = clickMessage.data['sessionId'].toString();
-          logger.d(
-              'message click : ${clickMessage.data['title']}, ${clickMessage
-                  .data['body']}, ${clickMessage.data['sessionId']}');
-          if (sessionId != '') {
-            //TODO 화면 공유
-          } else {
-            Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => NotificationScreen()));
-          }
-        });
+      final sessionId = clickMessage.data['sessionId'].toString();
+      logger.d(
+          'message click : ${clickMessage.data['title']}, ${clickMessage.data['body']}, ${clickMessage.data['sessionId']}');
+      if (sessionId != '') {
+        //TODO 화면 공유
+      } else {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => NotificationScreen()));
+      }
+    });
 
     AndroidNotificationChannel? androidNotificationChannel;
     if (Platform.isIOS) {
@@ -195,7 +186,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
       await flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
+              AndroidFlutterLocalNotificationsPlugin>()
           ?.createNotificationChannel(androidNotificationChannel);
     }
 
@@ -203,11 +194,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     FirebaseMessaging.onMessage.listen((message) {
       clickMessage = message;
       logger.d(
-          'notification message : ${message.notification!.title} , ${message
-              .notification!.body}');
+          'notification message : ${message.notification!.title} , ${message.notification!.body}');
       logger.d(
-          'data message : ${message.data['title']}, ${message
-              .data['body']}, ${message.data['sessionId']}');
+          'data message : ${message.data['title']}, ${message.data['body']}, ${message.data['sessionId']}');
       notificationHandlerInForeground(
           message, flutterLocalNotificationsPlugin, androidNotificationChannel);
     });
@@ -241,7 +230,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   Future<void> initOpenVidu() async {
     _openvidu = OpenViduClient('${BASE_URL}openvidu');
     localParticipant =
-    await _openvidu.startLocalPreview(context, StreamMode.backCamera);
+        await _openvidu.startLocalPreview(context, StreamMode.backCamera);
     await localParticipant?.setVideoInput("1");
     final videoId = localParticipant?.stream?.getVideoTracks().toString();
     setState(() {});
@@ -293,9 +282,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   Future<String?> getAddress() async {
     final url =
-        'https://maps.googleapis.com/maps/api/geocode/json?latlng=${ref.read(
-        currentLocationProvider)[0]},${ref.read(
-        currentLocationProvider)[1]}&key=$GOOGLE_MAP_KEY&language=ko';
+        'https://maps.googleapis.com/maps/api/geocode/json?latlng=${ref.read(currentLocationProvider)[0]},${ref.read(currentLocationProvider)[1]}&key=$GOOGLE_MAP_KEY&language=ko';
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       final decodedJson = jsonDecode(response.body);
@@ -343,14 +330,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   Widget drawerMenu({title: String}) {
     return Container(
       alignment: Alignment.centerLeft,
-      width: MediaQuery
-          .of(context)
-          .size
-          .width,
-      height: MediaQuery
-          .of(context)
-          .size
-          .height / 18,
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height / 18,
       child: GestureDetector(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -373,14 +354,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Image(
-            width: MediaQuery
-                .of(context)
-                .size
-                .width / 10,
-            height: MediaQuery
-                .of(context)
-                .size
-                .width / 10,
+            width: MediaQuery.of(context).size.width / 10,
+            height: MediaQuery.of(context).size.width / 10,
             image: image,
           ),
           Text(
@@ -412,15 +387,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   Map<String, RemoteParticipant> remoteParticipants = {};
 
   List<LatLng> _points = <LatLng>[
-    LatLng(36.10297258665421, 128.41820508241653),
-
-    LatLng(36.10254168405712, 128.41885954141617),
-
-    LatLng(36.10291682278871, 128.41865569353104),
-
-    LatLng(36.10285598948089, 128.41907411813736),
-
-    LatLng(36.102980190817696, 128.418827354908)
+    LatLng(36.105040919120235, 128.41439098119736),
+    LatLng(36.105641648035, 128.41495424509048),
+    LatLng(36.10564418275616, 128.41550678014755),
+    LatLng(36.10564671747732, 128.41606467962265),
+    LatLng(36.105040919120235, 128.41605931520462),
+    LatLng(36.105040919120235, 128.41439098119736)
   ];
 
   Set<Polygon> _buildPolygon() {
@@ -436,9 +408,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userInfo = ref
-        .watch(userInfoProvider.notifier)
-        .state;
+    final userInfo = ref.watch(userInfoProvider.notifier).state;
     final facilityInfo = ref.watch(facilityProvider.notifier);
     final markerInfo = ref.watch(markerProvider.notifier);
     final polyLineInfo = ref.watch(polyLineProvider.notifier);
@@ -455,18 +425,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
     return Scaffold(
       drawer: Drawer(
-        width: MediaQuery
-            .of(context)
-            .size
-            .width / 1.5,
+        width: MediaQuery.of(context).size.width / 1.5,
         child: SafeArea(
           child: Column(
             children: [
               Container(
-                width: MediaQuery
-                    .of(context)
-                    .size
-                    .width,
+                width: MediaQuery.of(context).size.width,
                 child: IconButton(
                   alignment: Alignment.topRight,
                   icon: Icon(Icons.notifications_none_rounded),
@@ -479,34 +443,27 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               userInfo is BaseResponseLoading
                   ? Container()
                   : Container(
-                width: MediaQuery
-                    .of(context)
-                    .size
-                    .width / 2.5,
-                height: MediaQuery
-                    .of(context)
-                    .size
-                    .width / 2.5,
-                child: CircleAvatar(
-                  backgroundColor: Colors.transparent,
-                  backgroundImage: Image
-                      .network(
-                      (userInfo as BaseResponse<UserInfoResponseDto>)
-                          .data!
-                          .profileImage!)
-                      .image,
-                  radius: 100, // 동그란 영역의 반지름
-                ),
-              ),
+                      width: MediaQuery.of(context).size.width / 2.5,
+                      height: MediaQuery.of(context).size.width / 2.5,
+                      child: CircleAvatar(
+                        backgroundColor: Colors.transparent,
+                        backgroundImage: Image.network(
+                                (userInfo as BaseResponse<UserInfoResponseDto>)
+                                    .data!
+                                    .profileImage!)
+                            .image,
+                        radius: 100, // 동그란 영역의 반지름
+                      ),
+                    ),
               SizedBox(
                 height: 10,
               ),
               Text(
                 userInfo is BaseResponse<UserInfoResponseDto>
                     ? (userInfo as BaseResponse<UserInfoResponseDto>)
-                    .data
-                    ?.nickname ??
-                    ''
+                            .data
+                            ?.nickname ??
+                        ''
                     : '',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
@@ -519,9 +476,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               Text(
                 userInfo is BaseResponse<UserInfoResponseDto>
                     ? (userInfo as BaseResponse<UserInfoResponseDto>)
-                    .data
-                    ?.phoneNumber ??
-                    ''
+                            .data
+                            ?.phoneNumber ??
+                        ''
                     : '',
                 style: TextStyle(
                   fontSize: 15,
@@ -603,523 +560,467 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       ),
       body: _locationData != null
           ? Builder(builder: (context) {
-        logger.d('message');
+              logger.d('message');
 
-        return SafeArea(
-          child: Stack(alignment: Alignment.topCenter, children: [
-            GoogleMap(
-              polygons: _buildPolygon(),
-              polylines: Set<Polyline>.of(polyLineInfo.state.values),
-              onMapCreated: _onMapCreated,
-              markers: markerInfo.state,
-              initialCameraPosition: CameraPosition(
-                target: LatLng(
-                    _locationData!.latitude!, _locationData!.longitude!),
-                zoom: 15.7,
-              ),
-              onCameraMove: (CameraPosition position) {
-                final lat = position.target.latitude;
-                final lng = position.target.longitude;
-                final centerLat = lat;
-                final centerLng = lng;
-                ref.read(centerPositionProvider.notifier).update((state) {
-                  return state = GetFacilityRequestDto(
-                    centerLat: centerLat,
-                    centerLng: centerLng,
-                    radius: 1000,
-                  );
-                });
-                ref
-                    .read(cameraMovedProvider.notifier)
-                    .update((state) => true);
-              },
-              myLocationEnabled: true,
-            ),
-            Positioned(
-              top: MediaQuery
-                  .of(context)
-                  .size
-                  .height / 12,
-              left: MediaQuery
-                  .of(context)
-                  .size
-                  .width / 50,
-              right: MediaQuery
-                  .of(context)
-                  .size
-                  .width / 50,
-              child: Container(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      for (String choice in _choices)
-                        Padding(
-                          padding:
-                          const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: ChoiceChip(
-                            backgroundColor: Colors.grey,
-                            label: Text(
-                              choice,
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            selectedColor: PRIMARY_COLOR,
-                            selected: chipInfo.state.contains(choice),
-                            onSelected: (bool selected) {
-                              chipInfo.toggleChip(choice);
-                              markerInfo.renderMarker();
-                              polyLineInfo.renderLine();
-                              setState(() {});
-                            },
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: MediaQuery
-                  .of(context)
-                  .size
-                  .height / 7,
-              child: GestureDetector(
-                onTap: () async {
-                  facilityInfo.getFacility(context);
-                  ref
-                      .read(cameraMovedProvider.notifier)
-                      .update((state) => false);
-                },
-                child: cameraMovedInfo
-                    ? Container(
-                  alignment: Alignment.center,
-                  height: MediaQuery
-                      .of(context)
-                      .size
-                      .height / 25,
-                  width: MediaQuery
-                      .of(context)
-                      .size
-                      .width / 3,
-                  child: Text(
-                    '현재 위치에서 검색',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                )
-                    : Container(),
-              ),
-            ),
-            ref
-                .read(facilityProvider.notifier)
-                .state
-            is BaseResponseLoading
-                ? loadingWidget()
-                : Container(),
-            Container(
-              margin: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              width: double.infinity,
-              height: MediaQuery
-                  .of(context)
-                  .size
-                  .height / 14,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      ref.read(userInfoProvider.notifier).getUserInfo();
-                      Scaffold.of(context).openDrawer();
-                    },
-                    icon: const Icon(Icons.menu),
-                  ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => SearchScreen()));
-                      },
-                      child: const Text(
-                        '도착지를 입력해주세요',
-                        style:
-                        TextStyle(color: Colors.grey, fontSize: 14),
-                      ),
+              return SafeArea(
+                child: Stack(alignment: Alignment.topCenter, children: [
+                  GoogleMap(
+                    polygons: _buildPolygon(),
+                    polylines: Set<Polyline>.of(polyLineInfo.state.values),
+                    onMapCreated: _onMapCreated,
+                    markers: markerInfo.state,
+                    initialCameraPosition: CameraPosition(
+                      target: LatLng(
+                          _locationData!.latitude!, _locationData!.longitude!),
+                      zoom: 15.7,
                     ),
+                    onCameraMove: (CameraPosition position) {
+                      final lat = position.target.latitude;
+                      final lng = position.target.longitude;
+                      final centerLat = lat;
+                      final centerLng = lng;
+                      ref.read(centerPositionProvider.notifier).update((state) {
+                        return state = GetFacilityRequestDto(
+                          centerLat: centerLat,
+                          centerLng: centerLng,
+                          radius: 1000,
+                        );
+                      });
+                      ref
+                          .read(cameraMovedProvider.notifier)
+                          .update((state) => true);
+                    },
+                    myLocationEnabled: true,
                   ),
-                ],
-              ),
-            ),
-            Positioned(
-              right: 10,
-              bottom: MediaQuery
-                  .of(context)
-                  .size
-                  .height / 7,
-              child: GestureDetector(
-                onTap: () async {
-                  final address = await getAddress();
-                  if (address != null)
-                    reviewDialogInfo.setAddress(address);
-                  reviewDialogInfo.setCurrentLocation();
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return StatefulBuilder(
-                        builder: (context, setState) {
-                          return Dialog(
-                            backgroundColor: PRIMARY_COLOR,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 30,
-                                vertical: 5,
-                              ),
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment:
-                                  MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    SizedBox(height: 10),
-                                    const Text(
-                                      '현재 위치에 대해서 평가해주세요',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(height: 5),
-                                    Text(
-                                      reviewDialogInfo.state.address,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 15),
-                                    RatingBar.builder(
-                                      initialRating: 0,
-                                      minRating: 1,
-                                      direction: Axis.horizontal,
-                                      itemCount: 5,
-                                      itemBuilder: (context, _) =>
-                                          Icon(
-                                            Icons.star,
-                                            color: Colors.amber,
-                                          ),
-                                      onRatingUpdate: (rating) {
-                                        reviewDialogInfo
-                                            .setScore(rating.toInt());
-                                      },
-                                    ),
-                                    SizedBox(height: 10),
-                                    createToggleButton(true, setState),
-                                    SizedBox(height: 4),
-                                    createToggleButton(false, setState),
-                                    SizedBox(height: 2),
-                                    Row(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.end,
-                                      children: [
-                                        Text(
-                                          '사진과 함께 등록할까요?',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12),
-                                        ),
-                                        GestureDetector(
-                                          onTap: () async {
-                                            //TODO 사진 촬영
-                                            final pickedFile =
-                                            await ImagePicker()
-                                                .pickImage(
-                                              source: ImageSource.camera,
-                                            );
-                                            if (pickedFile != null) {
-                                              reviewDialogInfo.setPicture(
-                                                  File(XFile(
-                                                      pickedFile.path)
-                                                      .path));
-                                            }
-                                          },
-                                          child: Text(
-                                            '촬영하기',
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 10,
-                                                decoration: TextDecoration
-                                                    .underline),
-                                          ),
-                                        ),
-                                        Icon(
-                                          Icons.camera_alt_outlined,
-                                          color: Colors.white,
-                                          size: 10,
-                                        )
-                                      ],
-                                    ),
-                                    SizedBox(height: 15),
-                                    TextField(
-                                      onChanged: (content) {
-                                        reviewDialogInfo
-                                            .setContent(content);
-                                      },
-                                      maxLength: 50,
-                                      // 글자 제한 설정
-                                      maxLines: 6,
-                                      // 멀티라인 설정
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 10,
-                                      ),
-                                      decoration: InputDecoration(
-                                        counterStyle: TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                        contentPadding: EdgeInsets.all(4),
-                                        hintText: '의견을 남겨주세요',
-                                        // 힌트 설정
-                                        filled: true,
-                                        // 배경색 적용
-                                        fillColor: Colors.white,
-                                        // 배경색 설정
-                                        border: OutlineInputBorder(
-                                          // 외곽선 설정
-                                          borderSide:
-                                          BorderSide.none, // 외곽선 없음
-                                          borderRadius:
-                                          BorderRadius.circular(
-                                              10), // 둥근 모서리 설정
-                                        ),
-                                      ),
-                                    ),
-                                    Divider(
-                                      color: Colors.white,
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        facilityInfo.postReview();
-                                        reviewDialogInfo.clearData();
-                                        Navigator.pop(context);
-                                      },
-                                      child: const Text(
-                                        '리뷰 등록',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                  Positioned(
+                    top: MediaQuery.of(context).size.height / 12,
+                    left: MediaQuery.of(context).size.width / 50,
+                    right: MediaQuery.of(context).size.width / 50,
+                    child: Container(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            for (String choice in _choices)
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4.0),
+                                child: ChoiceChip(
+                                  backgroundColor: Colors.grey,
+                                  label: Text(
+                                    choice,
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  selectedColor: PRIMARY_COLOR,
+                                  selected: chipInfo.state.contains(choice),
+                                  onSelected: (bool selected) {
+                                    chipInfo.toggleChip(choice);
+                                    markerInfo.renderMarker();
+                                    polyLineInfo.renderLine();
+                                    setState(() {});
+                                  },
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  );
-                },
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: PRIMARY_COLOR,
-                    borderRadius: BorderRadius.circular(150),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                  child: Text(
-                    '+',
-                    style: TextStyle(
+                  Positioned(
+                    top: MediaQuery.of(context).size.height / 7,
+                    child: GestureDetector(
+                      onTap: () async {
+                        facilityInfo.getFacility(context);
+                        ref
+                            .read(cameraMovedProvider.notifier)
+                            .update((state) => false);
+                      },
+                      child: cameraMovedInfo
+                          ? Container(
+                              alignment: Alignment.center,
+                              height: MediaQuery.of(context).size.height / 25,
+                              width: MediaQuery.of(context).size.width / 3,
+                              child: Text(
+                                '현재 위치에서 검색',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(30),
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.5),
+                                    spreadRadius: 2,
+                                    blurRadius: 5,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Container(),
+                    ),
+                  ),
+                  ref.read(facilityProvider.notifier).state
+                          is BaseResponseLoading
+                      ? loadingWidget()
+                      : Container(),
+                  Container(
+                    margin: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
                       color: Colors.white,
-                      fontSize: 50,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    width: double.infinity,
+                    height: MediaQuery.of(context).size.height / 14,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            ref.read(userInfoProvider.notifier).getUserInfo();
+                            Scaffold.of(context).openDrawer();
+                          },
+                          icon: const Icon(Icons.menu),
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => SearchScreen()));
+                            },
+                            child: const Text(
+                              '도착지를 입력해주세요',
+                              style:
+                                  TextStyle(color: Colors.grey, fontSize: 14),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ),
-            ),
-            ref
-                .read(videoProvider.notifier)
-                .state is BaseResponseLoading
-                ? loadingWidget()
-                : Container(),
-            Positioned(
-              left: 10,
-              right: 10,
-              bottom: 10,
-              height: MediaQuery
-                  .of(context)
-                  .size
-                  .height / 8,
-              child: Container(
-                width: MediaQuery
-                    .of(context)
-                    .size
-                    .width,
-                height: MediaQuery
-                    .of(context)
-                    .size
-                    .height / 8,
-                decoration: BoxDecoration(
-                  color: PRIMARY_COLOR,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    bottomComponent(
-                      image: AssetImage('res/call.png'),
-                      text: '보호자 통화',
-                      onPressed: () async {
-                        final friendInfo =
-                        ref.read(friendProvider.notifier);
-                        await friendInfo.getFriendList(1);
-                        guardianDialog(setState);
+                  Positioned(
+                    right: 10,
+                    bottom: MediaQuery.of(context).size.height / 7,
+                    child: GestureDetector(
+                      onTap: () async {
+                        final address = await getAddress();
+                        if (address != null)
+                          reviewDialogInfo.setAddress(address);
+                        reviewDialogInfo.setCurrentLocation();
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return StatefulBuilder(
+                              builder: (context, setState) {
+                                return Dialog(
+                                  backgroundColor: PRIMARY_COLOR,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 30,
+                                      vertical: 5,
+                                    ),
+                                    child: SingleChildScrollView(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: <Widget>[
+                                          SizedBox(height: 10),
+                                          const Text(
+                                            '현재 위치에 대해서 평가해주세요',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          SizedBox(height: 5),
+                                          Text(
+                                            reviewDialogInfo.state.address,
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 15),
+                                          RatingBar.builder(
+                                            initialRating: 0,
+                                            minRating: 1,
+                                            direction: Axis.horizontal,
+                                            itemCount: 5,
+                                            itemBuilder: (context, _) => Icon(
+                                              Icons.star,
+                                              color: Colors.amber,
+                                            ),
+                                            onRatingUpdate: (rating) {
+                                              reviewDialogInfo
+                                                  .setScore(rating.toInt());
+                                            },
+                                          ),
+                                          SizedBox(height: 10),
+                                          createToggleButton(true, setState),
+                                          SizedBox(height: 4),
+                                          createToggleButton(false, setState),
+                                          SizedBox(height: 2),
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              Text(
+                                                '사진과 함께 등록할까요?',
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12),
+                                              ),
+                                              GestureDetector(
+                                                onTap: () async {
+                                                  //TODO 사진 촬영
+                                                  final pickedFile =
+                                                      await ImagePicker()
+                                                          .pickImage(
+                                                    source: ImageSource.camera,
+                                                  );
+                                                  if (pickedFile != null) {
+                                                    reviewDialogInfo.setPicture(
+                                                        File(XFile(
+                                                                pickedFile.path)
+                                                            .path));
+                                                  }
+                                                },
+                                                child: Text(
+                                                  '촬영하기',
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 10,
+                                                      decoration: TextDecoration
+                                                          .underline),
+                                                ),
+                                              ),
+                                              Icon(
+                                                Icons.camera_alt_outlined,
+                                                color: Colors.white,
+                                                size: 10,
+                                              )
+                                            ],
+                                          ),
+                                          SizedBox(height: 15),
+                                          TextField(
+                                            onChanged: (content) {
+                                              reviewDialogInfo
+                                                  .setContent(content);
+                                            },
+                                            maxLength: 50,
+                                            // 글자 제한 설정
+                                            maxLines: 6,
+                                            // 멀티라인 설정
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 10,
+                                            ),
+                                            decoration: InputDecoration(
+                                              counterStyle: TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                              contentPadding: EdgeInsets.all(4),
+                                              hintText: '의견을 남겨주세요',
+                                              // 힌트 설정
+                                              filled: true,
+                                              // 배경색 적용
+                                              fillColor: Colors.white,
+                                              // 배경색 설정
+                                              border: OutlineInputBorder(
+                                                // 외곽선 설정
+                                                borderSide:
+                                                    BorderSide.none, // 외곽선 없음
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        10), // 둥근 모서리 설정
+                                              ),
+                                            ),
+                                          ),
+                                          Divider(
+                                            color: Colors.white,
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              facilityInfo.postReview();
+                                              reviewDialogInfo.clearData();
+                                              Navigator.pop(context);
+                                            },
+                                            child: const Text(
+                                              '리뷰 등록',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        );
                       },
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: PRIMARY_COLOR,
+                          borderRadius: BorderRadius.circular(150),
+                        ),
+                        child: Text(
+                          '+',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 50,
+                          ),
+                        ),
+                      ),
                     ),
-                    bottomComponent(
-                      image: AssetImage('res/body_cam.png'),
-                      text: '바디캠',
-                      onPressed: () async {
-                        var cameraStatus =
-                        await Permission.camera.request();
-                        if (!cameraStatus.isGranted) {
-                          showToast(context: context, '권한 사용을 허용 해주세요');
-                          openAppSettings();
-                          return;
-                        }
-                        var micStatus =
-                        await Permission.microphone.request();
-                        if (!micStatus.isGranted) {
-                          showToast(context: context, '권한 사용을 허용 해주세요');
-                          openAppSettings();
-                          return;
-                        }
-                        if (!isInside) {
-                          initOpenVidu();
-                          _listenSessionEvents();
-                          await ref
-                              .read(videoProvider.notifier)
-                              .startVideo();
-                          await _onConnect();
+                  ),
+                  ref.read(videoProvider.notifier).state is BaseResponseLoading
+                      ? loadingWidget()
+                      : Container(),
+                  Positioned(
+                    left: 10,
+                    right: 10,
+                    bottom: 10,
+                    height: MediaQuery.of(context).size.height / 8,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height / 8,
+                      decoration: BoxDecoration(
+                        color: PRIMARY_COLOR,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          bottomComponent(
+                            image: AssetImage('res/call.png'),
+                            text: '보호자 통화',
+                            onPressed: () async {
+                              final friendInfo =
+                                  ref.read(friendProvider.notifier);
+                              await friendInfo.getFriendList(1);
+                              guardianDialog(setState);
+                            },
+                          ),
+                          bottomComponent(
+                            image: AssetImage('res/body_cam.png'),
+                            text: '바디캠',
+                            onPressed: () async {
+                              var cameraStatus =
+                                  await Permission.camera.request();
+                              if (!cameraStatus.isGranted) {
+                                showToast(context: context, '권한 사용을 허용 해주세요');
+                                openAppSettings();
+                                return;
+                              }
+                              var micStatus =
+                                  await Permission.microphone.request();
+                              if (!micStatus.isGranted) {
+                                showToast(context: context, '권한 사용을 허용 해주세요');
+                                openAppSettings();
+                                return;
+                              }
+                              if (!isInside) {
+                                initOpenVidu();
+                                _listenSessionEvents();
+                                await ref
+                                    .read(videoProvider.notifier)
+                                    .startVideo();
+                                await _onConnect();
 
-                          isInside = true;
-                        } else {
-                          isInside = false;
-                          localParticipant = null;
-                          await ref
-                              .read(videoProvider.notifier)
-                              .stopVideo();
-                          await _openvidu.disconnect();
-                        }
-                      },
+                                isInside = true;
+                              } else {
+                                isInside = false;
+                                localParticipant = null;
+                                await ref
+                                    .read(videoProvider.notifier)
+                                    .stopVideo();
+                                await _openvidu.disconnect();
+                              }
+                            },
+                          ),
+                          bottomComponent(
+                            image: AssetImage('res/whistle.png'),
+                            text: '호루라기',
+                            onPressed: () async {
+                              AudioCache player = AudioCache();
+                              player.play('whistle.mp3');
+                              logger.d('whistle!!');
+                            },
+                          ),
+                          bottomComponent(
+                            image: AssetImage('res/report.png'),
+                            text: '비상신고',
+                            onPressed: () {
+                              reportDialog(setState);
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                    bottomComponent(
-                      image: AssetImage('res/whistle.png'),
-                      text: '호루라기',
-                      onPressed: () async {
-                        AudioCache player = AudioCache();
-                        player.play('whistle.mp3');
-                        logger.d('whistle!!');
-                      },
-                    ),
-                    bottomComponent(
-                      image: AssetImage('res/report.png'),
-                      text: '비상신고',
-                      onPressed: () {
-                        reportDialog(setState);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            isInside
-                ? Positioned(
-              bottom: MediaQuery
-                  .of(context)
-                  .size
-                  .height / 6,
-              left: MediaQuery
-                  .of(context)
-                  .size
-                  .width / 20,
-              child: Container(
-                width: MediaQuery
-                    .of(context)
-                    .size
-                    .width / 4,
-                height: MediaQuery
-                    .of(context)
-                    .size
-                    .height / 4,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  color: Colors.black,
-                ),
-                child: MediaStreamView(
-                  borderRadius: BorderRadius.circular(15),
-                  participant: localParticipant!,
-                ),
-              ),
-            )
-                : Container(),
-          ]),
-        );
-      })
+                  ),
+                  isInside
+                      ? Positioned(
+                          bottom: MediaQuery.of(context).size.height / 6,
+                          left: MediaQuery.of(context).size.width / 20,
+                          child: Container(
+                            width: MediaQuery.of(context).size.width / 4,
+                            height: MediaQuery.of(context).size.height / 4,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15),
+                              color: Colors.black,
+                            ),
+                            child: MediaStreamView(
+                              borderRadius: BorderRadius.circular(15),
+                              participant: localParticipant!,
+                            ),
+                          ),
+                        )
+                      : Container(),
+                ]),
+              );
+            })
           : Container(
-        width: MediaQuery
-            .of(context)
-            .size
-            .width,
-        height: MediaQuery
-            .of(context)
-            .size
-            .height,
-        color: Colors.black.withOpacity(0.5),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              '잠시만 기다려주세요 :)',
-              style: TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold),
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              color: Colors.black.withOpacity(0.5),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '잠시만 기다려주세요 :)',
+                    style: TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  LoadingAnimationWidget.staggeredDotsWave(
+                      color: Colors.white, size: 60)
+                ],
+              ),
             ),
-            SizedBox(
-              height: 20,
-            ),
-            LoadingAnimationWidget.staggeredDotsWave(
-                color: Colors.white, size: 60)
-          ],
-        ),
-      ),
     );
   }
 
@@ -1158,9 +1059,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       isSelected: isBright
           ? [!reviewDialogInfo.state.isBright, reviewDialogInfo.state.isBright]
           : [
-        !reviewDialogInfo.state.isCrowded,
-        reviewDialogInfo.state.isCrowded
-      ],
+              !reviewDialogInfo.state.isCrowded,
+              reviewDialogInfo.state.isCrowded
+            ],
       selectedBorderColor: SECOND_PRIMARY_COLOR,
       borderRadius: BorderRadius.circular(10),
       selectedColor: Colors.white,
@@ -1183,14 +1084,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   Widget loadingWidget() {
     return Positioned(
-      width: MediaQuery
-          .of(context)
-          .size
-          .width,
-      height: MediaQuery
-          .of(context)
-          .size
-          .height,
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height,
       child: Container(
         color: Colors.black.withOpacity(0.5),
         child: Column(
@@ -1199,7 +1094,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             Text(
               '잠시만 기다려주세요 :)',
               style:
-              TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
             SizedBox(
               height: 20,
@@ -1213,54 +1108,48 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   guardianDialog(setState) {
-    final friends = ref
-        .read(friendProvider.notifier)
-        .state
-    as BaseResponse<List<FriendResponseDto>>;
+    final friends = ref.read(friendProvider.notifier).state
+        as BaseResponse<List<FriendResponseDto>>;
     List<Widget> guardianWidget = List.generate(
       friends.data?.length ?? 0,
-          (index) =>
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(
+      (index) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            CircleAvatar(
+              radius: 25,
+              backgroundImage:
+                  Image.network(friends.data?[index].profileImage ?? "").image,
+            ),
+            Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 25,
-                  backgroundImage:
-                  Image
-                      .network(friends.data?[index].profileImage ?? "")
-                      .image,
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(friends.data?[index].nickname ?? ''),
-                    Text(
-                      friends.data?[index].phoneNumber ?? '',
-                      style: TextStyle(color: Colors.grey),
-                    )
-                  ],
-                ),
-                IconButton(
-                  onPressed: () {
-                    canLaunchUrl(Uri(
-                        scheme: 'tel',
-                        path: friends.data?[index].phoneNumber ?? ''))
-                        .then((value) =>
-                        launchUrl(Uri(
-                            scheme: 'tel',
-                            path: friends.data?[index].phoneNumber ?? '')));
-                  },
-                  icon: Icon(
-                    Icons.phone_in_talk_rounded,
-                    color: PRIMARY_COLOR,
-                  ),
-                ),
+                Text(friends.data?[index].nickname ?? ''),
+                Text(
+                  friends.data?[index].phoneNumber ?? '',
+                  style: TextStyle(color: Colors.grey),
+                )
               ],
             ),
-          ),
+            IconButton(
+              onPressed: () {
+                canLaunchUrl(Uri(
+                        scheme: 'tel',
+                        path: friends.data?[index].phoneNumber ?? ''))
+                    .then((value) => launchUrl(Uri(
+                        scheme: 'tel',
+                        path: friends.data?[index].phoneNumber ?? '')));
+              },
+              icon: Icon(
+                Icons.phone_in_talk_rounded,
+                color: PRIMARY_COLOR,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
 
     showDialog(
@@ -1278,7 +1167,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               child: SingleChildScrollView(
                 child: Padding(
                   padding:
-                  const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
+                      const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
                   child: Column(
                     children: [
                       Text(
@@ -1322,18 +1211,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             builder: (context, setState) {
               timer = Timer(Duration(seconds: 1), () {
                 if (_count == 0) {
-                  final user = ref
-                      .read(userInfoProvider.notifier)
-                      .state
-                  as BaseResponse<UserInfoResponseDto>;
+                  final user = ref.read(userInfoProvider.notifier).state
+                      as BaseResponse<UserInfoResponseDto>;
                   final currentLocation =
-                      ref
-                          .read(currentLocationProvider.notifier)
-                          .state;
+                      ref.read(currentLocationProvider.notifier).state;
                   final request = ReportRequestDto(
-                      '[Majoong]\n도움이 필요합니다.\n신고자 연락처: ${user.data
-                          ?.phoneNumber ??
-                          '알수없음'}\n위도: ${currentLocation[0]} 경도: ${currentLocation[1]}');
+                      '[Majoong]\n도움이 필요합니다.\n신고자 연락처: ${user.data?.phoneNumber ?? '알수없음'}\n위도: ${currentLocation[0]} 경도: ${currentLocation[1]}');
                   ref.read(userApiServiceProvider).sendPhone112(request);
                   isReporting = false;
                   Navigator.pop(context);
