@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
@@ -12,6 +14,7 @@ import 'package:majoong/model/response/map/search_route_response_dto.dart';
 import 'package:majoong/service/local/secure_storage.dart';
 import 'package:majoong/view/guardian/guardian_screen.dart';
 import 'package:majoong/view/on_going/on_going_screen.dart';
+import 'package:majoong/view/search/search_screen.dart';
 import 'package:majoong/view/search/select_guardians_screen.dart';
 import 'package:majoong/viewmodel/friend/friend_provider.dart';
 import 'package:majoong/viewmodel/search/get_guardians_provider.dart';
@@ -30,15 +33,15 @@ import '../../viewmodel/main/facility_provider.dart';
 import '../../viewmodel/main/marker_provider.dart';
 import '../../viewmodel/main/review_dialog_provider.dart';
 
-class ResultSearchRouteScreen extends ConsumerStatefulWidget {
-  const ResultSearchRouteScreen({Key? key}) : super(key: key);
+class SelectRouteScreen extends ConsumerStatefulWidget {
+  const SelectRouteScreen({Key? key}) : super(key: key);
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
-      _ResultSearchRouteState();
+      _SelectRouteState();
 }
 
-class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
+class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
   late GoogleMapController mapController;
   Location location = Location();
   late bool _serviceEnabled;
@@ -109,11 +112,13 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
     );
   }
 
+  late StreamSubscription<LocationData> locationSubscription;
+
   @override
   void initState() {
     super.initState();
     _getLocation();
-    location.onLocationChanged.listen((event) {
+    locationSubscription = location.onLocationChanged.listen((event) {
       setState(() {
         _locationData = event;
         final currentLocation = ref.read(currentLocationProvider);
@@ -191,7 +196,7 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
         zIndex: 1,
       ));
     }
-    logger.d('${route[0].polylineId}, ${route[1].polylineId}');
+    logger.d('경로 그리기 완료 : ${route[0].points.length}, ${route[1].points.length}');
   }
 
   makeMarkers(Set<Marker> facilities, double startLat, double startLng,
@@ -233,7 +238,8 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
     final resultRoutePoint = ref.watch(routePointProvider);
     final searchRouteState = ref.watch(searchRouteProvider);
 
-    if (searchRouteState is BaseResponseLoading) {
+    if (resultRoutePoint.startLocationName != '' && resultRoutePoint.endLocationName != '' && searchRouteState is BaseResponseLoading && !ref.read(searchRouteProvider.notifier).checkGetRoot) {
+      ref.read(searchRouteProvider.notifier).checkGetRoot = true;
       ref.read(searchRouteProvider.notifier).getRoute(
           resultRoutePoint.startLat,
           resultRoutePoint.startLng,
@@ -242,7 +248,7 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
     }
 
     logger.d(
-        '출발지 : ${resultRoutePoint.startLocationName}, 목적지 : ${resultRoutePoint.endLocationName}');
+        '출발지 : ${resultRoutePoint.startLocationName} , ${resultRoutePoint.startLat}, 목적지 : ${resultRoutePoint.endLocationName}, ${resultRoutePoint.endLat}');
     if (_locationData != null &&
         searchRouteState is BaseResponse<SearchRouteResponseDto>) {
       final shortestPath = searchRouteState.data!.shortestPath.point;
@@ -267,6 +273,10 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
         body: Builder(builder: (context) {
           return SafeArea(
             child: Stack(alignment: Alignment.topCenter, children: [
+              WillPopScope(child: Container(), onWillPop: () async {
+                ref.read(routePointProvider.notifier).refreshState();
+                return true;
+              }),
               GoogleMap(
                 polylines: Set.from(route),
                 onMapCreated: _onMapCreated,
@@ -317,25 +327,32 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                                   width: 20,
                                 ),
                                 Expanded(
-                                  child: Container(
-                                    height: MediaQuery.of(context).size.height *
-                                        0.07,
-                                    decoration: BoxDecoration(
-                                        color: WHITE_SMOKE,
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                    child: Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 14),
-                                        child: Text(
-                                          resultRoutePoint.startLocationName,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: BASE_TITLE_FONT_SIZE,
+                                  child: GestureDetector(
+                                    onTap: (){
+                                      ref.read(searchRouteProvider.notifier).refreshState();
+                                      ref.read(routePointProvider.notifier).refreshStartPoint();
+                                      Navigator.pop(context);
+                                    },
+                                    child: Container( //출발지
+                                      height: MediaQuery.of(context).size.height *
+                                          0.07,
+                                      decoration: BoxDecoration(
+                                          color: WHITE_SMOKE,
+                                          borderRadius:
+                                              BorderRadius.circular(10)),
+                                      child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 14),
+                                          child: Text(
+                                            resultRoutePoint.startLocationName,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: BASE_TITLE_FONT_SIZE,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
                                           ),
-                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                     ),
@@ -358,24 +375,31 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                                   width: 20,
                                 ),
                                 Expanded(
-                                  child: Container(
-                                    height: MediaQuery.of(context).size.height *
-                                        0.07,
-                                    decoration: BoxDecoration(
-                                        color: WHITE_SMOKE,
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                    child: Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 14),
-                                        child: Text(
-                                          resultRoutePoint.endLocationName,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: BASE_TITLE_FONT_SIZE,
-                                            overflow: TextOverflow.ellipsis,
+                                  child: GestureDetector(
+                                    onTap: (){
+                                      ref.read(searchRouteProvider.notifier).refreshState();
+                                      ref.read(routePointProvider.notifier).refreshEndPoint();
+                                      Navigator.pop(context);
+                                    },
+                                    child: Container( //도착지
+                                      height: MediaQuery.of(context).size.height *
+                                          0.07,
+                                      decoration: BoxDecoration(
+                                          color: WHITE_SMOKE,
+                                          borderRadius:
+                                              BorderRadius.circular(10)),
+                                      child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 14),
+                                          child: Text(
+                                            resultRoutePoint.endLocationName,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: BASE_TITLE_FONT_SIZE,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -567,6 +591,11 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
     }
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    locationSubscription.cancel();
+  }
   Widget selectRouteButton(String title, int time, int distance, bool selected,
       RouteInfoResponseDto? path) {
     return Container(

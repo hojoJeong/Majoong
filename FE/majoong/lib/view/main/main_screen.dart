@@ -36,6 +36,8 @@ import 'package:majoong/view/search/search_screen.dart';
 import 'package:majoong/viewmodel/main/facility_provider.dart';
 import 'package:majoong/viewmodel/main/marker_provider.dart';
 import 'package:majoong/viewmodel/main/review_dialog_provider.dart';
+import 'package:majoong/viewmodel/search/route_point_provider.dart';
+import 'package:majoong/viewmodel/search/search_route_provider.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
@@ -43,6 +45,7 @@ import 'package:http/http.dart' as http;
 import '../../common/util/logger.dart';
 import '../../common/const/key_value.dart';
 import '../../viewmodel/main/user_info_provider.dart';
+import '../../viewmodel/search/search_route_point_provider.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   MainScreen({Key? key}) : super(key: key);

@@ -169,6 +169,7 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
   void initState() {
     super.initState();
     _getLocation();
+    ref.read(routePointProvider.notifier).refreshState();
     locationSubscription = location.onLocationChanged.listen((event) {
       setState(() {
         _locationData = event;
@@ -267,13 +268,12 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
                         if (backBtnCnt == 1) {
                           backBtnCnt = 0;
                           showToast(context: context, '공유가 종료되었습니다.');
+                          ref.read(shareLocationProvider.notifier).sendLocation(-1, -1);
                           ref.read(cancelShareProvider.notifier).cancelShare();
                         }
                         return false; // true 반환 시 뒤로 가기 동작 수행, false 반환 시 동작 수행하지 않음
                       },
-                      child: Scaffold(
-                          // Scaffold 내용 작성
-                          ),
+                      child: Scaffold(),
                     ),
                     GoogleMap(
                       onMapCreated: _onMapCreated,

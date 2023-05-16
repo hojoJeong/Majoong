@@ -12,7 +12,7 @@ import 'package:majoong/service/local/recent_keyword_storage.dart';
 import 'package:majoong/view/favorite/favorite_screen.dart';
 import 'package:majoong/view/search/favorite_widget.dart';
 import 'package:majoong/view/search/recent_keyword_widget.dart';
-import 'package:majoong/view/search/response_search_places_screen.dart';
+import 'package:majoong/view/search/result_search_places_screen.dart';
 import 'package:majoong/viewmodel/favorite/favorite_list_provider.dart';
 import 'package:majoong/viewmodel/search/recent_keyword_provider.dart';
 import 'package:majoong/viewmodel/search/search_route_point_provider.dart';
@@ -83,7 +83,7 @@ class SearchScreen extends ConsumerWidget {
                                 } else {
                                   ref.read(recentKeywordProvider.notifier).addKeyword(searchKeywordController.text);
                                   Navigator.of(context).push(MaterialPageRoute(
-                                      builder: (_) => ResponseSearchPlacesScreen(
+                                      builder: (_) => ResultSearchPlacesScreen(
                                           keyword:
                                           searchKeywordController.text)));
                                 }
@@ -163,7 +163,9 @@ class SearchScreen extends ConsumerWidget {
       ));
     } else {
       logger.d(recentKeywordListState);
-      return const LoadingLayout();
+      return Container(
+          color: Colors.grey,
+          child: LoadingLayout());
     }
   }
 

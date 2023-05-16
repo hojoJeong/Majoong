@@ -95,13 +95,16 @@ class ShareLocationStateNotifier extends StateNotifier<BaseResponseState> {
       final data =message.payloadAsString.split('/');
       lat = double.parse(data[0]);
       lng = double.parse(data[1]);
-      final curAddress = await getAddress(lat, lng);
+      String curAddress = "";
+      if(lat != -1 && lng != -1){
+        curAddress = await getAddress(lat, lng) ?? "";
+      }
       locationSet.add(LocationPointResponseDto(lng: lng, lat: lat));
       if(setSize < locationSet.length){
         setSize = locationSet.length;
         state = BaseResponse(
             status: 200,
-            message: curAddress ?? "",
+            message: curAddress,
             data: LocationPointResponseDto(lng: lng, lat: lat));
         print('receive message : $lat, $lng');
       }

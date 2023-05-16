@@ -25,9 +25,9 @@ class SearchRoutePointStateNotifier extends StateNotifier<BaseResponseState> {
 
   getResultSearch(String query) async {
     final googlePlace = GoogleMapsPlaces(apiKey: GOOGLE_PLACE_API_KEY);
-    PlacesSearchResponse response =
+    PlacesSearchResponse? response =
         await googlePlace.searchByText(query, language: 'ko');
-    logger.d(response.status); //ZERO_RESULTS / OK
+    logger.d('검색 결과 : ${response.status}'); //ZERO_RESULTS / OK
 
     if (response.status == 'ZERO_RESULTS') {
       state = BaseResponse(status: 600, message: '검색 결과가 없습니다.', data: []);

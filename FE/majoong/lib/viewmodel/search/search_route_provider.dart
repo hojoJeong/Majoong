@@ -21,6 +21,8 @@ class SearchRouteStateNotifier extends StateNotifier<BaseResponseState> {
   SearchRouteStateNotifier({required this.mapApi})
       : super(BaseResponseLoading());
 
+  bool checkGetRoot = false;
+
   getRoute(double startLat, double startLng, double endLat, double endLng) async {
     final response =await mapApi.getRoute(SearchRouteRequestDto(
         startLng: startLng, startLat: startLat, endLng: endLng, endLat: endLat));
@@ -28,6 +30,11 @@ class SearchRouteStateNotifier extends StateNotifier<BaseResponseState> {
       state = response;
       logger.d('경로 검색 성공, $state');
     }
+  }
+
+  refreshState(){
+    state = BaseResponseLoading();
+    checkGetRoot = false;
   }
 
 }

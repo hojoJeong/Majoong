@@ -37,7 +37,7 @@ class DioInterceptor extends Interceptor {
   void onError(DioError err, ErrorInterceptorHandler handler) async {
     secureStorage.deleteAll();
     logger
-        .d('[ERROR] [${err.requestOptions.method}] ${err.requestOptions.uri}');
+        .d('[ERROR] [${err.requestOptions.method}] ${err.requestOptions.uri} ${err.message}, ${err.stackTrace}');
     final refreshTorken = await secureStorage.read(key: REFRESH_TOKEN);
     if (refreshTorken == null) {
       return handler.reject(err);

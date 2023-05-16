@@ -12,6 +12,7 @@ import 'package:majoong/common/layout/loading_layout.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/map/accept_share_route_response_dto.dart';
 import 'package:majoong/model/response/map/location_point_response_dto.dart';
+import 'package:majoong/view/guardian/share_done_screen.dart';
 import 'package:majoong/viewmodel/notification/accept_share_provider.dart';
 import 'package:majoong/viewmodel/share_loaction/share_location_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -358,6 +359,9 @@ class _GuardianState extends ConsumerState<GuardianScreen> {
         acceptShareState is BaseResponse<AcceptShareRouteResponseDto>) {
       final curLat = shareLocationState.data!.lat;
       final curLng = shareLocationState.data!.lng;
+      if(curLat == -1 && curLng == -1) {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => ShareDoneScreen()));
+      }
       final startLat = acceptShareState.data!.path.point[0].lat;
       final startLng = acceptShareState.data!.path.point[0].lng;
       final endLat = acceptShareState
