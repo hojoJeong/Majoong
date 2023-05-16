@@ -37,7 +37,11 @@ final facilityProvider =
   final chipInfo = ref.watch(chipProvider.notifier);
   final reviewDialogInfo = ref.watch(reviewDialogProvider.notifier);
   final centerPositionInfo = ref.watch(centerPositionProvider.notifier);
-  final polyLineInfo = ref.watch(polyLineProvider.notifier);
+  final polyLineInfo =
+      ref.watch(polyLineProvider.notifier as AlwaysAliveProviderListenable);
+  final polygonInfo =
+      ref.watch(polygonProvider.notifier as AlwaysAliveProviderListenable);
+
   final dio = ref.watch(dioProvider);
   final facilityNotifier = FacilityNotifier(
     dio,
@@ -47,6 +51,7 @@ final facilityProvider =
     centerPositionNotifier: centerPositionInfo,
     reviewDialogNotifier: reviewDialogInfo,
     polyLineNotifier: polyLineInfo,
+    polygonNotifier: polygonInfo,
   );
   return facilityNotifier;
 });
@@ -56,6 +61,7 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
   final MarkerNotifier markerNotifier;
   final ChipNotifier chipNotifier;
   final PolyLineNotifier polyLineNotifier;
+  final PolygonNotifier polygonNotifier;
   final StateNotifier centerPositionNotifier;
   final ReviewDialogNotifier reviewDialogNotifier;
   final Dio dio;
@@ -64,6 +70,7 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
       {required this.service,
       required this.markerNotifier,
       required this.polyLineNotifier,
+      required this.polygonNotifier,
       required this.chipNotifier,
       required this.centerPositionNotifier,
       required this.reviewDialogNotifier})
@@ -337,23 +344,24 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
           polyLineNotifier.addSafeRoad(polyLine);
         }
       }
+
       if (response.data?.riskRoad?.length != 0) {
         for (int i = 0; i < response.data!.riskRoad!.length; i++) {
           final road = response.data!.riskRoad![i];
-          final polyLine = Polyline(
-            polylineId: PolylineId('riskRoad$i'),
+          final polygon = Polygon(
+            polygonId: PolygonId('riskRoad$i'),
             points: [],
-            color: Color(0xFF535353),
-            endCap: Cap.roundCap,
-            startCap: Cap.roundCap,
-            width: 5,
+            strokeWidth: 2,
+            strokeColor: Colors.red.withOpacity(0.5),
+            fillColor: Colors.red.withOpacity(0.5),
           );
           for (var point in road.point) {
-            polyLine.points.add(LatLng(point.lat, point.lng));
+            polygon.points.add(LatLng(point.lat, point.lng));
           }
-          polyLineNotifier.addRiskRoad(polyLine);
+          polygonNotifier.addRiskRoad(polygon);
         }
       }
+      polygonNotifier.renderPolygon();
       polyLineNotifier.renderLine();
       markerNotifier.renderMarker();
     }

@@ -1,24 +1,42 @@
-import 'dart:math';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
-import '../../common/util/logger.dart';
 
 final markerProvider =
 StateNotifierProvider.autoDispose<MarkerNotifier, Set<Marker>>((ref) {
   return MarkerNotifier(chipNotifier: ref.watch(chipProvider.notifier));
 });
-final polyLineProvider = StateNotifierProvider<PolyLineNotifier,
+final polyLineProvider = StateNotifierProvider.autoDispose<PolyLineNotifier,
     Map<PolylineId, Polyline>>((ref) {
   final chipInfo = ref.watch(chipProvider.notifier);
   return PolyLineNotifier(chipNotifier: chipInfo);
 });
 
+final polygonProvider = StateNotifierProvider.autoDispose<PolygonNotifier,
+    Set<Polygon>>((ref) {
+  final chipInfo = ref.watch(chipProvider.notifier);
+  return PolygonNotifier(chipNotifier: chipInfo);
+});
+
+class PolygonNotifier extends StateNotifier<Set<Polygon>>{
+  final ChipNotifier chipNotifier;
+  final riskRoad = Set<Polygon>();
+
+  PolygonNotifier({required this.chipNotifier}) : super({});
+
+  renderPolygon() {
+    state.clear();
+    if (chipNotifier.state.contains('위험 지역')) {
+      state.addAll(riskRoad);
+    }
+  }
+  addRiskRoad(Polygon polygon) {
+    riskRoad.add(polygon);
+  }
+}
+
 class PolyLineNotifier extends StateNotifier<Map<PolylineId, Polyline>> {
   final ChipNotifier chipNotifier;
   final safeRaod = Map<PolylineId, Polyline>();
-  final riskRoad = Map<PolylineId, Polyline>();
 
   PolyLineNotifier({required this.chipNotifier}) : super({}) {}
 
@@ -27,20 +45,11 @@ class PolyLineNotifier extends StateNotifier<Map<PolylineId, Polyline>> {
     if (chipNotifier.state.contains('여성 안심 귀갓길')) {
       state.addAll(safeRaod);
     }
-    if (chipNotifier.state.contains('위험 지역')) {
-      state.addAll(riskRoad);
-      logger.d(state.length);
-    }
-    logger.d('renderline');
   }
-
   addSafeRoad(Polyline polyLine) {
     safeRaod[polyLine.polylineId] = polyLine;
   }
 
-  addRiskRoad(Polyline polyLine) {
-    riskRoad[polyLine.polylineId] = polyLine;
-  }
 }
 
 class MarkerNotifier extends StateNotifier<Set<Marker>> {

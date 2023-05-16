@@ -122,7 +122,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     setState(() {
       isInside = true;
     });
-    logger.d('onConnect');
+
   }
 
   Future<void> setupInteractedMessage(FirebaseMessaging fbMsg) async {
@@ -317,7 +317,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final currentLocation = ref.read(currentLocationProvider);
     currentLocation[0] = _locationData!.latitude!;
     currentLocation[1] = _locationData!.longitude!;
-    logger.d(currentLocation.toString());
     ref.read(centerPositionProvider.notifier).update((state) =>
         GetFacilityRequestDto(
             centerLng: _locationData!.longitude!,
@@ -386,32 +385,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   LocalParticipant? localParticipant;
   Map<String, RemoteParticipant> remoteParticipants = {};
 
-  List<LatLng> _points = <LatLng>[
-    LatLng(36.105040919120235, 128.41439098119736),
-    LatLng(36.105641648035, 128.41495424509048),
-    LatLng(36.10564418275616, 128.41550678014755),
-    LatLng(36.10564671747732, 128.41606467962265),
-    LatLng(36.105040919120235, 128.41605931520462),
-    LatLng(36.105040919120235, 128.41439098119736)
-  ];
-
-  Set<Polygon> _buildPolygon() {
-    return <Polygon>[
-      Polygon(
-        polygonId: PolygonId('my_polygon'),
-        points: _points,
-        strokeWidth: 2,
-        fillColor: Colors.red.withOpacity(0.8),
-      ),
-    ].toSet();
-  }
-
   @override
   Widget build(BuildContext context) {
     final userInfo = ref.watch(userInfoProvider.notifier).state;
     final facilityInfo = ref.watch(facilityProvider.notifier);
     final markerInfo = ref.watch(markerProvider.notifier);
     final polyLineInfo = ref.watch(polyLineProvider.notifier);
+    final polygonInfo = ref.watch(polygonProvider.notifier);
     final chipInfo = ref.watch(chipProvider.notifier);
     final reviewDialogInfo = ref.watch(reviewDialogProvider.notifier);
     final cameraMovedInfo = ref.watch(cameraMovedProvider);
@@ -422,7 +402,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         reportDialog(setState);
       }
     });
-
     return Scaffold(
       drawer: Drawer(
         width: MediaQuery.of(context).size.width / 1.5,
@@ -560,12 +539,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       ),
       body: _locationData != null
           ? Builder(builder: (context) {
-              logger.d('message');
-
               return SafeArea(
                 child: Stack(alignment: Alignment.topCenter, children: [
                   GoogleMap(
-                    polygons: _buildPolygon(),
+                    polygons: polygonInfo.state,
                     polylines: Set<Polyline>.of(polyLineInfo.state.values),
                     onMapCreated: _onMapCreated,
                     markers: markerInfo.state,
@@ -617,6 +594,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                     chipInfo.toggleChip(choice);
                                     markerInfo.renderMarker();
                                     polyLineInfo.renderLine();
+                                    polygonInfo.renderPolygon();
                                     setState(() {});
                                   },
                                 ),
@@ -966,7 +944,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                             onPressed: () async {
                               AudioCache player = AudioCache();
                               player.play('whistle.mp3');
-                              logger.d('whistle!!');
+
                             },
                           ),
                           bottomComponent(
@@ -1026,7 +1004,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   @override
   void dispose() {
-    logger.d('dispose');
     locationSubscription.cancel();
     super.dispose();
   }
@@ -1311,7 +1288,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                               final pinNum = await ref
                                   .read(secureStorageProvider)
                                   .read(key: PIN_NUM);
-                              logger.d(pinNum);
                               if (value == pinNum) {
                                 showToast(
                                     context: this.context, '신고 접수가 취소되었습니다');
