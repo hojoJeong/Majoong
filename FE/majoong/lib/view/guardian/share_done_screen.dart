@@ -19,7 +19,8 @@ class ShareDoneScreen extends StatelessWidget {
         Text('공유가 종료되었습니다.'),
         Spacer(),
         SingleButtonWidget(content: '메인으로 이동', onPressed: (){
-          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => MainScreen()), (route) => false);
+          Navigator.pop(context);
+          // Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => MainScreen()), (route) => false);
         })
       ],
     ));

@@ -639,7 +639,7 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
                 GestureDetector(
                   onTap: selected
                       ? () {
-                          Navigator.of(context).push(MaterialPageRoute(
+                          Navigator.of(context).pushReplacement(MaterialPageRoute(
                               builder: (_) => SelectGuardiansScreen(
                                     path: path!,
                                   )));

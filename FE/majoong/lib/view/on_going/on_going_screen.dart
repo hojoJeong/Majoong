@@ -48,6 +48,7 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
   Location location = Location();
   Set<Polyline> route = {};
   List<Marker> marker = [];
+  String curAddress = "";
 
   _OnGoingState({required this.selectedRoute});
 
@@ -169,7 +170,10 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
   void initState() {
     super.initState();
     _getLocation();
-    ref.read(routePointProvider.notifier).refreshState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      ref.read(routePointProvider.notifier).refreshState();
+    });
+
     locationSubscription = location.onLocationChanged.listen((event) {
       setState(() {
         _locationData = event;
@@ -201,15 +205,13 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
       final formattedAddresses = results
           .map((result) => result['formatted_address'] as String)
           .toList();
-      logger.d('현재 위치 : $formattedAddresses');
       return formattedAddresses[0].replaceAll('대한민국', '');
     } else {
       return null;
     }
   }
 
-  String curAddress = "";
-
+  late Timer timer;
   @override
   Widget build(BuildContext context) {
     final shareLocationState = ref.watch(shareLocationProvider);
@@ -231,7 +233,6 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
             (route) => false);
       });
     }
-
     if (_locationData != null && shareLocationState is BaseResponse<bool>) {
       endTime = DateFormat('hh:mm')
           .format(DateTime.now().add(Duration(minutes: selectedRoute.time)));
@@ -239,16 +240,24 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
       makePolyline(selectedRoute.point);
       makeMarkers(markerInfo.state);
 
-      Timer.periodic(Duration(seconds: 1), (timer) async {
+      timer = Timer(Duration(seconds: 1), () async {
         final curLocation = await Location.instance.getLocation();
         final lat = curLocation.latitude!;
         final lng = curLocation.longitude!;
         logger.d('amqp cur location : $lat, $lng');
-        //아래처럼 하면 Future를 String 에 넣어서 타입 안맞음
         curAddress = await getAddress(lat, lng) ?? "";
         logger.d('curAddress 현재 위치 : $curAddress');
         ref.read(shareLocationProvider.notifier).sendLocation(lat, lng);
       });
+      // timer = Timer.periodic(Duration(seconds: 1), (timer) async {
+      //   final curLocation = await Location.instance.getLocation();
+      //   final lat = curLocation.latitude!;
+      //   final lng = curLocation.longitude!;
+      //   logger.d('amqp cur location : $lat, $lng');
+      //   curAddress = await getAddress(lat, lng) ?? "";
+      //   logger.d('curAddress 현재 위치 : $curAddress');
+      //   ref.read(shareLocationProvider.notifier).sendLocation(lat, lng);
+      // });
 
       logger.d('curAddress : $curAddress');
       return Scaffold(
@@ -268,12 +277,14 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
                         if (backBtnCnt == 1) {
                           backBtnCnt = 0;
                           showToast(context: context, '공유가 종료되었습니다.');
+                          timer.cancel();
+                          ref.read(shareLocationProvider.notifier).dispose();
                           ref.read(shareLocationProvider.notifier).sendLocation(-1, -1);
                           ref.read(cancelShareProvider.notifier).cancelShare();
                         }
                         return false; // true 반환 시 뒤로 가기 동작 수행, false 반환 시 동작 수행하지 않음
                       },
-                      child: Scaffold(),
+                      child: Container(),
                     ),
                     GoogleMap(
                       onMapCreated: _onMapCreated,
@@ -437,5 +448,12 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
     } else {
       return LoadingLayout();
     }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    timer.cancel();
+    locationSubscription.cancel();
   }
 }
