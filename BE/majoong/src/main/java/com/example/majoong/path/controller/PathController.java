@@ -86,17 +86,17 @@ public class PathController {
             data.setMessage("안전경로 추천 오류");
         }
 
-        ////////
-//        NodeDto startNode = recommendedPathService.findNearestNode(startLng, startLat);
-//        NodeDto endNode = recommendedPathService.findNearestNode(endLng, endLat);
-//        GraphDto astarGraph = recommendedPathService.createAstarGraph(startNode, endNode);
-        ///////////////
+        //////
+        NodeDto startNode = recommendedPathService.findNearestNode(startLng, startLat);
+        NodeDto endNode = recommendedPathService.findNearestNode(endLng, endLat);
+        GraphDto astarGraph = recommendedPathService.createAstarGraph(startNode, endNode);
+        /////////////
 
         PathResponseDto path = new PathResponseDto();
         path.setRecommendedPath(recommendedPath);
         path.setShortestPath(null);
 
-        data.setData(path);
+        data.setData(astarGraph);
 
         return data.builder();
     }
