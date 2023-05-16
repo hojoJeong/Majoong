@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:collection/collection.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -49,6 +50,7 @@ import 'package:sensors_plus/sensors_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../common/const/key_value.dart';
+import '../../common/const/path.dart';
 import '../../viewmodel/main/user_info_provider.dart';
 import '../openvidu/media_stream_view.dart';
 
@@ -228,11 +230,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   Future<void> initOpenVidu() async {
-    _openvidu = OpenViduClient('https://majoong4u.com/openvidu');
+    _openvidu = OpenViduClient('${BASE_URL}openvidu');
     localParticipant =
         await _openvidu.startLocalPreview(context, StreamMode.backCamera);
+    await localParticipant?.setVideoInput("1");
+    final videoId = localParticipant?.stream?.getVideoTracks().toString();
     setState(() {});
-    logger.d('initOpenVidu');
   }
 
   void _listenSessionEvents() {
@@ -687,7 +690,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     ),
                   ),
                   Positioned(
-                    left: MediaQuery.of(context).size.width / 4,
+                    right: 10,
                     bottom: MediaQuery.of(context).size.height / 7,
                     child: GestureDetector(
                       onTap: () async {
@@ -833,9 +836,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                           ),
                                           TextButton(
                                             onPressed: () {
-                                              //TODO: 리뷰 등록 API 호출
                                               facilityInfo.postReview();
-                                              logger.d('call');
                                               reviewDialogInfo.clearData();
                                               Navigator.pop(context);
                                             },
@@ -858,18 +859,18 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         );
                       },
                       child: Container(
-                        width: MediaQuery.of(context).size.width / 2,
-                        height: MediaQuery.of(context).size.height / 20,
+                        width: 60,
+                        height: 60,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: Color(0xFF77469C),
-                          borderRadius: BorderRadius.circular(30),
+                          color: PRIMARY_COLOR,
+                          borderRadius: BorderRadius.circular(150),
                         ),
                         child: Text(
-                          '+ 현재위치 리뷰 작성',
+                          '+',
                           style: TextStyle(
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 50,
                           ),
                         ),
                       ),
@@ -965,10 +966,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                           bottom: MediaQuery.of(context).size.height / 6,
                           left: MediaQuery.of(context).size.width / 20,
                           child: Container(
-                            width: MediaQuery.of(context).size.width / 5,
-                            height: MediaQuery.of(context).size.height / 5,
+                            width: MediaQuery.of(context).size.width / 4,
+                            height: MediaQuery.of(context).size.height / 4,
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(15),
                               color: Colors.black,
                             ),
                             child: MediaStreamView(
