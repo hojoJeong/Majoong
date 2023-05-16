@@ -51,6 +51,9 @@ dependencies {
 	implementation 'com.squareup.okhttp3:okhttp:4.9.2'
 	// google maps
 	implementation 'com.google.maps:google-maps-services:0.9.1'
+	//polygon jts
+	implementation 'org.locationtech.jts:jts-core:1.17.1'
+
 	// postgis
 	implementation 'org.postgresql:postgresql' // PostgreSQL JDBC 드라이버
 	implementation 'org.hibernate:hibernate-core' // Hibernate Core

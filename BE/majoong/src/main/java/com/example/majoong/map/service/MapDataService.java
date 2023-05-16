@@ -133,6 +133,24 @@ public class MapDataService {
 
     }
 
+    public void jsonToRedis2() throws FileNotFoundException {
+        String filePath = "C:/Users/SSAFY/Desktop/S08P31D105/BE/majoong/src/main/resources/road/riskPolygonList.json";
+
+        FileReader reader = new FileReader(filePath);
+        Gson gson = new Gson();
+
+        Type mapType = new TypeToken<Map<String, Object>>(){}.getType();
+        Map<String, Object> jsonData = gson.fromJson(reader, mapType);
+
+        for (Map.Entry<String, Object> entry : jsonData.entrySet()) {
+            String key = entry.getKey();
+            Point point = parseKeyToPoint(key);
+            Object value = entry.getValue();
+            redisTemplate.opsForGeo().add("risk_polygon", point, value.toString());
+        }
+
+    }
+
     private static Point parseKeyToPoint(String key) {
         // 키를 파싱하여 Point 객체로 변환하는 로직 구현
         String[] parts = key.substring(1, key.length() - 1).split(", ");
