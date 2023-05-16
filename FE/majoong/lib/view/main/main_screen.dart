@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -46,9 +45,11 @@ import 'package:permission_handler/permission_handler.dart'
     hide PermissionStatus;
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:volume_controller/volume_controller.dart';
 
 import '../../common/const/key_value.dart';
 import '../../common/const/path.dart';
+import '../../viewmodel/main/audio_provider.dart';
 import '../../viewmodel/main/user_info_provider.dart';
 import '../openvidu/media_stream_view.dart';
 
@@ -122,7 +123,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     setState(() {
       isInside = true;
     });
-
   }
 
   Future<void> setupInteractedMessage(FirebaseMessaging fbMsg) async {
@@ -383,6 +383,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   bool isInside = false;
   late OpenViduClient _openvidu;
   LocalParticipant? localParticipant;
+
   Map<String, RemoteParticipant> remoteParticipants = {};
 
   @override
@@ -402,6 +403,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         reportDialog(setState);
       }
     });
+
     return Scaffold(
       drawer: Drawer(
         width: MediaQuery.of(context).size.width / 1.5,
@@ -942,9 +944,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                             image: AssetImage('res/whistle.png'),
                             text: '호루라기',
                             onPressed: () async {
-                              AudioCache player = AudioCache();
-                              player.play('whistle.mp3');
-
+                              final audioInfo = ref.read(audioProvider.notifier);
+                              if(audioInfo.isPlaying){
+                                audioInfo.stop();
+                              }else{
+                                audioInfo.play();
+                              }
                             },
                           ),
                           bottomComponent(
