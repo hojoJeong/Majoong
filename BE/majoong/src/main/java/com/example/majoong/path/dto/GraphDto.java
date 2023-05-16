@@ -37,7 +37,7 @@ public class GraphDto implements Iterable{
 
     public Map<NodeDataDto, Double> edgesFrom (Long nodeId) {
         if (nodeId == null) throw new NullPointerException("The input node should not be null.");
-        if (!heuristicMap.containsKey(nodeId)) throw new NoSuchElementException("This node is not a part of hueristic map");
+//        if (!heuristicMap.containsKey(nodeId)) throw new NoSuchElementException("This node is not a part of hueristic map");
         if (!graph.containsKey(nodeId)) throw new NoSuchElementException("The node should not be null.");
 
         return Collections.unmodifiableMap(graph.get(nodeId)); // 읽기 전용으로 반환
@@ -52,7 +52,7 @@ public class GraphDto implements Iterable{
     // 그래프에 새로운 노드 추가. 노드에 대한 heuristic map을 노드 데이터에 채운다
     public void addNode(Long nodeId, double lng, double lat) {
         if (nodeId == null) throw new NullPointerException("The node cannot be null");
-        if (!heuristicMap.containsKey(nodeId)) throw new NoSuchElementException("This node is not a part of hueristic map");
+//        if (!heuristicMap.containsKey(nodeId)) throw new NoSuchElementException("This node is not a part of hueristic map");
 
         graph.put(nodeId, new LinkedHashMap<NodeDataDto, Double>());
         nodeIdNodeData.put(nodeId, new NodeDataDto(nodeId, heuristicMap.get(nodeId), lng, lat));
