@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -33,7 +34,7 @@ public class MapController {
 
     @PostMapping("/facility")
     @Operation(summary = "시설물 조회 API", description = "cctv, 가로등, 비상벨, 경찰서, 편의점, 안심귀갓길, 위험지역, 리뷰")
-    public ResponseEntity getFacility(@RequestBody MapFacilityRequestDto position) {
+    public ResponseEntity getFacility(@RequestBody MapFacilityRequestDto position) throws JsonProcessingException {
         MapFacilityResponseDto facilities = mapFacilityService.getMapFacilities(position);
 
         ResponseData data = new ResponseData();
@@ -61,8 +62,13 @@ public class MapController {
 
     @GetMapping("/save/road")
     public String saveRedis2() throws CsvValidationException, IOException {
-        mapDataService.saveRoadCsvToRedis();
+        mapDataService.jsonToRedis2();
         return "Reids에 저장 성공";
+    }
+
+    @GetMapping("/test/{distance}")
+    public List<LocationRoadDto> test(@PathVariable int distance){
+        return mapFacilityService.getPolygonsWithOuterPoints(distance);
     }
 
 
