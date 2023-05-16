@@ -86,7 +86,7 @@ public class RecommendedPathService {
     }
 
     // 시작점에서 도착지까지 경로 탐색에 사용할 그래프 생성
-    public void createAstarGraph(NodeDto startNode, NodeDto endNode) {
+    public GraphDto createAstarGraph(NodeDto startNode, NodeDto endNode) {
 
         double lng1 = startNode.getLng();
         double lat1 = startNode.getLat();
@@ -124,15 +124,15 @@ public class RecommendedPathService {
 //        }
 
         astarGraph = new GraphDto(nodeList, edgeList, heuristicMap);
-//        return new GraphDto(nodeList, edgeList, heuristicMap);
+        return new GraphDto(nodeList, edgeList, heuristicMap);
     }
 
     public PathInfoDto astar(Long startId, Long endId, double endLng, double endLat) {
 
-//        System.out.println("START : " + startId + "              END : "+  endId);
-//        for (EdgeDto edge : astarGraph.getEdgeList()){
-//            System.out.println(edge.getEdgeId());
-//        }
+        System.out.println("START : " + startId + "              END : "+  endId);
+        for (EdgeDto edge : astarGraph.getEdgeList()){
+            System.out.println(edge.getEdgeId());
+        }
 
 
         /**
@@ -141,7 +141,8 @@ public class RecommendedPathService {
         // 우선선위 큐(초기 용량, 비교수단 Comparator)
 //        final Queue<NodeDataDto> openQueue = new PriorityQueue<NodeDataDto>(11, new NodeComparator());
         // 초기값을 노드의 크기로 설정
-        final Queue<NodeDataDto> openQueue = new PriorityQueue<NodeDataDto>(astarGraph.getNodeList().size(), new NodeComparator());
+//        final Queue<NodeDataDto> openQueue = new PriorityQueue<NodeDataDto>(astarGraph.getNodeList().size(), new NodeComparator());
+        final PriorityQueue<NodeDataDto> openQueue = new PriorityQueue<NodeDataDto>(Comparator.comparingDouble(nodeDataDto -> nodeDataDto.getF())); // 우선순위 큐
 
 
 //        // 우선순위 큐 선언
