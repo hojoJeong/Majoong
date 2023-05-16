@@ -1,5 +1,6 @@
 package com.example.majoong.path.dto;
 
+import com.example.majoong.path.service.RecommendedPathService;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,8 +29,28 @@ public class NodeDataDto {
         this.lat = lat;
     }
 
-    public void calcF(Long destinationId) {
-        this.h = heuristic.get(destinationId);
+    public void calcF(Long endId, double endLng, double endLat) {
+//        this.h = heuristic.get(endId);
+        this.h = calcH(lng, lat, endLng, endLat);
         this.f = g + h;
+    }
+
+    // 구면 코사인 법칙 사용 거리 계산
+    public double calcH(double startLng, double startLat, double endLng, double endLat){
+        double theta = startLng - endLng;
+        double distance = Math.sin(deg2rad(startLat)) * Math.sin(deg2rad(endLat)) + Math.cos(deg2rad(startLat)) * Math.cos(deg2rad(endLat)) * Math.cos(deg2rad(theta));
+
+        distance = Math.acos(distance);
+        distance = red2deg(distance);
+        distance = distance * 60 * 1.1515 * 1609.344; // meter 단위로 변환
+
+        return distance;
+    }
+
+    private double deg2rad(double deg) { return (deg * Math.PI / 180.0); }
+
+    // convert radians to decimal degrees
+    private double red2deg(double rad){
+        return (rad * 180.0 / Math.PI);
     }
 }

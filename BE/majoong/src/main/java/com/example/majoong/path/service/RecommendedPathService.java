@@ -48,7 +48,7 @@ public class RecommendedPathService {
         createAstarGraph(startNode, endNode);
 
         // astar 알고리즘
-        PathInfoDto recommendedPath = astar(startNode.getNodeId(), endNode.getNodeId());
+        PathInfoDto recommendedPath = astar(startNode.getNodeId(), endNode.getNodeId(), endNode.getLng(), endNode.getLat());
 
         return recommendedPath;
     }
@@ -67,7 +67,7 @@ public class RecommendedPathService {
         System.out.println("그래프 생성");
 
         // astar 알고리즘
-        PathInfoDto recommendedPath = astar(startNode.getNodeId(), endNode.getNodeId());
+        PathInfoDto recommendedPath = astar(startNode.getNodeId(), endNode.getNodeId(), endNode.getLng(), endNode.getLat());
         System.out.println("astar 알고리즘");
         return recommendedPath;
     }
@@ -101,35 +101,35 @@ public class RecommendedPathService {
 
         Map<Long, Map<Long, Double>> heuristicMap = new HashMap<Long, Map<Long, Double>>(); //휴리스틱 값
 
-        if(nodeList.size() < 2){
-            // 노드 개수가 두개 미마인 경우, 휴리스틱 값이 없음
-            // 바로 연결 or 예외 처리
-        }
-        else {
-            //노드 개수가 두개 이상일 경우,
-            for (NodeDto node1 : nodeList) {
-                HashMap<Long, Double> tempMap = new HashMap<>();
-                for (NodeDto node2 : nodeList) {
-                    if (node1.getNodeId().equals(node2.getNodeId())) {
-                        // 시작과 끝이 같은 경우, 휴리스티 값 0
-                        tempMap.put(node2.getNodeId(), 0.0);
-                    } else {
-                        double safetyRate = calcHeuristicVal(node1.getLng(), node1.getLat(), node2.getLng(), node2.getLat(), edgeList);
-                        tempMap.put(node2.getNodeId(), safetyRate);
-                    }
-                }
-
-                heuristicMap.put(node1.getNodeId(), tempMap);
-            }
-        }
+//        if(nodeList.size() < 2){
+//            // 노드 개수가 두개 미마인 경우, 휴리스틱 값이 없음
+//            // 바로 연결 or 예외 처리
+//        }
+//        else {
+//            //노드 개수가 두개 이상일 경우,
+//            for (NodeDto node1 : nodeList) {
+//                HashMap<Long, Double> tempMap = new HashMap<>();
+//                for (NodeDto node2 : nodeList) {
+//                    if (node1.getNodeId().equals(node2.getNodeId())) {
+//                        // 시작과 끝이 같은 경우, 휴리스티 값 0
+//                        tempMap.put(node2.getNodeId(), 0.0);
+//                    } else {
+//                        double safetyRate = calcHeuristicVal(node1.getLng(), node1.getLat(), node2.getLng(), node2.getLat(), edgeList);
+//                        tempMap.put(node2.getNodeId(), safetyRate);
+//                    }
+//                }
+//
+//                heuristicMap.put(node1.getNodeId(), tempMap);
+//            }
+//        }
 
         astarGraph = new GraphDto(nodeList, edgeList, heuristicMap);
 //        return new GraphDto(nodeList, edgeList, heuristicMap);
     }
 
-    public PathInfoDto astar(Long sourceId, Long destinationId) {
+    public PathInfoDto astar(Long startId, Long endId, double endLng, double endLat) {
 
-//        System.out.println("START : " + sourceId + "              END : "+  destinationId);
+//        System.out.println("START : " + startId + "              END : "+  endId);
 
         /**
          * http://stackoverflow.com/questions/20344041/why-does-priority-queue-has-default-initial-capacity-of-11
@@ -145,12 +145,12 @@ public class RecommendedPathService {
 
 
         // 그래프의 소스노드 부터 시작
-        NodeDataDto sourceNodeDataDto = astarGraph.getNodeData(sourceId);
+        NodeDataDto sourceNodeDataDto = astarGraph.getNodeData(startId);
         double nodeLng1 = sourceNodeDataDto.getLng();
         double nodeLat1 = sourceNodeDataDto.getLat();
 
         sourceNodeDataDto.setG(0); // 출발지점 0
-        sourceNodeDataDto.calcF(destinationId); // 도착지까지의 총 비용 계산
+        sourceNodeDataDto.calcF(endId, endLng, endLat); // 도착지까지의 총 비용 계산
         openQueue.add(sourceNodeDataDto); // 출발 노드 큐에 삽입
 
         // key: 노드, value : 부모 노드   -> 키에 해당하는 노드는 value에 해당하는 노드를 거쳐서 왔다는 뜻
@@ -167,8 +167,8 @@ public class RecommendedPathService {
             final NodeDataDto currentNode = openQueue.poll();  // 큐에서 하나 poll
 
             // 도착지 노드 발견하면 경로에 추가하고 종료
-            if (currentNode.getNodeId().equals(destinationId)) {
-                List<Long> pathList = getPathList(cameFrom, destinationId);
+            if (currentNode.getNodeId().equals(endId)) {
+                List<Long> pathList = getPathList(cameFrom, endId);
                 List<LocationDto> pointList = new ArrayList<>();
                 double distance = 0.0;
                 for(long id : pathList){
@@ -209,7 +209,7 @@ public class RecommendedPathService {
                 // poll한 노드 거쳐서 온 G값이 더 작으면 G값 변경
                 if (tentativeG < neighborNode.getG()) {
                     neighborNode.setG(tentativeG);
-                    neighborNode.calcF(destinationId);
+                    neighborNode.calcF(endId, endLng, endLat);
 
                     // 경로 map에 추가 -> 내가 어디서 왔는가 ( 부모 노드 입력 )
                     cameFrom.put(neighborNode.getNodeId(), currentNode.getNodeId());
@@ -264,16 +264,16 @@ public class RecommendedPathService {
     }
 
     // 경로 반환하는 메서드
-    private List<Long> getPathList(Map<Long, Long> cameFrom, Long destinationId) {
+    private List<Long> getPathList(Map<Long, Long> cameFrom, Long endId) {
         // assert boolean 식;       boolean 식이 true인 경우에만 프로그램이 실행
         assert cameFrom != null;
-        assert destinationId != null;
+        assert endId != null;
 
         final List<Long> pathList = new ArrayList<>();
-        pathList.add(destinationId);
-        while (cameFrom.containsKey(destinationId)) {
-            destinationId = cameFrom.get(destinationId);
-            pathList.add(destinationId);
+        pathList.add(endId);
+        while (cameFrom.containsKey(endId)) {
+            endId = cameFrom.get(endId);
+            pathList.add(endId);
         }
         Collections.reverse(pathList);
         return pathList;
@@ -482,20 +482,20 @@ public class RecommendedPathService {
     }
 
     // 구면 코사인 법칙 사용 거리 계산
-    public int calcDistance(double startLng, double startLat, double endLng, double endLat){
+    public double calcDistance(double startLng, double startLat, double endLng, double endLat){
         double theta = startLng - endLng;
-        double dist = Math.sin(deg2rad(startLat)) * Math.sin(deg2rad(endLat)) + Math.cos(deg2rad(startLat)) * Math.cos(deg2rad(endLat)) * Math.cos(deg2rad(theta));
+        double distance = Math.sin(deg2rad(startLat)) * Math.sin(deg2rad(endLat)) + Math.cos(deg2rad(startLat)) * Math.cos(deg2rad(endLat)) * Math.cos(deg2rad(theta));
 
-        dist = Math.acos(dist);
-        dist = red2deg(dist);
-        dist = dist * 60 * 1.1515 * 1609.344; // meter 단위로 변환
-        return (int) (dist);
+        distance = Math.acos(distance);
+        distance = red2deg(distance);
+        distance = distance * 60 * 1.1515 * 1609.344; // meter 단위로 변환
+        return distance;
     }
 
     // 두 점을 대각선으로 하는 사각형 넓이
     public double calcArea(double startLng, double startLat, double endLng, double endLat){
 
-        int straightDistance = calcDistance(startLng, startLat, endLng, endLat);
+        double straightDistance = calcDistance(startLng, startLat, endLng, endLat);
 
         double degree = calcDegree(startLng, startLat, endLng, endLat);
 
@@ -505,7 +505,7 @@ public class RecommendedPathService {
 
     private double calcPadding(double lng1, double lat1, double lng2, double lat2){
 
-        int dist = calcDistance(lng1, lat1, lng2, lat2);
+        double dist = calcDistance(lng1, lat1, lng2, lat2);
 
         return dist*PADDING_RATIO/STANDARD_DIST;
     }
