@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-
 public interface EdgeRepository extends JpaRepository<Edge, Long> {
 //    @Query(value = "SELECT * FROM edge WHERE ST_Within(geom, ST_MakeEnvelope(:lng1, :lat1, :lng2, :lat2, 4326))", nativeQuery = true)
     @Query(value = "SELECT * FROM edge WHERE ST_Within(sourcegeom, ST_MakeEnvelope(:lng1, :lat1, :lng2, :lat2, 4326)) AND ST_Within(targetgeom, ST_MakeEnvelope(:lng1, :lat1, :lng2, :lat2, 4326))", nativeQuery = true)

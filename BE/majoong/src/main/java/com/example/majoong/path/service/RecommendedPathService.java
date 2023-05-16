@@ -130,6 +130,10 @@ public class RecommendedPathService {
     public PathInfoDto astar(Long startId, Long endId, double endLng, double endLat) {
 
 //        System.out.println("START : " + startId + "              END : "+  endId);
+//        for (EdgeDto edge : astarGraph.getEdgeList()){
+//            System.out.println(edge.getEdgeId());
+//        }
+
 
         /**
          * http://stackoverflow.com/questions/20344041/why-does-priority-queue-has-default-initial-capacity-of-11
