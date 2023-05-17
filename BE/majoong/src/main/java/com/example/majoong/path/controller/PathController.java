@@ -1,5 +1,6 @@
 package com.example.majoong.path.controller;
 
+import com.example.majoong.exception.ExceedDistance;
 import com.example.majoong.path.dto.*;
 import com.example.majoong.path.service.RecommendedPathService;
 import com.example.majoong.path.service.ShortestPathService;
@@ -39,6 +40,12 @@ public class PathController {
         ResponseData data = new ResponseData();
         data.setStatus(200);
         data.setMessage("경로 추천 성공");
+
+        // 30km 초과 예외처리
+        double checkDistance = recommendedPathService.calcDistance(startLng, startLat, endLng, endLat);
+        if (checkDistance >= 30000) {
+            throw new ExceedDistance();
+        }
 
         PathInfoDto shortPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
         if (shortPath.getPoint()==null||shortPath==null){
