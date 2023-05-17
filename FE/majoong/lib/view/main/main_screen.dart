@@ -740,7 +740,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                           ),
                                           const SizedBox(height: 15),
                                           RatingBar.builder(
-                                            initialRating: 0,
+                                            initialRating: 5,
                                             minRating: 1,
                                             direction: Axis.horizontal,
                                             itemCount: 5,
@@ -838,9 +838,20 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                           ),
                                           TextButton(
                                             onPressed: () {
-                                              facilityInfo.postReview();
-                                              reviewDialogInfo.clearData();
-                                              Navigator.pop(context);
+                                              if (reviewDialogInfo
+                                                  .state.content.isEmpty) {
+                                                showToast(
+                                                  context: context,
+                                                  '내용을 입력해주세요',
+                                                  position: StyledToastPosition
+                                                      .center,
+                                                );
+                                                return;
+                                              } else {
+                                                facilityInfo.postReview();
+                                                reviewDialogInfo.clearData();
+                                                Navigator.pop(context);
+                                              }
                                             },
                                             child: const Text(
                                               '리뷰 등록',
