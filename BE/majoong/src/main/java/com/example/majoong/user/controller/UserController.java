@@ -43,7 +43,6 @@ public class UserController {
 
     private final FCMService fCMService;
 
-    private final UserRepository userRepository;
 
     @GetMapping
     public ResponseEntity getUser(HttpServletRequest request) {
@@ -151,10 +150,10 @@ public class UserController {
 
     @Operation(summary = "휴대폰 인증번호 전송", description = "인증번호를 전송합니다.")
     @PostMapping("/phone112")
-    public ResponseEntity<?> sendAuthNumber(@RequestBody Map<String,String> message) throws NoSuchAlgorithmException, URISyntaxException, InvalidKeyException, JsonProcessingException, UnsupportedEncodingException {
+    public ResponseEntity<?> sendAuthNumber(HttpServletRequest request, @RequestBody Map<String,String> message) throws NoSuchAlgorithmException, URISyntaxException, InvalidKeyException, IOException {
         log.info("/user/phone112 @Post start");
         ResponseData data = new ResponseData();
-        data.setData(messageService.sendContentMessage(message.get("content")));
+        data.setData(messageService.send112Message(request, message.get("content")));
         log.info(data.toString());
         log.info("/user/phone112 end\n");
         log.info("");

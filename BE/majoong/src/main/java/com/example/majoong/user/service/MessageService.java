@@ -3,6 +3,12 @@ package com.example.majoong.user.service;
 import com.example.majoong.exception.DuplicatePhoneNumberException;
 import com.example.majoong.exception.ExpiredNumberException;
 import com.example.majoong.exception.WrongNumberException;
+import com.example.majoong.fcm.service.FCMService;
+import com.example.majoong.friend.domain.Friend;
+import com.example.majoong.friend.repository.FriendRepository;
+import com.example.majoong.notification.domain.Notification;
+import com.example.majoong.notification.service.NotificationService;
+import com.example.majoong.tools.JwtTool;
 import com.example.majoong.user.domain.User;
 import com.example.majoong.user.dto.*;
 import com.example.majoong.user.repository.UserRepository;
@@ -23,6 +29,8 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -43,6 +51,14 @@ public class MessageService {
 
     @Autowired
     private final RedisTemplate redisTemplate;
+
+    private final JwtTool jwtTool;
+
+    private final FriendRepository friendRepository;
+
+    private final NotificationService notificationService;
+
+    private final FCMService fCMService;
 
     @Value("${naver.sms.service-id}")
     private String serviceId;
@@ -140,7 +156,7 @@ public class MessageService {
         return encodeBase64String;
     }
 
-    public MessageResponseDto sendContentMessage(String content) throws NoSuchAlgorithmException, InvalidKeyException, URISyntaxException, JsonProcessingException, UnsupportedEncodingException {
+    public MessageResponseDto send112Message(HttpServletRequest request, String content) throws NoSuchAlgorithmException, InvalidKeyException, URISyntaxException, IOException {
         Long time = System.currentTimeMillis();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -171,6 +187,24 @@ public class MessageService {
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
         MessageResponseDto response =  restTemplate.postForObject(new URI("https://sens.apigw.ntruss.com/sms/v2/services/"+ serviceId +"/messages"), httpBody, MessageResponseDto.class);
+
+
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+        User user = userRepository.findById(userId).get();
+        List<Friend> guardians = friendRepository.findAllByUserAndStateAndIsGuardian(user, 1, true);
+        for (Friend guardian : guardians) {
+            User guardianInfo = guardian.getFriend();
+            int guardianId = guardianInfo.getId();
+            Notification notification = new Notification(guardianId, userId, 3);
+            notificationService.saveNotification(notification);
+
+            String fcmTitle = "[긴급] 비상 신고 ";
+            String fcmBody = user.getNickname()+"님이 비상 신고 기능을 사용했습니다.";
+
+            fCMService.sendMessage(guardianId,fcmTitle, fcmBody,fcmTitle,fcmBody,"");
+        }
+
 
         return response;
     }
