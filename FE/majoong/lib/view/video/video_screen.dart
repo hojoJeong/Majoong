@@ -19,11 +19,29 @@ class VideoScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final videoInfo = ref.watch(videoProvider);
-    logger.d('videoscreen build');
     if (videoInfo is BaseResponse<List<GetRecordingResponseDto>>) {
       return DefaultLayout(
         title: '녹화 기록',
-        body: ListView.builder(
+        body: videoInfo.data!.length == 0
+            ? Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image(
+                fit: BoxFit.cover,
+                image: AssetImage('res/empty_box.png'),
+                width: MediaQuery.of(context).size.width * 0.5,
+              ),
+              SizedBox(height: 20),
+              Text(
+                '녹화된 영상이 없습니다',
+                style: TextStyle(
+                    fontSize: 25, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        )
+            : ListView.builder(
           itemCount: videoInfo.data!.length,
           itemBuilder: (context, index) {
             return Column(
