@@ -409,22 +409,35 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     });
 
     return Scaffold(
-      drawer: Drawer(
-        width: MediaQuery.of(context).size.width / 1.5,
-        child: SafeArea(
+      drawer: SafeArea(
+        child: Drawer(
+          width: MediaQuery.of(context).size.width / 1.5,
           child: Column(
             children: [
-              Container(
-                width: MediaQuery.of(context).size.width,
-                child: IconButton(
-                  alignment: Alignment.topRight,
-                  icon: Icon(Icons.notifications_none_rounded),
-                  onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (_) => NotificationScreen()));
-                  },
-                ),
-              ),
+              userInfo is BaseResponseLoading
+                  ? LoadingAnimationWidget.staggeredDotsWave(
+                      color: Colors.grey, size: 60)
+                  : Container(
+                      width: MediaQuery.of(context).size.width,
+                      child: IconButton(
+                        iconSize: 30,
+                        alignment: Alignment.topRight,
+                        icon: (userInfo as BaseResponse<UserInfoResponseDto>)
+                                    .data!
+                                    .alarmCount >
+                                0
+                            ? Icon(
+                                Icons.notifications_active_rounded,
+                                color: Colors.black,
+                              )
+                            : Icon(Icons.notifications_none_rounded,
+                                color: Colors.black),
+                        onPressed: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => NotificationScreen()));
+                        },
+                      ),
+                    ),
               userInfo is BaseResponseLoading
                   ? Container()
                   : Container(
