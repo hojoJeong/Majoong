@@ -140,6 +140,13 @@ public class ErrorHandler {
         return data.builder();
     }
 
+
+    @ExceptionHandler(NotGuardianException.class)
+    public ResponseEntity<?> NotGuardianException(){
+        ResponseData data = new ResponseData(ErrorEnum.NOT_GUARDIAN);
+        return data.builder();
+    }
+
     @ExceptionHandler(SameNodeException.class)
     public ResponseEntity<?> SameNodeException(){
         ResponseData data = new ResponseData(ErrorEnum.SAME_NODE);

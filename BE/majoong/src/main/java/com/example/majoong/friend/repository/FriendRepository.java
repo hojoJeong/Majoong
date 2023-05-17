@@ -13,6 +13,7 @@ public interface FriendRepository extends JpaRepository<Friend, Integer> {
     Friend findByUserAndFriendAndState(User user, User friend, int state);
     List<Friend> findAllByFriendAndStateAndIsGuardian(User friend, int state, boolean isGuardian);
 
+    boolean existsByUserAndFriendAndStateAndIsGuardian(User user, User friend, int state, boolean isGuardian);
 
 
 }
