@@ -48,7 +48,11 @@ public class FavoriteService {
         }
     return result;
     }
-    public void deleteFavorite(int favoriteId){
-        favoriteRepository.deleteById(favoriteId);
+    public void deleteFavorite(HttpServletRequest request, FavoriteDto favorite){
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+        User user = userRepository.findById(userId).get();
+        Favorite favoriteInfo = favoriteRepository.findByUserAndAddressAndLocationName(user,favorite.getAddress(), favorite.getLocationName());
+        favoriteRepository.delete(favoriteInfo);
     }
 }
