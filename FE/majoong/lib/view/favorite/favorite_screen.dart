@@ -4,6 +4,7 @@ import 'package:majoong/common/component/signle_button_widget.dart';
 import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/layout/default_layout.dart';
 import 'package:majoong/common/layout/loading_layout.dart';
+import 'package:majoong/model/request/favorite/favorite_request_dto.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/favorite/favorite_response_dto.dart';
 import 'package:majoong/viewmodel/favorite/favorite_list_provider.dart';
@@ -69,7 +70,10 @@ class FavoriteScreen extends ConsumerWidget {
                                 onTap: () {
                                   ref
                                       .read(favoriteListStateProvider.notifier)
-                                      .deleteFavorite(favoriteItem.favoriteId);
+                                      .deleteFavorite(FavoriteRequestDto(
+                                          address: favoriteItem.address,
+                                          locationName:
+                                              favoriteItem.locationName));
                                 },
                                 child: Icon(Icons.clear),
                               )
