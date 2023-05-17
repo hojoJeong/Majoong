@@ -196,11 +196,11 @@ public class MessageService {
         for (Friend guardian : guardians) {
             User guardianInfo = guardian.getFriend();
             int guardianId = guardianInfo.getId();
-            Notification notification = new Notification(guardianId, userId, 2);
+            Notification notification = new Notification(guardianId, userId, 3);
             notificationService.saveNotification(notification);
 
-            String fcmTitle = "[마중] 마중요청!";
-            String fcmBody = user.getNickname()+"님이 마중을 요청했습니다.";
+            String fcmTitle = "[긴급] 비상 신고 ";
+            String fcmBody = user.getNickname()+"님이 비상 신고 기능을 사용했습니다.";
 
             fCMService.sendMessage(guardianId,fcmTitle, fcmBody,fcmTitle,fcmBody,"");
         }
