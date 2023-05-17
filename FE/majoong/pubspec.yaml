@@ -129,6 +129,7 @@ flutter:
     - res/police.png
     - res/icon_star.png
     - res/icon_favorite.png
+    - res/empty_box.png
     - res/icon_camera.png
     - assets/whistle.mp3
     - res/icon_star_line.png

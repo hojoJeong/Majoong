@@ -36,4 +36,8 @@ abstract class VideoApiService{
   @DELETE('video/recordings/{recordingId}')
   Future<BaseResponse> deleteRecording(@Path('recordingId') String recordingId);
 
+  @Headers({AUTHORIZATION: AUTH})
+  @GET('video/recordings/friend/{friendId}')
+  Future<BaseResponse<List<GetRecordingResponseDto>>> getFriendRecording(@Path('friendId') int friendId);
+
 }
