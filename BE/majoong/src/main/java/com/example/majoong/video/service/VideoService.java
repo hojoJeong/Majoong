@@ -300,7 +300,7 @@ public class VideoService {
         User user = userRepository.findById(userId).get();
         User friend = userRepository.findById(friendId).get();
 
-        if (friendRepository.existsByUserAndFriendAndStateAndIsGuardian(user, friend,1, true)==false){
+        if (friendRepository.existsByUserAndFriendAndStateAndIsGuardian(friend, user,1, true)==false){
             throw new NotGuardianException();
         }
 
