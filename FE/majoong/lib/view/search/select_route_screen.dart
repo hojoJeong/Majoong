@@ -257,11 +257,13 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
         '출발지 : ${resultRoutePoint.startLocationName} , ${resultRoutePoint.startLat}, 목적지 : ${resultRoutePoint.endLocationName}, ${resultRoutePoint.endLat}');
 
     if (searchRouteState is BaseResponse && searchRouteState.status == 404) {
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  ErrorSearchRouteScreen(err: searchRouteState.message)));
+      Future.delayed(Duration.zero, () {
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    ErrorSearchRouteScreen(err: searchRouteState.message)));
+      });
     }
 
     if (_locationData != null &&
