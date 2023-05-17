@@ -39,15 +39,7 @@ public class RecommendedPathService {
 
 
 
-    public PathInfoDto getRecommendedPath(double startLng, double startLat, double endLng, double endLat) {
-
-        // 시작점, 도착점과 가장 가까운 노드 탐색
-        NodeDto startNode = findNearestNode(startLng, startLat);
-        NodeDto endNode = findNearestNode(endLng, endLat);
-
-        if (startNode.getNodeId().equals(endNode.getNodeId())) {
-            throw new SameNodeException();
-        }
+    public PathInfoDto getRecommendedPath(NodeDto startNode, NodeDto endNode) {
 
         // 그래프 생성
         createAstarGraph(startNode, endNode);
@@ -269,7 +261,7 @@ public class RecommendedPathService {
 
     public Map<String,List<?>> searchNodeEdgeForGraph(double lng1, double lat1, double lng2, double lat2){
 
-//        double padding = calcPadding(lng1, lat1, lng2, lat2)*CAPTURE_PADDING;
+        double padding = calcPadding(lng1, lat1, lng2, lat2)*CAPTURE_PADDING;
 
         if((lat1>lat2)){
             double temp = lat1;
@@ -290,10 +282,13 @@ public class RecommendedPathService {
         double paddingLng = 0.0011;
         double paddingLat = 0.0009;
 
-        lng1 -= paddingLng;
-        lat1 -= paddingLat;
-        lng2 += paddingLng;
-        lat2 += paddingLat;
+        double padLng = Math.max(padding, paddingLng);
+        double padLat = Math.max(padding, paddingLat);
+
+        lng1 -= padLng;
+        lat1 -= padLat;
+        lng2 += padLng;
+        lat2 += padLat;
 
         List<Node> nodes = nodeRepository.findNodesByArea(lng1, lat1, lng2, lat2);
         List<NodeDto> nodeList = new ArrayList<>();
@@ -330,6 +325,8 @@ public class RecommendedPathService {
 //            startFlag = false;
 //            endFlag = false;
 //        }
+
+        System.out.println("영역 좌표" + lng1 + ", " + lat1 + "/ " + lng2 + ", " + lat2);
 
         Map<String, List<? extends Object>> result= new HashMap<>();
 
