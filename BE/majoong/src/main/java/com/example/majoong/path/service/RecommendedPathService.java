@@ -1,5 +1,6 @@
 package com.example.majoong.path.service;
 
+import com.example.majoong.exception.SameNodeException;
 import com.example.majoong.map.dto.LocationDto;
 import com.example.majoong.path.repository.EdgeRepository;
 import com.example.majoong.path.repository.NodeRepository;
@@ -43,6 +44,10 @@ public class RecommendedPathService {
         // 시작점, 도착점과 가장 가까운 노드 탐색
         NodeDto startNode = findNearestNode(startLng, startLat);
         NodeDto endNode = findNearestNode(endLng, endLat);
+
+        if (startNode.getNodeId().equals(endNode.getNodeId())) {
+            throw new SameNodeException();
+        }
 
         // 그래프 생성
         createAstarGraph(startNode, endNode);
@@ -129,7 +134,7 @@ public class RecommendedPathService {
         double nodeLng1 = sourceNodeDataDto.getLng();
         double nodeLat1 = sourceNodeDataDto.getLat();
 
-        System.out.println("시작 : " + nodeLng1 + nodeLat1 + " / 도착 : " + endLng + endLat);
+        System.out.println("시작 : " + nodeLng1 + ", " + nodeLat1 + " / 도착 : " + endLng + ", " + endLat);
 
         sourceNodeDataDto.setG(0); // 출발지점 0
         sourceNodeDataDto.calcF(endId, endLng, endLat); // 도착지까지의 총 비용 계산
@@ -201,6 +206,7 @@ public class RecommendedPathService {
                     }
                 }
             }
+            System.out.println("currentNode : " + currentNode.getNodeId());
         }
         log.info("안전 경로를 찾을 수 없습니다");
         return null;
@@ -263,7 +269,7 @@ public class RecommendedPathService {
 
     public Map<String,List<?>> searchNodeEdgeForGraph(double lng1, double lat1, double lng2, double lat2){
 
-        double padding = calcPadding(lng1, lat1, lng2, lat2)*CAPTURE_PADDING;
+//        double padding = calcPadding(lng1, lat1, lng2, lat2)*CAPTURE_PADDING;
 
         if((lat1>lat2)){
             double temp = lat1;
@@ -276,10 +282,18 @@ public class RecommendedPathService {
             lng2 =temp;
         }
 
-        lng1 -= padding;
-        lat1 -= padding;
-        lng2 += padding;
-        lat2 += padding;
+//        lng1 -= padding;
+//        lat1 -= padding;
+//        lng2 += padding;
+//        lat2 += padding;
+
+        double paddingLng = 0.0011;
+        double paddingLat = 0.0009;
+
+        lng1 -= paddingLng;
+        lat1 -= paddingLat;
+        lng2 += paddingLng;
+        lat2 += paddingLat;
 
         List<Node> nodes = nodeRepository.findNodesByArea(lng1, lat1, lng2, lat2);
         List<NodeDto> nodeList = new ArrayList<>();
