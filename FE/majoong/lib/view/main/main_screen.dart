@@ -22,6 +22,7 @@ import 'package:majoong/main.dart';
 import 'package:majoong/model/request/map/get_facility_request_dto.dart';
 import 'package:majoong/model/request/user/ReportRequestDto.dart';
 import 'package:majoong/model/response/base_response.dart';
+import 'package:majoong/model/response/user/friend_list_model.dart';
 import 'package:majoong/model/response/user/friend_response_dto.dart';
 import 'package:majoong/model/response/user/user_info_response_dto.dart';
 import 'package:majoong/service/local/secure_storage.dart';
@@ -43,14 +44,16 @@ import 'package:majoong/viewmodel/video/videoProvider.dart';
 import 'package:openvidu_client/openvidu_client.dart';
 import 'package:permission_handler/permission_handler.dart'
     hide PermissionStatus;
+import 'package:majoong/viewmodel/search/route_point_provider.dart';
+import 'package:majoong/viewmodel/search/search_route_provider.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:volume_controller/volume_controller.dart';
 
 import '../../common/const/key_value.dart';
 import '../../common/const/path.dart';
 import '../../viewmodel/main/audio_provider.dart';
 import '../../viewmodel/main/user_info_provider.dart';
+import '../../viewmodel/search/search_route_point_provider.dart';
 import '../openvidu/media_stream_view.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
@@ -216,7 +219,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final fcmMessaging = FirebaseMessaging.instance;
     initFcm(fcmMessaging);
     _getLocation();
-
     locationSubscription = location.onLocationChanged.listen((event) {
       setState(() {
         _locationData = event;
@@ -317,6 +319,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final currentLocation = ref.read(currentLocationProvider);
     currentLocation[0] = _locationData!.latitude!;
     currentLocation[1] = _locationData!.longitude!;
+    logger.d(currentLocation.toString());
     ref.read(centerPositionProvider.notifier).update((state) =>
         GetFacilityRequestDto(
             centerLng: _locationData!.longitude!,
@@ -766,7 +769,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                               ),
                                               GestureDetector(
                                                 onTap: () async {
-                                                  //TODO 사진 촬영
                                                   final pickedFile =
                                                       await ImagePicker()
                                                           .pickImage(
@@ -862,11 +864,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         height: 60,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: PRIMARY_COLOR,
+                          color: SECOND_PRIMARY_COLOR,
                           borderRadius: BorderRadius.circular(150),
                         ),
                         child: Text(
                           '+',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 50,
@@ -897,9 +900,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                             image: AssetImage('res/call.png'),
                             text: '보호자 통화',
                             onPressed: () async {
-                              final friendInfo =
-                                  ref.read(friendProvider.notifier);
-                              await friendInfo.getFriendList(1);
+                              await ref
+                                  .read(guardianListProvider.notifier)
+                                  .getFriendList(1);
                               guardianDialog(setState);
                             },
                           ),
@@ -944,10 +947,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                             image: AssetImage('res/whistle.png'),
                             text: '호루라기',
                             onPressed: () async {
-                              final audioInfo = ref.read(audioProvider.notifier);
-                              if(audioInfo.isPlaying){
+                              final audioInfo =
+                                  ref.read(audioProvider.notifier);
+                              if (audioInfo.isPlaying) {
                                 audioInfo.stop();
-                              }else{
+                              } else {
                                 audioInfo.play();
                               }
                             },
@@ -1009,8 +1013,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   @override
   void dispose() {
-    locationSubscription.cancel();
     super.dispose();
+    locationSubscription.cancel();
   }
 
   Widget createToggleButton(isBright, setState) {
@@ -1090,10 +1094,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   guardianDialog(setState) {
-    final friends = ref.read(friendProvider.notifier).state
+    final guardians = ref.read(guardianListProvider.notifier)
         as BaseResponse<List<FriendResponseDto>>;
     List<Widget> guardianWidget = List.generate(
-      friends.data?.length ?? 0,
+      guardians.data?.length ?? 0,
       (index) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
@@ -1102,15 +1106,16 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             CircleAvatar(
               radius: 25,
               backgroundImage:
-                  Image.network(friends.data?[index].profileImage ?? "").image,
+                  Image.network(guardians.data?[index].profileImage ?? "")
+                      .image,
             ),
             Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(friends.data?[index].nickname ?? ''),
+                Text(guardians.data?[index].nickname ?? ''),
                 Text(
-                  friends.data?[index].phoneNumber ?? '',
+                  guardians.data?[index].phoneNumber ?? '',
                   style: TextStyle(color: Colors.grey),
                 )
               ],
@@ -1119,10 +1124,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               onPressed: () {
                 canLaunchUrl(Uri(
                         scheme: 'tel',
-                        path: friends.data?[index].phoneNumber ?? ''))
+                        path: guardians.data?[index].phoneNumber ?? ''))
                     .then((value) => launchUrl(Uri(
                         scheme: 'tel',
-                        path: friends.data?[index].phoneNumber ?? '')));
+                        path: guardians.data?[index].phoneNumber ?? '')));
               },
               icon: Icon(
                 Icons.phone_in_talk_rounded,

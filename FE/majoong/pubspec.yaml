@@ -73,6 +73,7 @@ dependencies:
   favorite_button: ^0.0.4
   group_button: ^5.2.2
   dart_amqp: ^0.2.4
+  intl: ^0.17.0
 
   plugin_platform_interface: ^2.0.2
   web_socket_channel: ^2.3.0
@@ -111,7 +112,6 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   assets:
     - res/majoong_logo.jpg
     - res/logo_kakao.png
@@ -131,14 +131,17 @@ flutter:
     - res/icon_camera.png
     - assets/whistle.mp3
     - res/icon_star_line.png
-    - res/icon_search_route_selected.png
+    - res/icon_search_route_selected_recommended.png
     - res/icon_search_route_unselected.png
+    - res/icon_search_route_selected_shortest.png
     - res/icon_start.png
     - res/icon_end.png
     - res/icon_start_2.png
     - res/icon_end_2.png
     - res/icon_start_3.png
     - res/icon_end_3.png
+    - res/icon_user_position.png
+    - res/icon_place_location.png
     - res/notification-bell.png
     - res/store.png
     - res/good.png

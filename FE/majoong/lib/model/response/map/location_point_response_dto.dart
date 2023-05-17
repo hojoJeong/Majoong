@@ -10,4 +10,5 @@ class LocationPointResponseDto {
   LocationPointResponseDto({required this.lng, required this.lat});
 
   factory LocationPointResponseDto.fromJson(Map<String, dynamic> json) => _$LocationPointResponseDtoFromJson(json);
+  Map<String, dynamic> toJson() => _$LocationPointResponseDtoToJson(this);
 }

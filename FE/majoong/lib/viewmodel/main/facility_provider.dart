@@ -33,8 +33,7 @@ final cameraMovedProvider = StateProvider<bool>((ref) {
 final facilityProvider =
     StateNotifierProvider<FacilityNotifier, BaseResponseState>((ref) {
   final mapService = ref.watch(mapApiServiceProvider);
-  final markerInfo =
-      ref.watch(markerProvider.notifier as AlwaysAliveProviderListenable);
+  final markerInfo = ref.watch(markerProvider.notifier);
   final chipInfo = ref.watch(chipProvider.notifier);
   final reviewDialogInfo = ref.watch(reviewDialogProvider.notifier);
   final centerPositionInfo = ref.watch(centerPositionProvider.notifier);
@@ -115,7 +114,6 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
       }
 
       final lampIcon = await getCustomMarkerIcon();
-      logger.d(lampList.length);
       for (var lamp in lampList) {
         markerNotifier.addLampMarker(Marker(
           markerId: MarkerId(lamp.lampId.toString()),
@@ -370,7 +368,6 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
 
   postReview() async {
     final request = reviewDialogNotifier.state;
-    logger.d(request.reviewImage?.path.toString());
 
     final formData = FormData.fromMap({
       'lng': request.lng.toString(),

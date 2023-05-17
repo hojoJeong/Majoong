@@ -1,34 +1,46 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:location/location.dart';
+import 'package:majoong/common/const/key_value.dart';
 import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/util/logger.dart';
+import 'package:majoong/model/response/map/route_info_response_dto.dart';
 import 'package:majoong/model/response/map/search_route_response_dto.dart';
+import 'package:majoong/service/local/secure_storage.dart';
 import 'package:majoong/view/guardian/guardian_screen.dart';
+import 'package:majoong/view/on_going/on_going_screen.dart';
+import 'package:majoong/view/search/search_screen.dart';
+import 'package:majoong/view/search/select_guardians_screen.dart';
+import 'package:majoong/viewmodel/friend/friend_provider.dart';
+import 'package:majoong/viewmodel/search/get_guardians_provider.dart';
 import 'package:majoong/viewmodel/search/route_point_provider.dart';
 import 'package:majoong/viewmodel/search/search_route_provider.dart';
 import 'package:majoong/viewmodel/share_loaction/share_location_provider.dart';
+import 'package:ndialog/ndialog.dart';
 
 import '../../common/const/colors.dart';
 import '../../model/request/map/get_facility_request_dto.dart';
+import '../../model/request/map/share_route_request_dto.dart';
 import '../../model/response/base_response.dart';
 import '../../model/response/map/location_point_response_dto.dart';
+import '../../model/response/user/friend_response_dto.dart';
 import '../../viewmodel/main/facility_provider.dart';
 import '../../viewmodel/main/marker_provider.dart';
 import '../../viewmodel/main/review_dialog_provider.dart';
 
-class ResultSearchRouteScreen extends ConsumerStatefulWidget {
-  const ResultSearchRouteScreen({Key? key}) : super(key: key);
+class SelectRouteScreen extends ConsumerStatefulWidget {
+  const SelectRouteScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _ResultSearchRouteState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _SelectRouteState();
 }
 
-class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
+class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
   late GoogleMapController mapController;
   Location location = Location();
   late bool _serviceEnabled;
@@ -36,7 +48,7 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
   LocationData? _locationData;
   bool selectShortest = false;
   bool selectRecommended = true;
-  Set<Polyline> route = {};
+  List<Polyline> route = [];
   List<Marker> marker = [];
 
   void _onMapCreated(GoogleMapController controller) {
@@ -99,18 +111,20 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
     );
   }
 
+  late StreamSubscription<LocationData> locationSubscription;
+
   @override
   void initState() {
     super.initState();
     _getLocation();
-    // location.onLocationChanged.listen((event) {
-    //   setState(() {
-    //     _locationData = event;
-    //     final currentLocation = ref.read(currentLocationProvider);
-    //     currentLocation[0] = event.latitude!;
-    //     currentLocation[1] = event.longitude!;
-    //   });
-    // });
+    locationSubscription = location.onLocationChanged.listen((event) {
+      setState(() {
+        _locationData = event;
+        final currentLocation = ref.read(currentLocationProvider);
+        currentLocation[0] = event.latitude!;
+        currentLocation[1] = event.longitude!;
+      });
+    });
   }
 
   List<String> _choices = [
@@ -139,20 +153,50 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
     }).toList();
 
     route.clear();
+    if (recommendedSelected) {
+      route.add(Polyline(
+          polylineId: PolylineId('shortest'),
+          visible: true,
+          points: shortestRouteList,
+          startCap: Cap.roundCap,
+          endCap: Cap.roundCap,
+          color: Colors.grey,
+          width: 8));
+      route.add(
+        Polyline(
+          polylineId: PolylineId('recommended'),
+          visible: true,
+          startCap: Cap.roundCap,
+          endCap: Cap.roundCap,
+          points: recommendedRouteList,
+          color: POLICE_MARKER_COLOR,
+          width: 8,
+          zIndex: 1,
+        ),
+      );
+    } else if (shortestSelected) {
+      route.add(Polyline(
+          polylineId: PolylineId('recommended'),
+          visible: true,
+          startCap: Cap.roundCap,
+          endCap: Cap.roundCap,
+          points: recommendedRouteList,
+          color: Colors.grey,
+          width: 8));
 
-    route.add(Polyline(
-        polylineId: PolylineId('recommended'),
-        visible: true,
-        points: recommendedRouteList,
-        color: recommendedSelected ? POLICE_MARKER_COLOR : Colors.grey,
-        width: 4));
-
-    route.add(Polyline(
+      route.add(Polyline(
         polylineId: PolylineId('shortest'),
         visible: true,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
         points: shortestRouteList,
-        color: shortestSelected ? POLICE_MARKER_COLOR : Colors.grey,
-        width: 8));
+        color: SECOND_PRIMARY_COLOR,
+        width: 8,
+        zIndex: 1,
+      ));
+    }
+    logger
+        .d('경로 그리기 완료 : ${route[0].points.length}, ${route[1].points.length}');
   }
 
   makeMarkers(Set<Marker> facilities, double startLat, double startLng,
@@ -193,16 +237,12 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
     final cameraMovedInfo = ref.watch(cameraMovedProvider);
     final resultRoutePoint = ref.watch(routePointProvider);
     final searchRouteState = ref.watch(searchRouteProvider);
-    final shareLocationState = ref.watch(shareLocationProvider);
-    if (shareLocationState is BaseResponse) {
-      logger.d('이동 준비 완료 : ${shareLocationState.message}');
-      Future.delayed(Duration.zero, () {
-        Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => GuardianScreen()));
-      });
-    }
 
-    if (searchRouteState is BaseResponseLoading) {
+    if (resultRoutePoint.startLocationName != '' &&
+        resultRoutePoint.endLocationName != '' &&
+        searchRouteState is BaseResponseLoading &&
+        !ref.read(searchRouteProvider.notifier).checkGetRoot) {
+      ref.read(searchRouteProvider.notifier).checkGetRoot = true;
       ref.read(searchRouteProvider.notifier).getRoute(
           resultRoutePoint.startLat,
           resultRoutePoint.startLng,
@@ -211,11 +251,10 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
     }
 
     logger.d(
-        '출발지 : ${resultRoutePoint.startLocationName}, 목적지 : ${resultRoutePoint.endLocationName}');
+        '출발지 : ${resultRoutePoint.startLocationName} , ${resultRoutePoint.startLat}, 목적지 : ${resultRoutePoint.endLocationName}, ${resultRoutePoint.endLat}');
     if (_locationData != null &&
         searchRouteState is BaseResponse<SearchRouteResponseDto>) {
       final shortestPath = searchRouteState.data!.shortestPath.point;
-
       final initialLat = searchRouteState
           .data!.shortestPath.point[shortestPath.length ~/ 2].lat;
       final initialLng = searchRouteState
@@ -237,8 +276,14 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
         body: Builder(builder: (context) {
           return SafeArea(
             child: Stack(alignment: Alignment.topCenter, children: [
+              WillPopScope(
+                  child: Container(),
+                  onWillPop: () async {
+                    ref.read(routePointProvider.notifier).refreshState();
+                    return true;
+                  }),
               GoogleMap(
-                polylines: route,
+                polylines: Set.from(route),
                 onMapCreated: _onMapCreated,
                 markers: Set.from(marker),
                 initialCameraPosition: CameraPosition(
@@ -287,25 +332,38 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                                   width: 20,
                                 ),
                                 Expanded(
-                                  child: Container(
-                                    height: MediaQuery.of(context).size.height *
-                                        0.07,
-                                    decoration: BoxDecoration(
-                                        color: WHITE_SMOKE,
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                    child: Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 14),
-                                        child: Text(
-                                          resultRoutePoint.startLocationName,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: BASE_TITLE_FONT_SIZE,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      ref
+                                          .read(searchRouteProvider.notifier)
+                                          .refreshState();
+                                      ref
+                                          .read(routePointProvider.notifier)
+                                          .refreshStartPoint();
+                                      Navigator.pop(context);
+                                    },
+                                    child: Container(
+                                      //출발지
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.07,
+                                      decoration: BoxDecoration(
+                                          color: WHITE_SMOKE,
+                                          borderRadius:
+                                              BorderRadius.circular(10)),
+                                      child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 14),
+                                          child: Text(
+                                            resultRoutePoint.startLocationName,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: BASE_TITLE_FONT_SIZE,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
                                           ),
-                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                     ),
@@ -328,24 +386,37 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                                   width: 20,
                                 ),
                                 Expanded(
-                                  child: Container(
-                                    height: MediaQuery.of(context).size.height *
-                                        0.07,
-                                    decoration: BoxDecoration(
-                                        color: WHITE_SMOKE,
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                    child: Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 14),
-                                        child: Text(
-                                          resultRoutePoint.endLocationName,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: BASE_TITLE_FONT_SIZE,
-                                            overflow: TextOverflow.ellipsis,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      ref
+                                          .read(searchRouteProvider.notifier)
+                                          .refreshState();
+                                      ref
+                                          .read(routePointProvider.notifier)
+                                          .refreshEndPoint();
+                                      Navigator.pop(context);
+                                    },
+                                    child: Container(
+                                      //도착지
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.07,
+                                      decoration: BoxDecoration(
+                                          color: WHITE_SMOKE,
+                                          borderRadius:
+                                              BorderRadius.circular(10)),
+                                      child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 14),
+                                          child: Text(
+                                            resultRoutePoint.endLocationName,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: BASE_TITLE_FONT_SIZE,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -485,7 +556,8 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                                 searchRouteState
                                         .data!.recommendedPath?.distance ??
                                     0,
-                                selectRecommended),
+                                selectRecommended,
+                                searchRouteState.data!.recommendedPath),
                           ),
                           GestureDetector(
                             onTap: () {
@@ -499,7 +571,8 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                                 searchRouteState.data!.shortestPath.time ?? 0,
                                 searchRouteState.data!.shortestPath.distance ??
                                     0,
-                                selectShortest),
+                                selectShortest,
+                                searchRouteState.data!.shortestPath),
                           ),
                         ],
                       ),
@@ -535,15 +608,26 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
     }
   }
 
-  Widget selectRouteButton(
-      String title, int time, int distance, bool selected) {
+  @override
+  void dispose() {
+    super.dispose();
+    locationSubscription.cancel();
+  }
+
+  Widget selectRouteButton(String title, int time, int distance, bool selected,
+      RouteInfoResponseDto? path) {
     return Container(
       width: MediaQuery.of(context).size.width * 0.45,
       decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-              color: selected ? POLICE_MARKER_COLOR : Colors.grey, width: 1)),
+              color: selected
+                  ? (title == '추천 경로'
+                      ? POLICE_MARKER_COLOR
+                      : SECOND_PRIMARY_COLOR)
+                  : Colors.grey,
+              width: 1)),
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Column(
@@ -555,7 +639,11 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
               children: [
                 Container(
                   decoration: BoxDecoration(
-                    color: selected ? POLICE_MARKER_COLOR : Colors.grey,
+                    color: selected
+                        ? (title == '추천 경로'
+                            ? POLICE_MARKER_COLOR
+                            : SECOND_PRIMARY_COLOR)
+                        : Colors.grey,
                     borderRadius: BorderRadius.circular(80),
                   ),
                   child: Padding(
@@ -569,15 +657,20 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                 GestureDetector(
                   onTap: selected
                       ? () {
-                          ref
-                              .read(shareLocationProvider.notifier)
-                              .initChannel(true, 5);
-                          showToast(context: context, '경로 탐색을 시작합니다.');
+                          Navigator.of(context)
+                              .pushReplacement(MaterialPageRoute(
+                                  builder: (_) => SelectGuardiansScreen(
+                                        path: path!,
+                                      )));
                         }
                       : null,
                   child: Image(
                     image: selected
-                        ? AssetImage('res/icon_search_route_selected.png')
+                        ? (title == '추천 경로'
+                            ? AssetImage(
+                                'res/icon_search_route_selected_recommended.png')
+                            : AssetImage(
+                                'res/icon_search_route_selected_shortest.png'))
                         : AssetImage('res/icon_search_route_unselected.png'),
                     width: 50,
                   ),
@@ -593,7 +686,11 @@ class _ResultSearchRouteState extends ConsumerState<ResultSearchRouteScreen> {
                   style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: selected ? POLICE_MARKER_COLOR : Colors.grey),
+                      color: selected
+                          ? (title == '추천 경로'
+                              ? POLICE_MARKER_COLOR
+                              : SECOND_PRIMARY_COLOR)
+                          : Colors.grey),
                 ),
                 SizedBox(
                   width: 4,

@@ -31,12 +31,12 @@ final searchFriendProvider =
 
 final requestFriendProvider =
     StateNotifierProvider<FriendStateNotifier, BaseResponseState>((ref) {
-      final userApi = ref.read(userApiServiceProvider);
-      final secureStorage = ref.read(secureStorageProvider);
-      final notifier = FriendStateNotifier(
-          userApi: userApi, secureStorage: secureStorage, isController: false);
-      return notifier;
-    });
+  final userApi = ref.read(userApiServiceProvider);
+  final secureStorage = ref.read(secureStorageProvider);
+  final notifier = FriendStateNotifier(
+      userApi: userApi, secureStorage: secureStorage, isController: false);
+  return notifier;
+});
 
 final friendRequestListProvider =
     StateNotifierProvider<FriendStateNotifier, BaseResponseState>((ref) {
@@ -115,14 +115,13 @@ class FriendStateNotifier extends StateNotifier<BaseResponseState> {
   searchFriend(String phoneNumber) async {
     final response = await userApi
         .searchFriend(SearchFriendRequestDto(phoneNumber: phoneNumber));
-    if (response.status == 200) {
+    if (response.status == 200 || response.status == 601) {
       state = response;
     }
   }
 
   deleteFriend(int friendId) async {
-    final int userId =
-        int.parse(await secureStorage.read(key: USER_ID).toString());
+    final int userId = int.parse(await secureStorage.read(key: USER_ID) ?? "");
     final response = await userApi.deleteFriend(
         FriendRequestRequestDto(userId: userId, friendId: friendId));
     if (response.status == 200) {
@@ -132,16 +131,20 @@ class FriendStateNotifier extends StateNotifier<BaseResponseState> {
 
   requestFriend(int friendId) async {
     final int userId =
-        int.parse(await secureStorage.read(key: USER_ID).toString());
+        int.parse((await secureStorage.read(key: USER_ID)).toString());
     final response = await userApi.requestFriend(
         FriendRequestRequestDto(userId: userId, friendId: friendId));
     state = response;
     logger.d(response.message);
   }
 
+  refreshState() {
+    state = BaseResponseLoading();
+  }
+
   acceptFriend(int friendId) async {
     final int userId =
-        int.parse(await secureStorage.read(key: USER_ID).toString());
+        int.parse((await secureStorage.read(key: USER_ID)).toString());
     final response = await userApi.acceptFriendRequest(
         FriendRequestRequestDto(userId: userId, friendId: friendId));
     if (response.status == 200) {
@@ -151,7 +154,7 @@ class FriendStateNotifier extends StateNotifier<BaseResponseState> {
 
   denyFriend(int friendId) async {
     final int userId =
-        int.parse(await secureStorage.read(key: USER_ID).toString());
+        int.parse((await secureStorage.read(key: USER_ID)).toString());
     final response = await userApi.denyFriendRequest(
         FriendRequestRequestDto(userId: userId, friendId: friendId));
     if (response.status == 200) {
@@ -161,7 +164,7 @@ class FriendStateNotifier extends StateNotifier<BaseResponseState> {
 
   editGuardian(int friendId) async {
     final int userId =
-        int.parse(await secureStorage.read(key: USER_ID).toString());
+        int.parse((await secureStorage.read(key: USER_ID)).toString());
     final response = await userApi.editGuardian(
         FriendRequestRequestDto(userId: userId, friendId: friendId));
     if (response.status == 200) {

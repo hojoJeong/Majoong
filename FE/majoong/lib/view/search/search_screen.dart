@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:majoong/common/const/key_value.dart';
 import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/layout/default_layout.dart';
@@ -11,7 +12,7 @@ import 'package:majoong/service/local/recent_keyword_storage.dart';
 import 'package:majoong/view/favorite/favorite_screen.dart';
 import 'package:majoong/view/search/favorite_widget.dart';
 import 'package:majoong/view/search/recent_keyword_widget.dart';
-import 'package:majoong/view/search/response_search_places_screen.dart';
+import 'package:majoong/view/search/result_search_places_screen.dart';
 import 'package:majoong/viewmodel/favorite/favorite_list_provider.dart';
 import 'package:majoong/viewmodel/search/recent_keyword_provider.dart';
 import 'package:majoong/viewmodel/search/search_route_point_provider.dart';
@@ -22,26 +23,19 @@ class SearchScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final favoriteListState = ref.watch(favoriteListStateProvider);
+    final favoriteListState = ref.watch(favoriteListStateProvider);
     final recentKeywordListState = ref.watch(recentKeywordProvider);
+
+    Future.delayed(Duration.zero, () {
+      if (ref.read(keywordProvider) != "") {
+        ref.read(keywordProvider.notifier).update((state) => "");
+      }
+    });
     ref.listen(keywordProvider, (previous, next) {
       searchKeywordController.text = next;
     });
 
-    ///임시 데이터
-    final List<FavoriteResponseDto> favoriteListState = [
-      FavoriteResponseDto(
-          favoriteId: 1, locationName: '사피', address: '경북 구미시 진평5길 23'),
-      FavoriteResponseDto(
-          favoriteId: 1, locationName: '사피', address: '경북 구미시 진평5길 23'),
-      FavoriteResponseDto(
-          favoriteId: 1, locationName: '사피', address: '경북 구미시 진평5길 23'),
-      FavoriteResponseDto(
-          favoriteId: 1, locationName: '사피', address: '경북 구미시 진평5길 23'),
-    ];
-
-    // if (favoriteListState is BaseResponse && recentKeywordListState is BaseResponse) {
-    if (recentKeywordListState is BaseResponse) {
+    if (favoriteListState is BaseResponse && recentKeywordListState is BaseResponse) {
       return Scaffold(
           body: SafeArea(
         child: Column(
@@ -84,10 +78,16 @@ class SearchScreen extends ConsumerWidget {
                               UnderlineInputBorder(borderSide: BorderSide.none),
                           suffixIcon: GestureDetector(
                               onTap: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (_) => ResponseSearchPlacesScreen(
-                                        keyword:
-                                            searchKeywordController.text)));
+                                if(searchKeywordController.text.isEmpty){
+                                  showToast(context: context, '검색어를 입력해주세요.');
+                                } else {
+                                  ref.read(recentKeywordProvider.notifier).addKeyword(searchKeywordController.text);
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (_) => ResultSearchPlacesScreen(
+                                          keyword:
+                                          searchKeywordController.text)));
+                                }
+                                
                               },
                               child: Icon(Icons.search))),
                     ),
@@ -130,7 +130,7 @@ class SearchScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            favoriteListView(favoriteListState, context),
+            favoriteListView(favoriteListState.data, context),
             // Expanded(child: makeFavoriteList(favoriteListState.data))
 
             SizedBox(
@@ -142,9 +142,7 @@ class SearchScreen extends ConsumerWidget {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      ref
-                          .read(recentKeywordProvider.notifier)
-                          .addKeyword('스벅');
+                      ref.read(recentKeywordProvider.notifier).addKeyword('스벅');
                     },
                     child: Text(
                       '최근 검색 기록',
@@ -165,7 +163,9 @@ class SearchScreen extends ConsumerWidget {
       ));
     } else {
       logger.d(recentKeywordListState);
-      return const LoadingLayout();
+      return Container(
+          color: Colors.grey,
+          child: LoadingLayout());
     }
   }
 

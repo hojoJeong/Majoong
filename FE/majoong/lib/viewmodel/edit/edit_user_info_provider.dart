@@ -38,6 +38,7 @@ class EditUserInfoStateNotifier extends StateNotifier<BaseResponseState> {
       required this.userInfo})
       : super(BaseResponseLoading());
 
+
   editUserInfo(EditUserInfoRequestDto request) async {
     final token = await secureStorage.read(key: ACCESS_TOKEN);
     final formData = FormData.fromMap({
@@ -48,7 +49,6 @@ class EditUserInfoStateNotifier extends StateNotifier<BaseResponseState> {
               filename: null)
           : null
     });
-
     final dio = Dio();
     dio.interceptors
         .add(DioInterceptor(secureStorage: secureStorage, dio: dio));

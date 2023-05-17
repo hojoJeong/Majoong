@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 final markerProvider =
-StateNotifierProvider.autoDispose<MarkerNotifier, Set<Marker>>((ref) {
+    StateNotifierProvider<MarkerNotifier, Set<Marker>>((ref) {
   return MarkerNotifier(chipNotifier: ref.watch(chipProvider.notifier));
 });
 final polyLineProvider = StateNotifierProvider.autoDispose<PolyLineNotifier,
@@ -11,13 +11,13 @@ final polyLineProvider = StateNotifierProvider.autoDispose<PolyLineNotifier,
   return PolyLineNotifier(chipNotifier: chipInfo);
 });
 
-final polygonProvider = StateNotifierProvider.autoDispose<PolygonNotifier,
-    Set<Polygon>>((ref) {
+final polygonProvider =
+    StateNotifierProvider.autoDispose<PolygonNotifier, Set<Polygon>>((ref) {
   final chipInfo = ref.watch(chipProvider.notifier);
   return PolygonNotifier(chipNotifier: chipInfo);
 });
 
-class PolygonNotifier extends StateNotifier<Set<Polygon>>{
+class PolygonNotifier extends StateNotifier<Set<Polygon>> {
   final ChipNotifier chipNotifier;
   final riskRoad = Set<Polygon>();
 
@@ -29,6 +29,7 @@ class PolygonNotifier extends StateNotifier<Set<Polygon>>{
       state.addAll(riskRoad);
     }
   }
+
   addRiskRoad(Polygon polygon) {
     riskRoad.add(polygon);
   }
@@ -46,10 +47,10 @@ class PolyLineNotifier extends StateNotifier<Map<PolylineId, Polyline>> {
       state.addAll(safeRaod);
     }
   }
+
   addSafeRoad(Polyline polyLine) {
     safeRaod[polyLine.polylineId] = polyLine;
   }
-
 }
 
 class MarkerNotifier extends StateNotifier<Set<Marker>> {

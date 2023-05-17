@@ -12,4 +12,5 @@ class RouteInfoResponseDto {
       {required this.distance, required this.time, required this.point});
 
   factory RouteInfoResponseDto.fromJson(Map<String, dynamic> json) => _$RouteInfoResponseDtoFromJson(json);
+  Map<String, dynamic> toJson() => _$RouteInfoResponseDtoToJson(this);
 }

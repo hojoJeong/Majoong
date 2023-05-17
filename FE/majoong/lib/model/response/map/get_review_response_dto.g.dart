@@ -13,7 +13,7 @@ GetReviewResponseDto _$GetReviewResponseDtoFromJson(
       json['address'] as String,
       json['score'] as int,
       json['content'] as String,
-      json['reviewImage'] as String,
+      json['reviewImage'] as String?,
       json['bright'] as bool,
       json['crowded'] as bool,
     );
