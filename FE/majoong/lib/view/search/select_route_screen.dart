@@ -14,6 +14,7 @@ import 'package:majoong/model/response/map/search_route_response_dto.dart';
 import 'package:majoong/service/local/secure_storage.dart';
 import 'package:majoong/view/guardian/guardian_screen.dart';
 import 'package:majoong/view/on_going/on_going_screen.dart';
+import 'package:majoong/view/search/error_search_route_screen.dart';
 import 'package:majoong/view/search/search_screen.dart';
 import 'package:majoong/view/search/select_guardians_screen.dart';
 import 'package:majoong/viewmodel/friend/friend_provider.dart';
@@ -254,8 +255,18 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
 
     logger.d(
         '출발지 : ${resultRoutePoint.startLocationName} , ${resultRoutePoint.startLat}, 목적지 : ${resultRoutePoint.endLocationName}, ${resultRoutePoint.endLat}');
+
+    if (searchRouteState is BaseResponse && searchRouteState.status == 404) {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  ErrorSearchRouteScreen(err: searchRouteState.message)));
+    }
+
     if (_locationData != null &&
-        searchRouteState is BaseResponse<SearchRouteResponseDto>) {
+        searchRouteState is BaseResponse<SearchRouteResponseDto> &&
+        searchRouteState.status == 200) {
       final shortestPath = searchRouteState.data!.shortestPath.point;
       final initialLat = searchRouteState
           .data!.shortestPath.point[shortestPath.length ~/ 2].lat;
@@ -297,7 +308,9 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
                   final lng = position.target.longitude;
                   final centerLat = lat;
                   final centerLng = lng;
-                  ref.read(searchCenterPositionProvider.notifier).update((state) {
+                  ref
+                      .read(searchCenterPositionProvider.notifier)
+                      .update((state) {
                     return state = GetFacilityRequestDto(
                       centerLat: centerLat,
                       centerLng: centerLng,
@@ -310,7 +323,8 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
                 },
                 myLocationEnabled: true,
               ),
-              ref.read(searchFacilityProvider.notifier).state is BaseResponseLoading
+              ref.read(searchFacilityProvider.notifier).state
+                      is BaseResponseLoading
                   ? loadingWidget()
                   : Container(),
               Container(
