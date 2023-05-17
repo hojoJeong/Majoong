@@ -294,13 +294,7 @@ public class VideoService {
     }
 
 
-    public List<GetRecordingsResponseDto> getFriendRecordings(HttpServletRequest request) {
-
-        String token = request.getHeader("Authorization").split(" ")[1];
-        int userId = jwtTool.getUserIdFromToken(token);
-        User user = userRepository.findById(userId).get();
-
-
+    public List<GetRecordingsResponseDto> getFriendRecordings(int userId) {
         String url = OPENVIDU_BASE_PATH + "recordings";
         // OPENVIDU REST API 요청
         RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
@@ -322,38 +316,34 @@ public class VideoService {
         JsonParser parser = new JsonParser();
         JsonArray items = parser.parse(response.getBody()).getAsJsonObject().get("items").getAsJsonArray();
         // items를 순회하면서 userId와 일치하는 녹화파일 정보를 추출해서 List에 담습니다.
-
-        List<Friend> guardians = friendRepository.findAllByFriendAndStateAndIsGuardian(user, 1, true);
         List<GetRecordingsResponseDto> responseDtos = new ArrayList<>();
-
-        for (Friend guardian : guardians) {
-            int guardianId = guardian.getUser().getId();
-            for (JsonElement item : items) {
-                String recordingId = item.getAsJsonObject().get("id").getAsString();
-                String[] splitId = recordingId.split("-");
-                if (splitId[0].equals(String.valueOf(guardianId))) {  // guardianId와 일치하는 데이터를 가져옵니다.
-                    String createdAt = unitConverter.timestampToDate(item.getAsJsonObject().get("createdAt").getAsLong());
-                    long duration = item.getAsJsonObject().get("duration").getAsLong();
-                    String recordingUrl = null;
-                    String thumbnailImageUrl = null;
-                    if (!item.getAsJsonObject().get("url").isJsonNull()) {
-                        recordingUrl = item.getAsJsonObject().get("url").getAsString();
-                        thumbnailImageUrl = recordingUrl.replace("mp4", "jpg");
-                    }
-
-                    GetRecordingsResponseDto responseDto = new GetRecordingsResponseDto();
-                    responseDto.setRecordingId(recordingId);
-                    responseDto.setThumbnailImageUrl(thumbnailImageUrl);
-                    responseDto.setRecordingUrl(recordingUrl);
-                    responseDto.setCreatedAt(createdAt);
-                    responseDto.setDuration(duration);
-                    responseDtos.add(responseDto);
+        for (JsonElement item : items) {
+            String recordingId = item.getAsJsonObject().get("id").getAsString();
+            System.out.println("getRecordings: " + recordingId);
+            String[] splitId = recordingId.split("-");
+            if (splitId[0].equals(String.valueOf(userId))) {
+                String createdAt = unitConverter.timestampToDate(item.getAsJsonObject().get("createdAt").getAsLong());
+                long duration = item.getAsJsonObject().get("duration").getAsLong();
+                String recordingUrl = null;
+                String thumbnailImageUrl = null;
+                if (!item.getAsJsonObject().get("url").isJsonNull()){ // 녹화가 진행중인 파일은 url이 존재하지 않아 예외처리함.
+                    recordingUrl = item.getAsJsonObject().get("url").getAsString();
+                    thumbnailImageUrl = recordingUrl.replace("mp4", "jpg");
                 }
+
+
+                GetRecordingsResponseDto responseDto = new GetRecordingsResponseDto();
+                responseDto.setRecordingId(recordingId);
+                responseDto.setThumbnailImageUrl(thumbnailImageUrl);
+                responseDto.setRecordingUrl(recordingUrl);
+                responseDto.setCreatedAt(createdAt);
+                responseDto.setDuration(duration);
+                responseDtos.add(responseDto);
             }
         }
 
-            return responseDtos;
-        }
+        return responseDtos;
+    }
 
     public void removeRecording(HttpServletRequest request, String recordingId) {
         String token = request.getHeader("Authorization").split(" ")[1];
