@@ -39,15 +39,7 @@ public class RecommendedPathService {
 
 
 
-    public PathInfoDto getRecommendedPath(double startLng, double startLat, double endLng, double endLat) {
-
-        // 시작점, 도착점과 가장 가까운 노드 탐색
-        NodeDto startNode = findNearestNode(startLng, startLat);
-        NodeDto endNode = findNearestNode(endLng, endLat);
-
-        if (startNode.getNodeId().equals(endNode.getNodeId())) {
-            throw new SameNodeException();
-        }
+    public PathInfoDto getRecommendedPath(NodeDto startNode, NodeDto endNode) {
 
         // 그래프 생성
         createAstarGraph(startNode, endNode);
