@@ -8,7 +8,7 @@ part of 'favorite_response_dto.dart';
 
 FavoriteResponseDto _$FavoriteResponseDtoFromJson(Map<String, dynamic> json) =>
     FavoriteResponseDto(
-      favoriteId: json['favoriteId'] as int,
+      id: json['id'] as int,
       locationName: json['locationName'] as String,
       address: json['address'] as String,
     );
@@ -16,7 +16,7 @@ FavoriteResponseDto _$FavoriteResponseDtoFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$FavoriteResponseDtoToJson(
         FavoriteResponseDto instance) =>
     <String, dynamic>{
-      'favoriteId': instance.favoriteId,
+      'id': instance.id,
       'locationName': instance.locationName,
       'address': instance.address,
     };

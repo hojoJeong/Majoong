@@ -10,51 +10,50 @@ class FavoriteWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        logger.d('선택한 검색 키워드 : $name, $address');
-      },
-      child: Container(
-        width: 150,
-        height: 100,
-        child: Row(
-          children: [
-            Image(
-              image: AssetImage('res/icon_star.png'),
-              width: 30,
-            ),
-            SizedBox(
-              width: 10,
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
+    return Container(
+      width: 150,
+      height: 100,
+      child: Row(
+        children: [
+          Image(
+            image: AssetImage('res/icon_star.png'),
+            width: 30,
+          ),
+          SizedBox(
+            width: 10,
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 100,
+                child: Text(
                   name,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
+                    overflow: TextOverflow.ellipsis
                   ),
                 ),
-                SizedBox(
-                  height: 6,
+              ),
+              SizedBox(
+                height: 6,
+              ),
+              Container(
+                width: 100,
+                child: Text(
+                  address,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black54),
                 ),
-                Container(
-                  width: 100,
-                  child: Text(
-                    address,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black54),
-                  ),
-                )
-              ],
-            )
-          ],
-        ),
+              )
+            ],
+          )
+        ],
       ),
     );
   }

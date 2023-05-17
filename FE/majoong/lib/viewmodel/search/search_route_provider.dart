@@ -29,6 +29,9 @@ class SearchRouteStateNotifier extends StateNotifier<BaseResponseState> {
     if(response.status == 200){
       state = response;
       logger.d('경로 검색 성공, $state');
+    } else if (response.status == 404){
+      logger.d('경로 검색 오류 : ${response.message}');
+      state = response;
     }
   }
 

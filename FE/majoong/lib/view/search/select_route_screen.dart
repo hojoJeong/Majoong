@@ -14,6 +14,7 @@ import 'package:majoong/model/response/map/search_route_response_dto.dart';
 import 'package:majoong/service/local/secure_storage.dart';
 import 'package:majoong/view/guardian/guardian_screen.dart';
 import 'package:majoong/view/on_going/on_going_screen.dart';
+import 'package:majoong/view/search/error_search_route_screen.dart';
 import 'package:majoong/view/search/search_screen.dart';
 import 'package:majoong/view/search/select_guardians_screen.dart';
 import 'package:majoong/viewmodel/friend/friend_provider.dart';
@@ -32,6 +33,8 @@ import '../../model/response/user/friend_response_dto.dart';
 import '../../viewmodel/main/facility_provider.dart';
 import '../../viewmodel/main/marker_provider.dart';
 import '../../viewmodel/main/review_dialog_provider.dart';
+import '../../viewmodel/search/search_facility_provider.dart';
+import '../../viewmodel/search/search_marker_provider.dart';
 
 class SelectRouteScreen extends ConsumerStatefulWidget {
   const SelectRouteScreen({Key? key}) : super(key: key);
@@ -77,12 +80,12 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
     currentLocation[0] = _locationData!.latitude!;
     currentLocation[1] = _locationData!.longitude!;
     logger.d(currentLocation.toString());
-    ref.read(centerPositionProvider.notifier).update((state) =>
+    ref.read(searchCenterPositionProvider.notifier).update((state) =>
         GetFacilityRequestDto(
             centerLng: _locationData!.longitude!,
             centerLat: _locationData!.latitude!,
             radius: 1000));
-    ref.read(facilityProvider.notifier).getFacility(context);
+    ref.read(searchFacilityProvider.notifier).getFacility(context);
     setState(() {});
   }
 
@@ -231,10 +234,10 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final facilityInfo = ref.watch(facilityProvider.notifier);
-    final markerInfo = ref.watch(markerProvider.notifier);
-    final chipInfo = ref.watch(chipProvider.notifier);
-    final cameraMovedInfo = ref.watch(cameraMovedProvider);
+    final facilityInfo = ref.watch(searchFacilityProvider.notifier);
+    final markerInfo = ref.watch(searchMarkerProvider.notifier);
+    final chipInfo = ref.watch(searchChipProvider.notifier);
+    final cameraMovedInfo = ref.watch(searchCameraMovedProvider);
     final resultRoutePoint = ref.watch(routePointProvider);
     final searchRouteState = ref.watch(searchRouteProvider);
 
@@ -252,8 +255,20 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
 
     logger.d(
         '출발지 : ${resultRoutePoint.startLocationName} , ${resultRoutePoint.startLat}, 목적지 : ${resultRoutePoint.endLocationName}, ${resultRoutePoint.endLat}');
+
+    if (searchRouteState is BaseResponse && searchRouteState.status == 404) {
+      Future.delayed(Duration.zero, () {
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    ErrorSearchRouteScreen(err: searchRouteState.message)));
+      });
+    }
+
     if (_locationData != null &&
-        searchRouteState is BaseResponse<SearchRouteResponseDto>) {
+        searchRouteState is BaseResponse<SearchRouteResponseDto> &&
+        searchRouteState.status == 200) {
       final shortestPath = searchRouteState.data!.shortestPath.point;
       final initialLat = searchRouteState
           .data!.shortestPath.point[shortestPath.length ~/ 2].lat;
@@ -295,7 +310,9 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
                   final lng = position.target.longitude;
                   final centerLat = lat;
                   final centerLng = lng;
-                  ref.read(centerPositionProvider.notifier).update((state) {
+                  ref
+                      .read(searchCenterPositionProvider.notifier)
+                      .update((state) {
                     return state = GetFacilityRequestDto(
                       centerLat: centerLat,
                       centerLng: centerLng,
@@ -303,12 +320,13 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
                     );
                   });
                   ref
-                      .read(cameraMovedProvider.notifier)
+                      .read(searchCameraMovedProvider.notifier)
                       .update((state) => true);
                 },
                 myLocationEnabled: true,
               ),
-              ref.read(facilityProvider.notifier).state is BaseResponseLoading
+              ref.read(searchFacilityProvider.notifier).state
+                      is BaseResponseLoading
                   ? loadingWidget()
                   : Container(),
               Container(

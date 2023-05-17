@@ -75,8 +75,8 @@ abstract class UserApiService {
   Future<BaseResponse<List<FavoriteResponseDto>>> getFavoriteList();
 
   @Headers({AUTHORIZATION: AUTH})
-  @DELETE('user/favorite/{favoriteId}')
-  Future<BaseResponse<bool>> deleteFavorite(@Path('favoriteId') int favoriteId);
+  @DELETE('user/favorite')
+  Future<BaseResponse<bool>> deleteFavorite(@Body() FavoriteRequestDto request);
 
   @Headers({AUTHORIZATION: AUTH})
   @PUT('user/profile')
@@ -143,4 +143,5 @@ abstract class UserApiService {
   @Headers({AUTHORIZATION: AUTH})
   @POST('user/favorite')
   Future<BaseResponse> addFavorite(@Body() FavoriteRequestDto request);
+
 }

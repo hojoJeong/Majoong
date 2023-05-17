@@ -74,22 +74,16 @@ class FriendListScreen extends ConsumerWidget {
                             OutlineInputBorder(borderSide: BorderSide.none),
                         suffixIcon: GestureDetector(
                           onTap: () {
-                            if (searchTextFieldController.text.isEmpty) {
-                              showToast(context: context, '전화번호를 입력해주세요');
-                            } else {
-                              ref
-                                  .read(loadingVisibilityProvider.notifier)
-                                  .update((state) => true);
-                              ref
-                                  .read(searchFriendProvider.notifier)
-                                  .searchFriend(searchTextFieldController.text);
-                            }
+                            searchFriend(searchTextFieldController.text, ref, context, searchTextFieldController);
                           },
                           child: Icon(
                             Icons.search,
                             color: POLICE_MARKER_COLOR,
                           ),
                         )),
+                    onSubmitted: (number) {
+                      searchFriend(number, ref, context, searchTextFieldController);
+                    },
                   ),
                   SizedBox(
                     height: BASE_MARGIN_CONTENTS_TO_CONTENTS,
@@ -102,6 +96,7 @@ class FriendListScreen extends ConsumerWidget {
                       Text('친구요청'),
                     ],
                   ),
+                  SizedBox(height: 10,),
                   FriendRequestListView(
                     isGuardian: false,
                     isRequest: true,
@@ -118,6 +113,7 @@ class FriendListScreen extends ConsumerWidget {
                       Text('보호자'),
                     ],
                   ),
+                  SizedBox(height: 10,),
                   FriendRequestListView(
                     isGuardian: true,
                     isRequest: false,
@@ -134,6 +130,7 @@ class FriendListScreen extends ConsumerWidget {
                       Text('친구 목록'),
                     ],
                   ),
+                  SizedBox(height: 10,),
                   FriendRequestListView(
                     isGuardian: false,
                     isRequest: false,
@@ -153,6 +150,19 @@ class FriendListScreen extends ConsumerWidget {
         ),
         child: LoadingLayout(),
       );
+    }
+  }
+
+  searchFriend(String phoneNumber, WidgetRef ref, BuildContext context, TextEditingController searchTextFieldController){
+    if (searchTextFieldController.text.isEmpty) {
+      showToast(context: context, '전화번호를 입력해주세요');
+    } else {
+      ref
+          .read(loadingVisibilityProvider.notifier)
+          .update((state) => true);
+      ref
+          .read(searchFriendProvider.notifier)
+          .searchFriend(searchTextFieldController.text);
     }
   }
 }

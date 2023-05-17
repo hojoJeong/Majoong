@@ -244,12 +244,13 @@ class _UserApiService implements UserApiService {
   }
 
   @override
-  Future<BaseResponse<bool>> deleteFavorite(favoriteId) async {
+  Future<BaseResponse<bool>> deleteFavorite(request) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{r'Authorization': 'auth'};
     _headers.removeWhere((k, v) => v == null);
     final _data = <String, dynamic>{};
+    _data.addAll(request.toJson());
     final _result = await _dio
         .fetch<Map<String, dynamic>>(_setStreamType<BaseResponse<bool>>(Options(
       method: 'DELETE',
@@ -258,7 +259,7 @@ class _UserApiService implements UserApiService {
     )
             .compose(
               _dio.options,
-              'user/favorite/${favoriteId}',
+              'user/favorite',
               queryParameters: queryParameters,
               data: _data,
             )
