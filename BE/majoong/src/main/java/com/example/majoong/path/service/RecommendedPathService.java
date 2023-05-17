@@ -326,6 +326,8 @@ public class RecommendedPathService {
 //            endFlag = false;
 //        }
 
+        System.out.println("영역 좌표" + lng1 + ", " + lat1 + "/ " + lng2 + ", " + lat2);
+
         Map<String, List<? extends Object>> result= new HashMap<>();
 
         result.put("nodeList", nodeList);
