@@ -1,5 +1,7 @@
 package com.example.majoong.path.controller;
 
+import com.example.majoong.exception.ExceedDistance;
+import com.example.majoong.exception.SameNodeException;
 import com.example.majoong.path.dto.*;
 import com.example.majoong.path.service.RecommendedPathService;
 import com.example.majoong.path.service.ShortestPathService;
@@ -40,13 +42,28 @@ public class PathController {
         data.setStatus(200);
         data.setMessage("경로 추천 성공");
 
-        PathInfoDto shortPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
+        // 시작점, 도착점과 가장 가까운 노드 탐색
+        NodeDto startNode = recommendedPathService.findNearestNode(startLng, startLat);
+        NodeDto endNode = recommendedPathService.findNearestNode(endLng, endLat);
+
+        // 시작점과 도착점이 같을 경우 예외 처리
+        if (startNode.getNodeId().equals(endNode.getNodeId())) {
+            throw new SameNodeException();
+        }
+
+        // 30km 초과 예외처리
+        double checkDistance = recommendedPathService.calcDistance(startLng, startLat, endLng, endLat);
+        if (checkDistance >= 30000) {
+            throw new ExceedDistance();
+        }
+
+        PathInfoDto shortPath = shortestPathService.getShortestPath(startNode.getLng(), startNode.getLat(), endNode.getLng(), endNode.getLat());
         if (shortPath.getPoint()==null||shortPath==null){
             data.setStatus(404);
             data.setMessage("최단거리 추천 오류");
         }
 
-        PathInfoDto recommendedPath = recommendedPathService.getRecommendedPath(startLng, startLat, endLng, endLat);
+        PathInfoDto recommendedPath = recommendedPathService.getRecommendedPath(startNode, endNode);
         if (recommendedPath == null) {
             data.setStatus(404);
             data.setMessage("안전경로 추천 오류");

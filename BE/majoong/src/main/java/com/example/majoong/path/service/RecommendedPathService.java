@@ -1,5 +1,6 @@
 package com.example.majoong.path.service;
 
+import com.example.majoong.exception.SameNodeException;
 import com.example.majoong.map.dto.LocationDto;
 import com.example.majoong.path.repository.EdgeRepository;
 import com.example.majoong.path.repository.NodeRepository;
@@ -38,11 +39,7 @@ public class RecommendedPathService {
 
 
 
-    public PathInfoDto getRecommendedPath(double startLng, double startLat, double endLng, double endLat) {
-
-        // 시작점, 도착점과 가장 가까운 노드 탐색
-        NodeDto startNode = findNearestNode(startLng, startLat);
-        NodeDto endNode = findNearestNode(endLng, endLat);
+    public PathInfoDto getRecommendedPath(NodeDto startNode, NodeDto endNode) {
 
         // 그래프 생성
         createAstarGraph(startNode, endNode);
@@ -101,38 +98,17 @@ public class RecommendedPathService {
 
         Map<Long, Map<Long, Double>> heuristicMap = new HashMap<Long, Map<Long, Double>>(); //휴리스틱 값
 
-//        if(nodeList.size() < 2){
-//            // 노드 개수가 두개 미마인 경우, 휴리스틱 값이 없음
-//            // 바로 연결 or 예외 처리
-//        }
-//        else {
-//            //노드 개수가 두개 이상일 경우,
-//            for (NodeDto node1 : nodeList) {
-//                HashMap<Long, Double> tempMap = new HashMap<>();
-//                for (NodeDto node2 : nodeList) {
-//                    if (node1.getNodeId().equals(node2.getNodeId())) {
-//                        // 시작과 끝이 같은 경우, 휴리스티 값 0
-//                        tempMap.put(node2.getNodeId(), 0.0);
-//                    } else {
-//                        double safetyRate = calcHeuristicVal(node1.getLng(), node1.getLat(), node2.getLng(), node2.getLat(), edgeList);
-//                        tempMap.put(node2.getNodeId(), safetyRate);
-//                    }
-//                }
-//
-//                heuristicMap.put(node1.getNodeId(), tempMap);
-//            }
-//        }
-
-        astarGraph = new GraphDto(nodeList, edgeList, heuristicMap);
-        return new GraphDto(nodeList, edgeList, heuristicMap);
+        astarGraph = new GraphDto(nodeList, edgeList);
+        return new GraphDto(nodeList, edgeList);
     }
 
     public PathInfoDto astar(Long startId, Long endId, double endLng, double endLat) {
 
         System.out.println("START : " + startId + "              END : "+  endId);
-        for (EdgeDto edge : astarGraph.getEdgeList()){
-            System.out.println(edge.getEdgeId());
-        }
+//        for (EdgeDto edge : astarGraph.getEdgeList()){
+//            System.out.println(edge.getEdgeId());
+//        }
+        System.out.println("edge size : " + astarGraph.getEdgeList().size());
 
 
         /**
@@ -142,17 +118,15 @@ public class RecommendedPathService {
 //        final Queue<NodeDataDto> openQueue = new PriorityQueue<NodeDataDto>(11, new NodeComparator());
         // 초기값을 노드의 크기로 설정
 //        final Queue<NodeDataDto> openQueue = new PriorityQueue<NodeDataDto>(astarGraph.getNodeList().size(), new NodeComparator());
-        final PriorityQueue<NodeDataDto> openQueue = new PriorityQueue<NodeDataDto>(Comparator.comparingDouble(nodeDataDto -> nodeDataDto.getF())); // 우선순위 큐
-
-
-//        // 우선순위 큐 선언
-//        PriorityQueue<Node> openQueue = new PriorityQueue<>(Comparator.comparingDouble(node -> node.f));
-
+        // 우선순위 큐
+        final PriorityQueue<NodeDataDto> openQueue = new PriorityQueue<NodeDataDto>(Comparator.comparingDouble(nodeDataDto -> nodeDataDto.getF()));
 
         // 그래프의 소스노드 부터 시작
         NodeDataDto sourceNodeDataDto = astarGraph.getNodeData(startId);
         double nodeLng1 = sourceNodeDataDto.getLng();
         double nodeLat1 = sourceNodeDataDto.getLat();
+
+        System.out.println("시작 : " + nodeLng1 + ", " + nodeLat1 + " / 도착 : " + endLng + ", " + endLat);
 
         sourceNodeDataDto.setG(0); // 출발지점 0
         sourceNodeDataDto.calcF(endId, endLng, endLat); // 도착지까지의 총 비용 계산
@@ -224,6 +198,7 @@ public class RecommendedPathService {
                     }
                 }
             }
+            System.out.println("currentNode : " + currentNode.getNodeId());
         }
         log.info("안전 경로를 찾을 수 없습니다");
         return null;
@@ -299,10 +274,21 @@ public class RecommendedPathService {
             lng2 =temp;
         }
 
-        lng1 -= padding;
-        lat1 -= padding;
-        lng2 += padding;
-        lat2 += padding;
+//        lng1 -= padding;
+//        lat1 -= padding;
+//        lng2 += padding;
+//        lat2 += padding;
+
+        double paddingLng = 0.0011;
+        double paddingLat = 0.0009;
+
+        double padLng = Math.max(padding, paddingLng);
+        double padLat = Math.max(padding, paddingLat);
+
+        lng1 -= padLng;
+        lat1 -= padLat;
+        lng2 += padLng;
+        lat2 += padLat;
 
         List<Node> nodes = nodeRepository.findNodesByArea(lng1, lat1, lng2, lat2);
         List<NodeDto> nodeList = new ArrayList<>();
@@ -340,6 +326,8 @@ public class RecommendedPathService {
 //            endFlag = false;
 //        }
 
+        System.out.println("영역 좌표" + lng1 + ", " + lat1 + "/ " + lng2 + ", " + lat2);
+
         Map<String, List<? extends Object>> result= new HashMap<>();
 
         result.put("nodeList", nodeList);
@@ -359,7 +347,7 @@ public class RecommendedPathService {
             double centerLng = edge.getCenterLng();
             double centerLat = edge.getCenterLat();
             int distance = (int) Math.round(edge.getDistance());
-            if (distance <= 0) distance = 1;
+            if (distance <= 1) distance = 1;
 
 //            System.out.println();
 //            System.out.println(edgeId);
@@ -394,78 +382,38 @@ public class RecommendedPathService {
             int bellNum = bellResult.getContent().size();
             int lampNum = lampResult.getContent().size();
 
-            int policeVal = policeNum*10;
-            if (safeRoadNum != 0) safeRoadNum = 5;
-            int storeVal = storeNum*3;
-            int cctvVal = cctvNum*3;
-            int bellVal = bellNum;
-            int lampVal = lampNum;
+            /*
+            // 안전 시설물 점수 (전체 : 25)
+            경찰서 : 10
+            편의점 : 5
+            cctv : 5
+            안전귀갓길 : 3
+            비상벨 : 1
+            가로등 : 1
+             */
+            int policeVal = 10;
+            int safeRoadVal = 3;
+            int storeVal = 5;
+            int cctvVal = 5;
+            int bellVal = 1;
+            int lampVal = 1;
 
-            int safety = policeNum*10 + safeRoadNum + storeVal + cctvVal + bellVal + lampVal;
+            if (policeNum == 0) policeVal = 0;
+            if (safeRoadNum == 0) safeRoadVal = 0;
+            if (storeNum == 0) storeVal = 0;
+            if (cctvNum == 0) cctvVal = 0;
+            if (bellNum == 0) bellVal = 0;
+            if (lampNum == 0) lampVal = 0;
 
-//            System.out.println();
-//            System.out.println(safety);
-//            System.out.println();
+            int safety = policeVal + safeRoadVal + storeVal + cctvVal + bellVal + lampVal;
+
+            System.out.println();
+            System.out.println(safety);
+            System.out.println();
 
             edge.setSafety(safety);
             edgeRepository.save(edge);
         }
-
-        /*
-        Edge edgePosition = edgeRepository.findEdgePosition();
-        Long edgeId = edgePosition.getEdgeId();
-        double centerLng = edgePosition.getCenterLng();
-        double centerLat = edgePosition.getCenterLat();
-        int distance = (int) Math.round(edgePosition.getDistance());
-        if (distance <= 0) distance = 1;
-
-        System.out.println();
-        System.out.println(edgeId);
-        System.out.println(centerLng);
-        System.out.println(centerLat);
-        System.out.println(distance);
-        System.out.println();
-
-        RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().includeCoordinates();
-        GeoResults<RedisGeoCommands.GeoLocation<String>> policeResult = redisOperations.opsForGeo()
-                .radius("police", new Circle(new Point(centerLng, centerLat), new Distance(distance, RedisGeoCommands.DistanceUnit.METERS)), args);
-
-        GeoResults<RedisGeoCommands.GeoLocation<String>> safeRoadResult = redisOperations.opsForGeo()
-                .radius("saferoad", new Circle(new Point(centerLng, centerLat), new Distance(distance, RedisGeoCommands.DistanceUnit.METERS)), args);
-
-        GeoResults<RedisGeoCommands.GeoLocation<String>> storeResult = redisOperations.opsForGeo()
-                .radius("store", new Circle(new Point(centerLng, centerLat), new Distance(distance, RedisGeoCommands.DistanceUnit.METERS)), args);
-
-        GeoResults<RedisGeoCommands.GeoLocation<String>> cctvResult = redisOperations.opsForGeo()
-                .radius("cctv", new Circle(new Point(centerLng, centerLat), new Distance(distance, RedisGeoCommands.DistanceUnit.METERS)), args);
-
-        GeoResults<RedisGeoCommands.GeoLocation<String>> bellResult = redisOperations.opsForGeo()
-                .radius("bell", new Circle(new Point(centerLng, centerLat), new Distance(distance, RedisGeoCommands.DistanceUnit.METERS)), args);
-
-        GeoResults<RedisGeoCommands.GeoLocation<String>> lampResult = redisOperations.opsForGeo()
-                .radius("lamp", new Circle(new Point(centerLng, centerLat), new Distance(distance, RedisGeoCommands.DistanceUnit.METERS)), args);
-
-        int policeNum = policeResult.getContent().size();
-        int safeRoadNum = safeRoadResult.getContent().size();
-        int storeNum = storeResult.getContent().size();
-        int cctvNum = cctvResult.getContent().size();
-        int bellNum = bellResult.getContent().size();
-        int lampNum = lampResult.getContent().size();
-
-        int policeVal = policeNum*10;
-        if (safeRoadNum != 0) safeRoadNum = 5;
-        int storeVal = storeNum*3;
-        int cctvVal = cctvNum*3;
-
-        int safety = policeNum*10 + safeRoadNum + storeNum + cctvNum + bellNum + lampNum;
-
-        System.out.println();
-        System.out.println(safety);
-        System.out.println();
-
-        edgePosition.setSafety(safety);
-//        edgeRepository.save(edgePosition);
-        */
     }
 
 

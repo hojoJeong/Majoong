@@ -147,4 +147,15 @@ public class ErrorHandler {
         return data.builder();
     }
 
+    @ExceptionHandler(SameNodeException.class)
+    public ResponseEntity<?> SameNodeException(){
+        ResponseData data = new ResponseData(ErrorEnum.SAME_NODE);
+        return data.builder();
+    }
+
+    @ExceptionHandler(ExceedDistance.class)
+    public ResponseEntity<?> ExceedDistance(){
+        ResponseData data = new ResponseData(ErrorEnum.EXCEED_DISTANCE);
+        return data.builder();
+    }
 }

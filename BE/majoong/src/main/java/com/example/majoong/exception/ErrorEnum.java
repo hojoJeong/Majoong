@@ -23,8 +23,9 @@ public enum ErrorEnum {
     NOT_EXIST_FCM_TOKEN("fcm 토큰이 존재하지 않습니다.",404),
     NO_FILE("파일이 존재하지 않습니다.", 404),
     NOT_EXIST_SHARE_LOCATION("위치공유 정보가 없습니다.",404),
-    NOT_GUARDIAN("보호자 권한이 없습니다.", 401);
-
+    NOT_GUARDIAN("보호자 권한이 없습니다.", 401),
+    SAME_NODE("시작점과 도착점이 같습니다.", 404),
+    EXCEED_DISTANCE("직선거리 30km를 초과했습니다.", 404);
 
     public String message;
     public int status;
