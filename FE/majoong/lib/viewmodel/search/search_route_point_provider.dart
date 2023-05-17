@@ -75,23 +75,4 @@ class SearchRoutePointStateNotifier extends StateNotifier<BaseResponseState> {
       state = BaseResponse(status: 200, message: '', data: list);
     }
   }
-
-  setFavoritePlace(String address, String locationName) async {
-    final response = await userApi.addFavorite(
-        FavoriteRequestDto(address: address, locationName: locationName));
-    if (response.status == 200) {
-      logger.d('즐겨찾기 등록 완료');
-    } else {
-      logger.d('즐겨찾기 등록 실패');
-    }
-  }
-
-  deleteFavoritePlace(int favoriteId) async {
-    final response = await userApi.deleteFavorite(favoriteId);
-    if (response.status == 200) {
-      logger.d('즐겨찾기 삭제 완료');
-    } else {
-      logger.d('즐겨찾기 삭제 실패');
-    }
-  }
 }

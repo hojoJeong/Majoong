@@ -64,7 +64,7 @@ class FriendItemWidget extends ConsumerWidget {
             backgroundImage: NetworkImage(profileImage),
           ),
           SizedBox(
-            width: 10,
+            width: 20,
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,6 +75,7 @@ class FriendItemWidget extends ConsumerWidget {
                     fontSize: BASE_TITLE_FONT_SIZE,
                     fontWeight: FontWeight.bold),
               ),
+              SizedBox(height: 6,),
               Text(
                 phoneNumber,
                 style: TextStyle(

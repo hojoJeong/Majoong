@@ -10,8 +10,10 @@ import 'package:location/location.dart';
 import 'package:majoong/common/component/signle_button_widget.dart';
 import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/layout/loading_layout.dart';
+import 'package:majoong/model/request/favorite/favorite_request_dto.dart';
 import 'package:majoong/model/response/map/search_places_model.dart';
 import 'package:majoong/view/search/select_route_screen.dart';
+import 'package:majoong/viewmodel/favorite/favorite_list_provider.dart';
 import 'package:majoong/viewmodel/search/search_facility_provider.dart';
 import 'package:majoong/viewmodel/search/search_marker_provider.dart';
 import 'package:majoong/viewmodel/search/search_route_point_provider.dart';
@@ -171,7 +173,26 @@ class _ResultSearchPlacesState extends ConsumerState<ResultSearchPlacesScreen> {
                                 ),
                                 StarButton(
                                   iconSize: 30,
-                                  valueChanged: (newState) {},
+                                  valueChanged: (btnState) {
+                                    logger.d('$btnState');
+                                    if (btnState) {
+                                      ref
+                                          .read(favoriteListStateProvider
+                                              .notifier)
+                                          .addFavorite(FavoriteRequestDto(
+                                              address: place.address,
+                                              locationName:
+                                                  place.locationName));
+                                    } else {
+                                      ref
+                                          .read(favoriteListStateProvider
+                                              .notifier)
+                                          .deleteFavorite(FavoriteRequestDto(
+                                              address: place.address,
+                                              locationName:
+                                                  place.locationName));
+                                    }
+                                  },
                                   isStarred: place.isFavorite,
                                 ),
                               ],

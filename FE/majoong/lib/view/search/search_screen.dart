@@ -89,7 +89,10 @@ class SearchScreen extends ConsumerWidget {
                                 }
                                 
                               },
-                              child: Icon(Icons.search))),
+                              child: Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: Icon(Icons.search, size: 30,),
+                              ))),
                     ),
                   ),
                 ],

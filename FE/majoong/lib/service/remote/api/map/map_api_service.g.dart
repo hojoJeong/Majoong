@@ -13,7 +13,7 @@ class _MapApiService implements MapApiService {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'http://13.125.101.46:8091/api/';
+    baseUrl ??= 'https://majoong4u.com/api/';
   }
 
   final Dio _dio;
