@@ -3,6 +3,8 @@ package com.example.majoong.video.service;
 
 import com.example.majoong.exception.*;
 import com.example.majoong.fcm.service.FCMService;
+import com.example.majoong.friend.domain.Friend;
+import com.example.majoong.friend.repository.FriendRepository;
 import com.example.majoong.map.dto.LocationShareDto;
 import com.example.majoong.map.dto.MovingInfoDto;
 import com.example.majoong.map.service.MapService;
@@ -37,19 +39,17 @@ import java.util.*;
 public class VideoService {
     @Autowired
     private UserRepository userRepository;
-    private final RedisTemplate redisTemplate;
     private final JwtTool jwtTool;
     private final UnitConverter unitConverter;
-
-    private final FCMService fCMService;
-
-    private final MapService mapService;
 
     @Value("${OPENVIDU_BASE_PATH}")
     private String OPENVIDU_BASE_PATH;
 
     @Value("${OPENVIDU_SECRET}")
     private String OPENVIDU_SECRET;
+
+    private final FriendRepository friendRepository;
+
 
     public InitializeSessionResponseDto initializeSession(HttpServletRequest request) throws IOException {
         String token = request.getHeader("Authorization").split(" ")[1];
@@ -292,6 +292,68 @@ public class VideoService {
 
         return responseDtos;
     }
+
+
+    public List<GetRecordingsResponseDto> getFriendRecordings(HttpServletRequest request) {
+
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+        User user = userRepository.findById(userId).get();
+
+
+        String url = OPENVIDU_BASE_PATH + "recordings";
+        // OPENVIDU REST API 요청
+        RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+        // Header 생성
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.add("Authorization", "Basic " + OPENVIDU_SECRET);
+        // Header + Body
+        HttpEntity<String> entity = new HttpEntity<String>("", headers);
+        // request
+        ResponseEntity<String> response = restTemplate.exchange(
+                url, //{요청할 서버 주소}
+                HttpMethod.GET, //{요청할 방식}
+                entity, // {요청할 때 보낼 데이터}
+                String.class
+        );
+        // response
+        JsonParser parser = new JsonParser();
+        JsonArray items = parser.parse(response.getBody()).getAsJsonObject().get("items").getAsJsonArray();
+        // items를 순회하면서 userId와 일치하는 녹화파일 정보를 추출해서 List에 담습니다.
+
+        List<Friend> guardians = friendRepository.findAllByFriendAndStateAndIsGuardian(user, 1, true);
+        List<GetRecordingsResponseDto> responseDtos = new ArrayList<>();
+
+        for (Friend guardian : guardians) {
+            int guardianId = guardian.getUser().getId();
+            for (JsonElement item : items) {
+                String recordingId = item.getAsJsonObject().get("id").getAsString();
+                String[] splitId = recordingId.split("-");
+                if (splitId[0].equals(String.valueOf(guardianId))) {  // guardianId와 일치하는 데이터를 가져옵니다.
+                    String createdAt = unitConverter.timestampToDate(item.getAsJsonObject().get("createdAt").getAsLong());
+                    long duration = item.getAsJsonObject().get("duration").getAsLong();
+                    String recordingUrl = null;
+                    String thumbnailImageUrl = null;
+                    if (!item.getAsJsonObject().get("url").isJsonNull()) {
+                        recordingUrl = item.getAsJsonObject().get("url").getAsString();
+                        thumbnailImageUrl = recordingUrl.replace("mp4", "jpg");
+                    }
+
+                    GetRecordingsResponseDto responseDto = new GetRecordingsResponseDto();
+                    responseDto.setRecordingId(recordingId);
+                    responseDto.setThumbnailImageUrl(thumbnailImageUrl);
+                    responseDto.setRecordingUrl(recordingUrl);
+                    responseDto.setCreatedAt(createdAt);
+                    responseDto.setDuration(duration);
+                    responseDtos.add(responseDto);
+                }
+            }
+        }
+
+            return responseDtos;
+        }
 
     public void removeRecording(HttpServletRequest request, String recordingId) {
         String token = request.getHeader("Authorization").split(" ")[1];

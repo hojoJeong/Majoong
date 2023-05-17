@@ -90,7 +90,6 @@ public class VideoController {
 
     @GetMapping("/recordings")
     @Operation(summary = "recording 목록 조회", description = "유저의 녹화목록을 조회합니다.")
-
     public ResponseEntity<?> getRecordings(HttpServletRequest request) {
         List<GetRecordingsResponseDto> responseDtos = videoService.getRecordings(request);
 
@@ -100,9 +99,20 @@ public class VideoController {
         return data.builder();
     }
 
+    @GetMapping("/recordings/friend")
+    @Operation(summary = "recording 목록 조회", description = "친구(내가 보호자)의 녹화목록을 조회합니다.")
+    public ResponseEntity<?> getFriendRecordings(HttpServletRequest request) {
+        List<GetRecordingsResponseDto> responseDtos = videoService.getFriendRecordings(request);
+
+        ResponseData data = new ResponseData();
+        data.setData(responseDtos);
+        data.setMessage("getRecordings 성공");
+        return data.builder();
+    }
+
+
     @DeleteMapping("/recordings/{recordingId}")
     @Operation(summary = "recording 삭제", description = "녹화파일을 삭제합니다.")
-
     public ResponseEntity<?> removeRecording(HttpServletRequest request, @PathVariable("recordingId") String recordingId) {
         videoService.removeRecording(request, recordingId);
         ResponseData data = new ResponseData();
