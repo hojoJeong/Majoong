@@ -22,6 +22,15 @@ public class Edge {
     private Long targetId;
     private double targetLng;
     private double targetLat;
+    /*
+    // 안전 시설물 점수 (전체 : 25)
+    경찰서 : 10
+    편의점 : 5
+    cctv : 5
+    안전귀갓길 : 3
+    비상벨 : 1
+    가로등 : 1
+     */
     private int safety;
     private String address;
     private double distance;

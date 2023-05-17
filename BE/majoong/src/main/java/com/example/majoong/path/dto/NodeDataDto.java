@@ -16,14 +16,13 @@ public class NodeDataDto {
     private Long nodeId;
     private double lng;
     private double lat;
-    private Map<Long, Double> heuristic; // 다른 노드까지의 예상 비용 Map
+//    private Map<Long, Double> heuristic; // 다른 노드까지의 예상 비용 Map
     private double g;  // g is distance from the source // 출발지점부터 현재 노드까지의 비용
     private double h;  // h is the heuristic of destination.    // 목적지까지의 추정 비용
     private double f;  // f = g + h // 출발지부터의 비용과 목적지까지의 추정 비용의 합
 
-    public NodeDataDto(Long nodeId, Map<Long, Double> heuristic, double lng, double lat){
+    public NodeDataDto(Long nodeId, double lng, double lat){
         this.nodeId = nodeId;
-        this.heuristic = heuristic;
         this.g = Double.MAX_VALUE;
         this.lng = lng;
         this.lat = lat;
@@ -44,7 +43,10 @@ public class NodeDataDto {
         distance = red2deg(distance);
         distance = distance * 60 * 1.1515 * 1609.344; // meter 단위로 변환
 
-        return distance;
+        double H = distance + 25;
+//        double H = distance;
+
+        return H;
     }
 
     private double deg2rad(double deg) { return (deg * Math.PI / 180.0); }
