@@ -101,8 +101,8 @@ public class VideoController {
 
     @GetMapping("/recordings/friend/{friendId}")
     @Operation(summary = "recording 목록 조회", description = "친구(내가 보호자)의 녹화목록을 조회합니다.")
-    public ResponseEntity<?> getFriendRecordings(@PathVariable("friendId") int userId) {
-        List<GetRecordingsResponseDto> responseDtos = videoService.getFriendRecordings(userId);
+    public ResponseEntity<?> getFriendRecordings(HttpServletRequest request, @PathVariable("friendId") int friendId) {
+        List<GetRecordingsResponseDto> responseDtos = videoService.getFriendRecordings(request,friendId);
         ResponseData data = new ResponseData();
         data.setData(responseDtos);
         data.setMessage("getRecordings 성공");
