@@ -261,7 +261,7 @@ public class RecommendedPathService {
 
     public Map<String,List<?>> searchNodeEdgeForGraph(double lng1, double lat1, double lng2, double lat2){
 
-//        double padding = calcPadding(lng1, lat1, lng2, lat2)*CAPTURE_PADDING;
+        double padding = calcPadding(lng1, lat1, lng2, lat2)*CAPTURE_PADDING;
 
         if((lat1>lat2)){
             double temp = lat1;
@@ -282,10 +282,13 @@ public class RecommendedPathService {
         double paddingLng = 0.0011;
         double paddingLat = 0.0009;
 
-        lng1 -= paddingLng;
-        lat1 -= paddingLat;
-        lng2 += paddingLng;
-        lat2 += paddingLat;
+        double padLng = Math.max(padding, paddingLng);
+        double padLat = Math.max(padding, paddingLat);
+
+        lng1 -= padLng;
+        lat1 -= padLat;
+        lng2 += padLng;
+        lat2 += padLat;
 
         List<Node> nodes = nodeRepository.findNodesByArea(lng1, lat1, lng2, lat2);
         List<NodeDto> nodeList = new ArrayList<>();
