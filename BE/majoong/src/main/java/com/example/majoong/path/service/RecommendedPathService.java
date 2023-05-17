@@ -129,6 +129,8 @@ public class RecommendedPathService {
         double nodeLng1 = sourceNodeDataDto.getLng();
         double nodeLat1 = sourceNodeDataDto.getLat();
 
+        System.out.println("시작 : " + nodeLng1 + nodeLat1 + " / 도착 : " + endLng + endLat);
+
         sourceNodeDataDto.setG(0); // 출발지점 0
         sourceNodeDataDto.calcF(endId, endLng, endLat); // 도착지까지의 총 비용 계산
         openQueue.add(sourceNodeDataDto); // 출발 노드 큐에 삽입

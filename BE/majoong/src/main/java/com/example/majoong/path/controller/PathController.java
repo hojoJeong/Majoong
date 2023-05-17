@@ -40,6 +40,19 @@ public class PathController {
         data.setStatus(200);
         data.setMessage("경로 추천 성공");
 
+        // 30km 초과 예외처리
+        double checkDistance = recommendedPathService.calcDistance(startLng, startLat, endLng, endLat);
+        if (checkDistance >= 30000) {
+            data.setStatus(406);
+            data.setMessage("직선거리가 30km를 초과했습니다.");
+            PathResponseDto path = new PathResponseDto();
+            path.setRecommendedPath(null);
+            path.setShortestPath(null);
+            data.setData(path);
+
+            return data.builder();
+        }
+
         PathInfoDto shortPath = shortestPathService.getShortestPath(startLng, startLat, endLng, endLat);
         if (shortPath.getPoint()==null||shortPath==null){
             data.setStatus(404);
