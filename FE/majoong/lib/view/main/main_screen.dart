@@ -1094,7 +1094,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   guardianDialog(setState) {
-    final guardians = ref.read(guardianListProvider.notifier)
+    logger.d(ref.read(guardianListProvider.notifier).state);
+    final guardians = ref.read(guardianListProvider.notifier).state
         as BaseResponse<List<FriendResponseDto>>;
     List<Widget> guardianWidget = List.generate(
       guardians.data?.length ?? 0,
@@ -1114,6 +1115,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(guardians.data?[index].nickname ?? ''),
+                SizedBox(
+                  height: 5,
+                ),
                 Text(
                   guardians.data?[index].phoneNumber ?? '',
                   style: TextStyle(color: Colors.grey),
