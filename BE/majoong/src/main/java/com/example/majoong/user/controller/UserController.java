@@ -234,7 +234,7 @@ public class UserController {
 
     @Operation(summary = "즐겨찾기 설정")
     @PostMapping("/favorite")
-    public ResponseEntity addFavorite(HttpServletRequest request, @RequestBody FavoriteDto favoriteDto) {
+    public ResponseEntity setFavorite(HttpServletRequest request, @RequestBody FavoriteDto favoriteDto) {
         log.info("/user/favorite @Post start");
         favoriteService.addFavorite(request, favoriteDto);
         ResponseData data = new ResponseData();
@@ -246,7 +246,7 @@ public class UserController {
 
     @Operation(summary = "즐겨찾기 조회")
     @GetMapping("/favorite")
-    public ResponseEntity addFavorite(HttpServletRequest request) {
+    public ResponseEntity getFavorite(HttpServletRequest request) {
         log.info("/user/favorite @Get start");
         ResponseData data = new ResponseData();
         List<FavoriteResponseDto> result = favoriteService.getFavorites(request);
@@ -258,11 +258,11 @@ public class UserController {
     }
 
     @Operation(summary = "즐겨찾기 삭제")
-    @DeleteMapping("/favorite/{favoriteId}")
-    public ResponseEntity addFavorite(@PathVariable("favoriteId") int id) {
+    @DeleteMapping("/favorite")
+    public ResponseEntity deleteFavorite(HttpServletRequest request, @RequestBody FavoriteDto favoriteInfo) {
         log.info("/user/favorite @Delete start");
         ResponseData data = new ResponseData();
-        favoriteService.deleteFavorite(id);
+        favoriteService.deleteFavorite(request,favoriteInfo);
         log.info(data.toString());
         log.info("/user/favorite end\n");
         log.info("");
