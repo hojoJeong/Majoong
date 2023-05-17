@@ -34,9 +34,12 @@ class FriendRequestListView extends ConsumerWidget {
               friendId: data.userId,
             );
           },
-          separatorBuilder: (context, index) => const Divider(
-                thickness: 1,
-              ),
+          separatorBuilder: (context, index) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Divider(
+                  thickness: 1,
+                ),
+          ),
           itemCount: list.length);
     } else {
       return Padding(

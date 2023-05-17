@@ -135,7 +135,7 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
             centerLng: _locationData!.longitude!,
             centerLat: _locationData!.latitude!,
             radius: 1000));
-    ref.read(searchFacilityProvider.notifier).getFacility();
+    ref.read(searchFacilityProvider.notifier).getFacility(context);
     setState(() {});
   }
 
@@ -249,15 +249,7 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
         logger.d('curAddress 현재 위치 : $curAddress');
         ref.read(shareLocationProvider.notifier).sendLocation(lat, lng);
       });
-      // timer = Timer.periodic(Duration(seconds: 1), (timer) async {
-      //   final curLocation = await Location.instance.getLocation();
-      //   final lat = curLocation.latitude!;
-      //   final lng = curLocation.longitude!;
-      //   logger.d('amqp cur location : $lat, $lng');
-      //   curAddress = await getAddress(lat, lng) ?? "";
-      //   logger.d('curAddress 현재 위치 : $curAddress');
-      //   ref.read(shareLocationProvider.notifier).sendLocation(lat, lng);
-      // });
+
 
       logger.d('curAddress : $curAddress');
       return Scaffold(
@@ -391,7 +383,7 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
                       top: MediaQuery.of(context).size.height / 7,
                       child: GestureDetector(
                         onTap: () async {
-                          facilityInfo.getFacility();
+                          facilityInfo.getFacility(context);
                           ref
                               .read(searchCameraMovedProvider.notifier)
                               .update((state) => false);

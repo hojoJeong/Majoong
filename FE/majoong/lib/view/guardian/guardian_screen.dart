@@ -123,7 +123,7 @@ class _GuardianState extends ConsumerState<GuardianScreen> {
             centerLng: _locationData!.longitude!,
             centerLat: _locationData!.latitude!,
             radius: 1000));
-    ref.read(searchFacilityProvider.notifier).getFacility();
+    ref.read(searchFacilityProvider.notifier).getFacility(context);
     setState(() {});
   }
 
@@ -492,7 +492,7 @@ class _GuardianState extends ConsumerState<GuardianScreen> {
                 top: MediaQuery.of(context).size.height / 6,
                 child: GestureDetector(
                   onTap: () async {
-                    facilityInfo.getFacility();
+                    facilityInfo.getFacility(context);
                     ref
                         .read(searchCameraMovedProvider.notifier)
                         .update((state) => false);

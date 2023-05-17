@@ -78,6 +78,7 @@ class FriendItemWidget extends ConsumerWidget {
               Text(
                 phoneNumber,
                 style: TextStyle(
+                  color: Colors.grey,
                   fontWeight: FontWeight.normal,
                   fontSize: 14,
                 ),

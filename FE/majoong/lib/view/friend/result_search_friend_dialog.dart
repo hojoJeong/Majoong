@@ -30,7 +30,7 @@ class ResultSearchFriendDialog {
             ))
           : SingleChildScrollView(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(
                     height: 20,
@@ -40,11 +40,11 @@ class ResultSearchFriendDialog {
                     backgroundImage: NetworkImage(friendInfo!.profileImage),
                   ),
                   SizedBox(
-                    height: 10,
+                    height: 20,
                   ),
                   Text(friendInfo!.nickname),
                   SizedBox(
-                    height: 10,
+                    height: 4,
                   ),
                   Text(
                     friendInfo!.phoneNumber,

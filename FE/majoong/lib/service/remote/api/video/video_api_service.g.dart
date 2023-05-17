@@ -13,7 +13,7 @@ class _VideoApiService implements VideoApiService {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'https://majoong4u.com/api/';
+    baseUrl ??= 'http://13.125.101.46:8091/api/';
   }
 
   final Dio _dio;
