@@ -403,6 +403,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       if ((event.x.abs() > 75 || event.y.abs() > 75 || event.z.abs() > 75) &&
           !isReporting) {
         isReporting = true;
+        ref.read(audioProvider.notifier).playOneShot();
         reportDialog(setState);
       }
     });
@@ -1189,7 +1190,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   reportDialog(setState) {
     int _count = 20;
     Timer timer;
-    ref.read(audioProvider.notifier).play();
     showDialog(
       barrierDismissible: false,
       context: context,
@@ -1306,7 +1306,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                 showToast(
                                     context: this.context, '신고 접수가 취소되었습니다');
                                 timer.cancel();
-                                ref.read(audioProvider.notifier).stop();
                                 isReporting = false;
                                 Navigator.pop(context);
                               } else {
