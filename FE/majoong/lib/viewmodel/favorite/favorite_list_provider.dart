@@ -27,12 +27,12 @@ class FavoriteListStateNotifier extends StateNotifier<BaseResponseState> {
   deleteFavorite(FavoriteRequestDto request) async {
     final response = await userApi.deleteFavorite(request);
     logger.d('즐겨찾기 삭제 완료 : ${response.status}, ${response.message}');
-    state = response;
+    getFavoriteList();
   }
 
   addFavorite(FavoriteRequestDto request) async {
     final response = await userApi.addFavorite(request);
     logger.d('즐겨찾기 추가 완료 : ${response.status}, ${response.message}');
-    state = response;
+    getFavoriteList();
   }
 }

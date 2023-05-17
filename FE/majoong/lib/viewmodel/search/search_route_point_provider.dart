@@ -38,7 +38,7 @@ class SearchRoutePointStateNotifier extends StateNotifier<BaseResponseState> {
       List<String> listForCheckingFavorite =
           favoriteList.data?.map((e) => e.locationName).toList() ?? [];
       List<int> favoriteIdList =
-          favoriteList.data?.map((e) => e.favoriteId).toList() ?? [];
+          favoriteList.data?.map((e) => e.id).toList() ?? [];
       final size = result.length > 20 ? 20 : result.length;
 
       for (int i = 0; i < size; i++) {

@@ -4,12 +4,12 @@ part 'favorite_response_dto.g.dart';
 
 @JsonSerializable()
 class FavoriteResponseDto {
-  final int favoriteId;
+  final int id;
   final String locationName;
   final String address;
 
   FavoriteResponseDto(
-      {required this.favoriteId,
+      {required this.id,
       required this.locationName,
       required this.address});
 
