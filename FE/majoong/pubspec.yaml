@@ -123,6 +123,7 @@ flutter:
     - res/call.png
     - res/body_cam.png
     - res/whistle.png
+    - res/add.png
     - res/profile_image.png
     - res/cctv.png
     - res/police.png

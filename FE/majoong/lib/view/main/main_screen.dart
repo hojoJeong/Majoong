@@ -879,13 +879,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                           color: SECOND_PRIMARY_COLOR,
                           borderRadius: BorderRadius.circular(150),
                         ),
-                        child: Text(
-                          '+',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 50,
-                          ),
+                        child: Image(
+                          image: AssetImage('res/add.png'),
+                          width: 30,
+                          height: 30,
+                          fit: BoxFit.cover,
                         ),
                       ),
                     ),
