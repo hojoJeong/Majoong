@@ -411,6 +411,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     return Scaffold(
       drawer: SafeArea(
         child: Drawer(
+          backgroundColor: Colors.white.withOpacity(0.9),
           width: MediaQuery.of(context).size.width / 1.5,
           child: Column(
             children: [
@@ -428,10 +429,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                 0
                             ? Icon(
                                 Icons.notifications_active_rounded,
-                                color: Colors.black,
+                                color: Colors.black87,
                               )
                             : Icon(Icons.notifications_none_rounded,
-                                color: Colors.black),
+                                color: Colors.black87),
                         onPressed: () {
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (_) => NotificationScreen()));

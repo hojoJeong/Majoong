@@ -31,31 +31,37 @@ class VideoScreen extends ConsumerWidget {
                 Container(
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height * 0.15,
-                  decoration: BoxDecoration(),
                   child: Row(
                     children: [
-                      Container(
-                        width: MediaQuery.of(context).size.height * 0.15,
-                        height: MediaQuery.of(context).size.height * 0.15,
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: GestureDetector(
-                          onTap: () async {
-                            final url = videoInfo.data![index].recordingUrl;
-                            await canLaunch(url)
-                                ? await launch(url)
-                                : throw 'Could not launch $url';
-                          },
-                          child: CachedNetworkImage(
-                            imageUrl:
-                                videoInfo.data![index].thumbnailImageUrl ?? '',
-                            placeholder: (context, url) =>
-                                LoadingAnimationWidget.staggeredDotsWave(
-                                    color: Colors.white, size: 60),
-                            errorWidget: (context, url, error) =>
-                                Icon(Icons.error),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          padding: EdgeInsets.all(8),
+                          width: MediaQuery.of(context).size.height * 0.15,
+                          height: MediaQuery.of(context).size.height * 0.15,
+                          decoration: BoxDecoration(
+                            color: PRIMARY_COLOR.withOpacity(0.8),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: GestureDetector(
+                            onTap: () async {
+                              final url = videoInfo.data![index].recordingUrl;
+                              await canLaunch(url)
+                                  ? await launch(url)
+                                  : throw 'Could not launch $url';
+                            },
+                            child: CachedNetworkImage(
+                              fit: BoxFit.cover,
+                              imageUrl:
+                                  videoInfo.data![index].thumbnailImageUrl ??
+                                      '',
+                              placeholder: (context, url) =>
+                                  CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                              errorWidget: (context, url, error) =>
+                                  Icon(Icons.error),
+                            ),
                           ),
                         ),
                       ),
