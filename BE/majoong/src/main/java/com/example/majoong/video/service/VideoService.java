@@ -294,7 +294,16 @@ public class VideoService {
     }
 
 
-    public List<GetRecordingsResponseDto> getFriendRecordings(int userId) {
+    public List<GetRecordingsResponseDto> getFriendRecordings(HttpServletRequest request, int friendId) {
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+        User user = userRepository.findById(userId).get();
+        User friend = userRepository.findById(friendId).get();
+
+        if (friendRepository.existsByUserAndFriendAndStateAndIsGuardian(user, friend,1, true)==false){
+            throw new NotGuardianException();
+        }
+
         String url = OPENVIDU_BASE_PATH + "recordings";
         // OPENVIDU REST API 요청
         RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
@@ -321,7 +330,7 @@ public class VideoService {
             String recordingId = item.getAsJsonObject().get("id").getAsString();
             System.out.println("getRecordings: " + recordingId);
             String[] splitId = recordingId.split("-");
-            if (splitId[0].equals(String.valueOf(userId))) {
+            if (splitId[0].equals(String.valueOf(friendId))) {
                 String createdAt = unitConverter.timestampToDate(item.getAsJsonObject().get("createdAt").getAsLong());
                 long duration = item.getAsJsonObject().get("duration").getAsLong();
                 String recordingUrl = null;
