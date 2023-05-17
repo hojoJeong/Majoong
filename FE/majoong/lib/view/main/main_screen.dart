@@ -63,7 +63,8 @@ class MainScreen extends ConsumerStatefulWidget {
   ConsumerState<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends ConsumerState<MainScreen> {
+class _MainScreenState extends ConsumerState<MainScreen>
+    with WidgetsBindingObserver {
   late GoogleMapController mapController;
 
   Location location = Location();
@@ -214,8 +215,19 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   late StreamSubscription<LocationData> locationSubscription;
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    await _openvidu.disconnect();
+  }
+
+  final List<AppLifecycleState> _stateHistoryList = <AppLifecycleState>[];
+
+  @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    if (WidgetsBinding.instance.lifecycleState != null) {
+      _stateHistoryList.add(WidgetsBinding.instance.lifecycleState!);
+    }
     final fcmMessaging = FirebaseMessaging.instance;
     initFcm(fcmMessaging);
     _getLocation();
@@ -1037,8 +1049,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   @override
   void dispose() {
-    super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     locationSubscription.cancel();
+    super.dispose();
   }
 
   Widget createToggleButton(isBright, setState) {
