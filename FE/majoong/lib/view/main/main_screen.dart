@@ -439,12 +439,16 @@ class _MainScreenState extends ConsumerState<MainScreen>
                                     .data!
                                     .alarmCount >
                                 0
-                            ? Icon(
-                                Icons.notifications_active_rounded,
-                                color: Colors.black87,
-                              )
-                            : Icon(Icons.notifications_none_rounded,
-                                color: Colors.black87),
+                            ? Image(
+                                width: MediaQuery.of(context).size.width / 15,
+                                height: MediaQuery.of(context).size.width / 15,
+                                image: AssetImage(
+                                    'res/notification.png'),)
+                            : Image(
+                                width: MediaQuery.of(context).size.width / 15,
+                                height: MediaQuery.of(context).size.width / 15,
+                                image: AssetImage(
+                                    'res/no_notification.png'),),
                         onPressed: () {
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (_) => NotificationScreen()));

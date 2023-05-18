@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/video/get_recordings_response_dto.dart';
 import 'package:majoong/model/response/video/start_video_response_dto.dart';
-import '../../common/util/logger.dart';
+
 import '../../service/remote/api/video/video_api_service.dart';
 
 final videoProvider =
@@ -27,9 +27,17 @@ class VideoStateNotifier extends StateNotifier<BaseResponseState> {
         await videoService.getRecordings();
     if (response.status == 200) {
       state = response;
-      recordings.addAll(response.data!);
-      logger.d(state.runtimeType);
+      recordings.addAll(response.data ?? []);
     }
+  }
+
+  getFriendRecordings(friendId) async {
+    state = BaseResponseLoading();
+    recordings.clear();
+    final BaseResponse<List<GetRecordingResponseDto>> response =
+        await videoService.getFriendRecording(friendId);
+    state = response;
+    recordings.addAll(response.data ?? []);
   }
 
   deleteRecording(recordingId) async {
