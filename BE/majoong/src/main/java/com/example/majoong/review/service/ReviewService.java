@@ -117,7 +117,6 @@ public class ReviewService {
             log.error("존재하지 않는 리뷰 입니다.", reviewId);
             throw new NoReviewException();
         }
-        System.out.println(optionalReview.get());
         Review review = optionalReview.get();
         String imageUrl = review.getReviewImage();
         s3Upload.deleteFile(imageUrl);

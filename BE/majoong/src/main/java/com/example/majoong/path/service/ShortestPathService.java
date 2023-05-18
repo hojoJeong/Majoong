@@ -89,7 +89,7 @@ public class ShortestPathService {
                         }
                     }
                 } else {
-                    System.out.println("Request failed: " + response.code() + " - " + response.message());
+                    log.error("Request failed : {}", response.code(), response.message());
                 }
             }
             PathInfoDto path = new PathInfoDto();

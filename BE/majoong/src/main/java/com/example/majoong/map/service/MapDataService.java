@@ -194,7 +194,6 @@ public class MapDataService {
 
         List<RoadDto> road = new ArrayList<>();
         for (int i = 0; i < len; i++) {
-            System.out.println(i);
             RoadDto roadPoint = roadPoints.get(i);
 
             if (processedPoints.contains(roadPoint)) {
@@ -331,7 +330,6 @@ public class MapDataService {
             try {
                 GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
                 geoOperations.add(key, new Point(longitude, latitude), member);
-                System.out.println(member);
 //                log.info("저장성공", member);
             } catch (Exception e) {
                 log.error("저장실패", e.getMessage());
@@ -355,7 +353,6 @@ public class MapDataService {
             try {
                 GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
                 geoOperations.add(key, new Point(longitude, latitude), member);
-                System.out.println(member);
 //                log.info("저장성공", member);
             } catch (Exception e) {
                 log.error("저장실패", e.getMessage());
@@ -379,7 +376,6 @@ public class MapDataService {
             try {
                 GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
                 geoOperations.add(key, new Point(longitude, latitude), member);
-                System.out.println(member);
 //                log.info("저장성공", member);
             } catch (Exception e) {
                 log.error("저장실패", e.getMessage());
@@ -403,7 +399,6 @@ public class MapDataService {
             try {
                 GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
                 geoOperations.add(key, new Point(longitude, latitude), member);
-                System.out.println(member);
 //                log.info("저장성공", member);
             } catch (Exception e) {
                 log.error("저장실패", e.getMessage());
@@ -427,7 +422,6 @@ public class MapDataService {
             try {
                 GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
                 geoOperations.add(key, new Point(longitude, latitude), member);
-                System.out.println(member);
 //                log.info("저장성공", member);
             } catch (Exception e) {
                 log.error("저장실패", e.getMessage());
@@ -452,7 +446,6 @@ public class MapDataService {
             try {
                 GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
                 geoOperations.add(key, new Point(longitude, latitude), member);
-                System.out.println(member);
 //                log.info("저장성공", member);
             } catch (Exception e) {
                 log.error("저장실패", e.getMessage());

@@ -225,7 +225,6 @@ public class MapFacilityService {
 
         List<LocationDto> road = new ArrayList<>();
         for (int i = 0; i < len; i++) {
-            System.out.println(i);
             LocationDto roadPoint = roadPoints.get(i);
 
             if (processedPoints.contains(roadPoint)) {
