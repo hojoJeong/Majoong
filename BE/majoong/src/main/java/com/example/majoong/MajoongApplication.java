@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @SpringBootApplication
 public class MajoongApplication {
 //	static {
-//		System.setProperty("com.amazonaws.sdk.disableEc2Metadata", "true");
+//		System.setProperty("com.amazonaws.sdk.disableEc2Metadata", "true"); // 로컬 환경
 //	}
 	public static void main(String[] args) {
 		SpringApplication.run(MajoongApplication.class, args);

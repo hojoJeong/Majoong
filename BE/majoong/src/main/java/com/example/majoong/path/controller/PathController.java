@@ -15,9 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -80,6 +77,7 @@ public class PathController {
     @GetMapping("/path/safety")
     public void getPath() {
 
+        // 도로 데이터의 edge 테이블에 safety 값 설정
         recommendedPathService.setEdgeSafety();
 
         log.info("safety 값 설정 성공");
@@ -103,11 +101,10 @@ public class PathController {
             data.setMessage("안전경로 추천 오류");
         }
 
-        //////
+        // 그래프 생성 테스트용
         NodeDto startNode = recommendedPathService.findNearestNode(startLng, startLat);
         NodeDto endNode = recommendedPathService.findNearestNode(endLng, endLat);
         GraphDto astarGraph = recommendedPathService.createAstarGraph(startNode, endNode);
-        /////////////
 
         PathResponseDto path = new PathResponseDto();
         path.setRecommendedPath(recommendedPath);
@@ -117,5 +114,4 @@ public class PathController {
 
         return data.builder();
     }
-
 }

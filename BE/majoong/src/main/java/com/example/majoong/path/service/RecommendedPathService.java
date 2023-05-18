@@ -1,6 +1,5 @@
 package com.example.majoong.path.service;
 
-import com.example.majoong.exception.SameNodeException;
 import com.example.majoong.map.dto.LocationDto;
 import com.example.majoong.path.repository.EdgeRepository;
 import com.example.majoong.path.repository.NodeRepository;
@@ -33,6 +32,7 @@ public class RecommendedPathService {
     private EdgeRepository edgeRepository;
     private final RedisOperations<String, String> redisOperations;
 
+    private final int SAFETY_RATIO = 1; // 안전 점수 비율
     private final double CAPTURE_PADDING = 0.00015000000;
     private final double PADDING_RATIO = 3.3; //패딩 조절 비율
     private final int STANDARD_DIST = 254; //padding == CAPTURE_PADDING 일 경우, 가장 깔끔 하게 나온 경로 결과 값의 직선 거리
@@ -55,17 +55,16 @@ public class RecommendedPathService {
         // 시작점, 도착점과 가장 가까운 노드 탐색
         NodeDto startNode = findNearestNode(startLng, startLat);
         NodeDto endNode = findNearestNode(endLng, endLat);
-        System.out.println();
-        System.out.println("startNode : " + startNode.getNodeId() + "              endNode : "+  endNode.getNodeId());
-        System.out.println();
+
+        // 시작 노드, 도착 노드 디버깅
+//        System.out.println("startNode : " + startNode.getNodeId() + "              endNode : "+  endNode.getNodeId());
 
         // 그래프 생성
         createAstarGraph(startNode, endNode);
-        System.out.println("그래프 생성");
 
         // astar 알고리즘
         PathInfoDto recommendedPath = astar(startNode.getNodeId(), endNode.getNodeId(), endNode.getLng(), endNode.getLat());
-        System.out.println("astar 알고리즘");
+
         return recommendedPath;
     }
 
@@ -96,7 +95,7 @@ public class RecommendedPathService {
         List<NodeDto> nodeList = (List<NodeDto>) nodeEdge.get("nodeList");      //영역 안의 모든 노드정보
         List<EdgeDto> edgeList = (List<EdgeDto>) nodeEdge.get("edgeList");      //영역 안의 모든 엣지정보
 
-        Map<Long, Map<Long, Double>> heuristicMap = new HashMap<Long, Map<Long, Double>>(); //휴리스틱 값
+        Map<Long, Map<Long, Double>> heuristicMap = new HashMap<Long, Map<Long, Double>>();           //휴리스틱 값
 
         astarGraph = new GraphDto(nodeList, edgeList);
         return new GraphDto(nodeList, edgeList);
@@ -104,20 +103,9 @@ public class RecommendedPathService {
 
     public PathInfoDto astar(Long startId, Long endId, double endLng, double endLat) {
 
-        System.out.println("START : " + startId + "              END : "+  endId);
-//        for (EdgeDto edge : astarGraph.getEdgeList()){
-//            System.out.println(edge.getEdgeId());
-//        }
-        System.out.println("edge size : " + astarGraph.getEdgeList().size());
+        // 시작 노드, 도착 노드 디버깅용
+//        System.out.println("START : " + startId + "              END : "+  endId);
 
-
-        /**
-         * http://stackoverflow.com/questions/20344041/why-does-priority-queue-has-default-initial-capacity-of-11
-         */
-        // 우선선위 큐(초기 용량, 비교수단 Comparator)
-//        final Queue<NodeDataDto> openQueue = new PriorityQueue<NodeDataDto>(11, new NodeComparator());
-        // 초기값을 노드의 크기로 설정
-//        final Queue<NodeDataDto> openQueue = new PriorityQueue<NodeDataDto>(astarGraph.getNodeList().size(), new NodeComparator());
         // 우선순위 큐
         final PriorityQueue<NodeDataDto> openQueue = new PriorityQueue<NodeDataDto>(Comparator.comparingDouble(nodeDataDto -> nodeDataDto.getF()));
 
@@ -126,15 +114,13 @@ public class RecommendedPathService {
         double nodeLng1 = sourceNodeDataDto.getLng();
         double nodeLat1 = sourceNodeDataDto.getLat();
 
-        System.out.println("시작 : " + nodeLng1 + ", " + nodeLat1 + " / 도착 : " + endLng + ", " + endLat);
+        sourceNodeDataDto.setG(0);                                              // 출발지점 0
+        sourceNodeDataDto.calcF(endId, endLng, endLat);                         // 도착지까지의 총 비용 계산
+        openQueue.add(sourceNodeDataDto);                                       // 출발 노드 큐에 삽입
 
-        sourceNodeDataDto.setG(0); // 출발지점 0
-        sourceNodeDataDto.calcF(endId, endLng, endLat); // 도착지까지의 총 비용 계산
-        openQueue.add(sourceNodeDataDto); // 출발 노드 큐에 삽입
-
-        // key: 노드, value : 부모 노드   -> 키에 해당하는 노드는 value에 해당하는 노드를 거쳐서 왔다는 뜻
-        final Map<Long, Long> cameFrom = new HashMap<Long, Long>(); // 경로 Map
-        final Set<Long> closedList = new HashSet<>(); // 닫힌 목록 -> 더 이상 볼 필요 없는 목록
+        // key: 노드, value : 부모 노드 -> 키에 해당하는 노드는 value에 해당하는 노드를 거쳐서 왔다는 뜻
+        final Map<Long, Long> cameFrom = new HashMap<Long, Long>();                      // 경로 Map
+        final Set<Long> closedList = new HashSet<>();                           // 닫힌 목록 -> 더 이상 볼 필요 없는 목록
 
         // 반환값
         PathInfoDto result = new PathInfoDto();
@@ -143,7 +129,7 @@ public class RecommendedPathService {
         // 큐가 비기 전 까지 무한 반복 -> 큐가 빈거면 경로가 없다는 뜻
         while (!openQueue.isEmpty()) {
 
-            final NodeDataDto currentNode = openQueue.poll();  // 큐에서 하나 poll
+            final NodeDataDto currentNode = openQueue.poll();                   // 큐에서 하나 poll
 
             // 도착지 노드 발견하면 경로에 추가하고 종료
             if (currentNode.getNodeId().equals(endId)) {
@@ -164,9 +150,7 @@ public class RecommendedPathService {
                 result.setDistance((int) distance);
                 result.setTime((int)(distance/1000/5*60));
 
-                for (long id : pathList){
-                    System.out.println(id);
-                }
+                log.info("안전 경로 탐색 성공 : {}", (int) distance);
 
                 return result;
             }
@@ -198,9 +182,12 @@ public class RecommendedPathService {
                     }
                 }
             }
-            System.out.println("currentNode : " + currentNode.getNodeId());
+
+            // 진행 과정 디버깅
+//            System.out.println("currentNode : " + currentNode.getLat() + ", " + currentNode.getLng() + " / " + currentNode.getNodeId());
         }
         log.info("안전 경로를 찾을 수 없습니다");
+
         return null;
     }
 
@@ -234,10 +221,12 @@ public class RecommendedPathService {
         return safetyRate;
     }
 
-    // 노드 데이터끼리 총 비용을 비교할 수 있도록 Comparator 재정의
+    // 노드 데이터끼리 F값 비교하는 Comparator 재정의
+    // F : 거리 + 안전수치
+    // priority queue 구현에 사용
     public class NodeComparator implements Comparator<NodeDataDto> {
         public int compare(NodeDataDto nodeFirst, NodeDataDto nodeSecond) {
-            if (nodeFirst.getF() < nodeSecond.getF()) return -1;    // F : 거리 + 안전수치
+            if (nodeFirst.getF() < nodeSecond.getF()) return -1;
             if (nodeSecond.getF() > nodeFirst.getF()) return 1;
             return 0;
         }
@@ -274,11 +263,7 @@ public class RecommendedPathService {
             lng2 =temp;
         }
 
-//        lng1 -= padding;
-//        lat1 -= padding;
-//        lng2 += padding;
-//        lat2 += padding;
-
+        // 최소 패딩 길이 : 약 100m
         double paddingLng = 0.0011;
         double paddingLat = 0.0009;
 
@@ -307,32 +292,13 @@ public class RecommendedPathService {
             edgeList.add(edgeDto);
         }
 
-        // 불러온 노드와 엣지가 유효한지 검사
-//        boolean startFlag = false;
-//        boolean endFlag = false;
-//
-//        List<EdgeDto> checkedEdgeList = new ArrayList<>();
-//
-//        for(EdgeDto edge : edgeList){
-//            for(NodeDto node : nodeList){
-//
-//                if(node.getNodeId() == edge.getSourceId()) startFlag = true;
-//                if(node.getNodeId() == edge.getTargetId()) endFlag = true;
-//            }
-//            if (startFlag && endFlag) {
-//                checkedEdgeList.add(edge);
-//            }
-//            startFlag = false;
-//            endFlag = false;
-//        }
-
-        System.out.println("영역 좌표" + lng1 + ", " + lat1 + "/ " + lng2 + ", " + lat2);
+        // 영역 넓이 디버깅용
+//        System.out.println("영역 좌표 : " + lng1 + ", " + lat1 + " / " + lng2 + ", " + lat2);
 
         Map<String, List<? extends Object>> result= new HashMap<>();
 
         result.put("nodeList", nodeList);
         result.put("edgeList", edgeList);
-//        result.put("edgeList", checkedEdgeList);
 
         return result;
     }
@@ -348,13 +314,6 @@ public class RecommendedPathService {
             double centerLat = edge.getCenterLat();
             int distance = (int) Math.round(edge.getDistance());
             if (distance <= 1) distance = 1;
-
-//            System.out.println();
-//            System.out.println(edgeId);
-//            System.out.println(centerLng);
-//            System.out.println(centerLat);
-//            System.out.println(distance);
-//            System.out.println();
 
             RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().includeCoordinates();
             GeoResults<RedisGeoCommands.GeoLocation<String>> policeResult = redisOperations.opsForGeo()
@@ -405,11 +364,10 @@ public class RecommendedPathService {
             if (bellNum == 0) bellVal = 0;
             if (lampNum == 0) lampVal = 0;
 
-            int safety = policeVal + safeRoadVal + storeVal + cctvVal + bellVal + lampVal;
+            int safety = (policeVal + safeRoadVal + storeVal + cctvVal + bellVal + lampVal) * SAFETY_RATIO;
 
-            System.out.println();
-            System.out.println(safety);
-            System.out.println();
+            // edge의 safety 값 디버깅용
+//            System.out.println(edgeId + " : " + safety);
 
             edge.setSafety(safety);
             edgeRepository.save(edge);
