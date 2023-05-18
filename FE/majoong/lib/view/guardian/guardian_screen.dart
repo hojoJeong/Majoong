@@ -359,8 +359,11 @@ class _GuardianState extends ConsumerState<GuardianScreen> {
         acceptShareState is BaseResponse<AcceptShareRouteResponseDto>) {
       final curLat = shareLocationState.data!.lat;
       final curLng = shareLocationState.data!.lng;
-      if(curLat == -1 && curLng == -1) {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => ShareDoneScreen()));
+      if (curLat == -1 && curLng == -1) {
+        Future.delayed(Duration.zero, () {
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (_) => ShareDoneScreen()));
+        });
       }
       final startLat = acceptShareState.data!.path.point[0].lat;
       final startLng = acceptShareState.data!.path.point[0].lng;
@@ -436,7 +439,8 @@ class _GuardianState extends ConsumerState<GuardianScreen> {
                         '$userName님의 현재위치',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            fontSize: BASE_TITLE_FONT_SIZE,),
+                          fontSize: BASE_TITLE_FONT_SIZE,
+                        ),
                       ),
                       Text(
                         curAddress,
@@ -445,7 +449,9 @@ class _GuardianState extends ConsumerState<GuardianScreen> {
                             fontSize: BASE_TITLE_FONT_SIZE,
                             fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(height: 4,),
+                      SizedBox(
+                        height: 4,
+                      ),
                       Text(
                         '$endTime 도착 예정',
                         style: TextStyle(

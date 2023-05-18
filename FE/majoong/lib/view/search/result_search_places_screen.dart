@@ -165,7 +165,7 @@ class _ResultSearchPlacesState extends ConsumerState<ResultSearchPlacesScreen> {
                                       MediaQuery.of(context).size.width * 0.5,
                                   child: Text(
                                     place.locationName,
-                                    overflow: TextOverflow.clip,
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                         fontSize: BASE_TITLE_FONT_SIZE,
                                         fontWeight: FontWeight.bold),
