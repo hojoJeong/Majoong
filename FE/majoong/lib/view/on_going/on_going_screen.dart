@@ -40,6 +40,7 @@ import '../../service/remote/api/user/user_api_service.dart';
 import '../../service/remote/dio/dio_provider.dart';
 import '../../viewmodel/friend/friend_provider.dart';
 import '../../viewmodel/main/audio_provider.dart';
+import '../../viewmodel/main/marker_provider.dart';
 import '../../viewmodel/main/review_dialog_provider.dart';
 import '../../viewmodel/main/user_info_provider.dart';
 import '../../viewmodel/search/search_facility_provider.dart';
@@ -577,6 +578,9 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
     final chipInfo = ref.watch(searchChipProvider.notifier);
     final cameraMovedInfo = ref.watch(searchCameraMovedProvider);
     final cancelShareState = ref.watch(cancelShareProvider);
+    final polygonInfo = ref.watch(polygonProvider.notifier);
+    final polyLineInfo = ref.watch(polyLineProvider.notifier);
+
     String endTime = "";
     logger.d('amqp share locationstate : $shareLocationState');
 
@@ -640,6 +644,7 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
                       onMapCreated: _onMapCreated,
                       markers: Set.from(marker),
                       polylines: route,
+                      polygons: polygonInfo.state,
                       initialCameraPosition: CameraPosition(
                         target: LatLng(_locationData!.latitude!,
                             _locationData!.longitude!),
@@ -728,6 +733,8 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
                                     onSelected: (bool selected) {
                                       chipInfo.toggleChip(choice);
                                       markerInfo.renderMarker();
+                                      polyLineInfo.renderLine();
+                                      polygonInfo.renderPolygon();
                                       setState(() {});
                                     },
                                   ),
