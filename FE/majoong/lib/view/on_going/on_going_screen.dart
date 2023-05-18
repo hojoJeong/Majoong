@@ -72,7 +72,8 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
   LocationData? _locationData;
   Location location = Location();
   Set<Polyline> route = {};
-  List<Marker> marker = [];
+  Set<Marker> marker = {};
+  List<Marker> routePointMarker = [];
   String curAddress = "";
   List<String> _choices = [
     'CCTV',
@@ -108,12 +109,14 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
         width: 8));
   }
 
-  makeMarkers(Set<Marker> facilities) async {
+  makeMarkers() async {
     final routePoint = ref.read(routePointProvider);
     final startLat = routePoint.startLat;
     final startLng = routePoint.startLng;
     final endLat = routePoint.endLat;
     final endLng = routePoint.endLng;
+
+    logger.d('온고잉 출발 도착지 : ${routePoint.startLat}, ${routePoint.endLat}');
     final startMarkerIcon = await BitmapDescriptor.fromAssetImage(
       ImageConfiguration(size: Size(50, 50)),
       'res/icon_start_3.png',
@@ -132,14 +135,9 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
         markerId: MarkerId('endPoint'),
         position: LatLng(endLat, endLng),
         icon: endMarkerIcon);
-
-    marker.clear();
-    marker.addAll(facilities);
-    marker.add(startPoint);
-    marker.add(endPoint);
-
-    logger.d(
-        '마커 생성 - 크기 : ${marker.length}, start : ${marker[marker.length - 2]}, end : ${marker[marker.length - 1]}');
+    routePointMarker.clear();
+    routePointMarker.add(startPoint);
+    routePointMarker.add(endPoint);
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -464,7 +462,8 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
   }
 
   guardianDialog(setState) {
-    final guardians = ref.read(guardianListProvider.notifier)
+    logger.d(ref.read(guardianListProvider.notifier).state);
+    final guardians = ref.read(guardianListProvider.notifier).state
     as BaseResponse<List<FriendResponseDto>>;
     List<Widget> guardianWidget = List.generate(
       guardians.data?.length ?? 0,
@@ -484,6 +483,9 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(guardians.data?[index].nickname ?? ''),
+                SizedBox(
+                  height: 5,
+                ),
                 Text(
                   guardians.data?[index].phoneNumber ?? '',
                   style: TextStyle(color: Colors.grey),
@@ -556,9 +558,6 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
   void initState() {
     super.initState();
     _getLocation();
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      ref.read(routePointProvider.notifier).refreshState();
-    });
 
     locationSubscription = location.onLocationChanged.listen((event) {
       setState(() {
@@ -586,6 +585,14 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
 
     logger.d('ongoing : $_locationData, $shareLocationState');
 
+    logger.d('온고잉 마커 크기 : ${marker.length}');
+    logger.d('온고잉 마커 인포 : ${markerInfo.state.length}');
+    logger.d('온고잉 마커 출발 도착지 마커 크기 : ${routePointMarker.length}');
+
+    marker.clear();
+    marker.addAll(routePointMarker);
+    marker.addAll(markerInfo.state);
+
     if (cancelShareState is BaseResponse) {
       Future.delayed(Duration.zero, () {
         Navigator.pushAndRemoveUntil(
@@ -599,7 +606,8 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
           .format(DateTime.now().add(Duration(minutes: selectedRoute.time)));
       logger.d('도착시간 : $endTime');
       makePolyline(selectedRoute.point);
-      makeMarkers(markerInfo.state);
+
+      makeMarkers();
 
       timer = Timer(Duration(seconds: 1), () async {
         final curLocation = await Location.instance.getLocation();
@@ -642,7 +650,7 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
                     ),
                     GoogleMap(
                       onMapCreated: _onMapCreated,
-                      markers: Set.from(marker),
+                      markers: marker,
                       polylines: route,
                       polygons: polygonInfo.state,
                       initialCameraPosition: CameraPosition(

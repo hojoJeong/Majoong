@@ -1,18 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:majoong/viewmodel/search/route_point_provider.dart';
 
 final searchMarkerProvider =
-StateNotifierProvider<SearchMarkerNotifier, Set<Marker>>((ref) {
-  return SearchMarkerNotifier(chipNotifier: ref.watch(searchChipProvider.notifier));
+    StateNotifierProvider<SearchMarkerNotifier, Set<Marker>>((ref) {
+  return SearchMarkerNotifier(
+      chipNotifier: ref.watch(searchChipProvider.notifier));
 });
-final searchPolyLineProvider = StateNotifierProvider.autoDispose<SearchPolyLineNotifier,
-    Map<PolylineId, Polyline>>((ref) {
+final searchPolyLineProvider = StateNotifierProvider.autoDispose<
+    SearchPolyLineNotifier, Map<PolylineId, Polyline>>((ref) {
   final chipInfo = ref.watch(searchChipProvider.notifier);
   return SearchPolyLineNotifier(chipNotifier: chipInfo);
 });
 
 final searchPolygonProvider =
-StateNotifierProvider.autoDispose<SearchPolygonNotifier, Set<Polygon>>((ref) {
+    StateNotifierProvider.autoDispose<SearchPolygonNotifier, Set<Polygon>>(
+        (ref) {
   final chipInfo = ref.watch(searchChipProvider.notifier);
   return SearchPolygonNotifier(chipNotifier: chipInfo);
 });
@@ -66,6 +69,7 @@ class SearchMarkerNotifier extends StateNotifier<Set<Marker>> {
 
   renderMarker() {
     state.clear();
+
     final chips = chipNotifier.state;
     if (chips.contains('CCTV')) {
       addAllMarker(cctvMarkerSet);
@@ -122,7 +126,8 @@ class SearchMarkerNotifier extends StateNotifier<Set<Marker>> {
   }
 }
 
-final searchChipProvider = StateNotifierProvider<SearchChipNotifier, Set<String>>((ref) {
+final searchChipProvider =
+    StateNotifierProvider<SearchChipNotifier, Set<String>>((ref) {
   return SearchChipNotifier();
 });
 
