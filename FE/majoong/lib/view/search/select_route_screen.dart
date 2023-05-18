@@ -240,6 +240,8 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
     final cameraMovedInfo = ref.watch(searchCameraMovedProvider);
     final resultRoutePoint = ref.watch(routePointProvider);
     final searchRouteState = ref.watch(searchRouteProvider);
+    final polygonInfo = ref.watch(polygonProvider.notifier);
+    final polyLineInfo = ref.watch(polyLineProvider.notifier);
 
     if (resultRoutePoint.startLocationName != '' &&
         resultRoutePoint.endLocationName != '' &&
@@ -506,6 +508,8 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
                               onSelected: (bool selected) {
                                 chipInfo.toggleChip(choice);
                                 markerInfo.renderMarker();
+                                polyLineInfo.renderLine();
+                                polygonInfo.renderPolygon();
                                 setState(() {});
                               },
                             ),
