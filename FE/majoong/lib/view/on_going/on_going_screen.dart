@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:location/location.dart';
@@ -311,6 +314,57 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
     );
   }
 
+  Widget createToggleButton(isBright, setState) {
+    final reviewDialogInfo = ref.read(reviewDialogProvider.notifier);
+    List<Widget> _lighting = [
+      Text(
+        '어두워요',
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      ),
+      Text(
+        '밝아요',
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      ),
+    ];
+    List<Widget> _crowded = [
+      Text(
+        '인적이 드물어요',
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      ),
+      Text(
+        '사람이 많아요',
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      ),
+    ];
+    return ToggleButtons(
+      borderWidth: 2,
+      children: isBright ? _lighting : _crowded,
+      isSelected: isBright
+          ? [!reviewDialogInfo.state.isBright, reviewDialogInfo.state.isBright]
+          : [
+        !reviewDialogInfo.state.isCrowded,
+        reviewDialogInfo.state.isCrowded
+      ],
+      selectedBorderColor: SECOND_PRIMARY_COLOR,
+      borderRadius: BorderRadius.circular(10),
+      selectedColor: Colors.white,
+      borderColor: SECOND_PRIMARY_COLOR,
+      fillColor: SECOND_PRIMARY_COLOR,
+      constraints: const BoxConstraints(
+        minHeight: 40.0,
+        minWidth: 120,
+      ),
+      onPressed: (int index) {
+        setState(() {
+          if (isBright)
+            reviewDialogInfo.toggleBright();
+          else
+            reviewDialogInfo.toggleCrowded();
+        });
+      },
+    );
+  }
+
   reportDialog(setState) {
     int _count = 20;
     Timer dialogTimer;
@@ -579,6 +633,7 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
     final cancelShareState = ref.watch(cancelShareProvider);
     final polygonInfo = ref.watch(searchPolygonProvider.notifier);
     final polyLineInfo = ref.watch(searchPolyLineProvider.notifier);
+    final reviewDialogInfo = ref.watch(reviewDialogProvider.notifier);
 
     String endTime = "";
     logger.d('amqp share locationstate : $shareLocationState');
@@ -789,6 +844,202 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
                     ref.read(videoProvider.notifier).state is BaseResponseLoading
                         ? loadingWidget()
                         : Container(),
+                    Positioned(
+                      right: 10,
+                      bottom: MediaQuery.of(context).size.height / 7,
+                      child: GestureDetector(
+                        onTap: () async {
+                          final address = await getAddress(ref.read(currentLocationProvider)[0], ref.read(currentLocationProvider)[1]);
+                          if (address != null)
+                            reviewDialogInfo.setAddress(address);
+                          reviewDialogInfo.setCurrentLocation();
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return StatefulBuilder(
+                                builder: (context, setState) {
+                                  return Dialog(
+                                    backgroundColor: PRIMARY_COLOR,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 30,
+                                        vertical: 5,
+                                      ),
+                                      child: SingleChildScrollView(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                          children: <Widget>[
+                                            SizedBox(height: 10),
+                                            const Text(
+                                              '현재 위치에 대해서 평가해주세요',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            SizedBox(height: 5),
+                                            Text(
+                                              reviewDialogInfo.state.address,
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 10,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 15),
+                                            RatingBar.builder(
+                                              initialRating: 5,
+                                              minRating: 1,
+                                              direction: Axis.horizontal,
+                                              itemCount: 5,
+                                              itemBuilder: (context, _) => Icon(
+                                                Icons.star,
+                                                color: Colors.amber,
+                                              ),
+                                              onRatingUpdate: (rating) {
+                                                reviewDialogInfo
+                                                    .setScore(rating.toInt());
+                                              },
+                                            ),
+                                            SizedBox(height: 10),
+                                            createToggleButton(true, setState),
+                                            SizedBox(height: 4),
+                                            createToggleButton(false, setState),
+                                            SizedBox(height: 2),
+                                            Row(
+                                              crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                              children: [
+                                                Text(
+                                                  '사진과 함께 등록할까요?',
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 12),
+                                                ),
+                                                GestureDetector(
+                                                  onTap: () async {
+                                                    final pickedFile =
+                                                    await ImagePicker()
+                                                        .pickImage(
+                                                      source: ImageSource.camera,
+                                                    );
+                                                    if (pickedFile != null) {
+                                                      reviewDialogInfo.setPicture(
+                                                          File(XFile(
+                                                              pickedFile.path)
+                                                              .path));
+                                                    }
+                                                  },
+                                                  child: Text(
+                                                    '촬영하기',
+                                                    style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 10,
+                                                        decoration: TextDecoration
+                                                            .underline),
+                                                  ),
+                                                ),
+                                                Icon(
+                                                  Icons.camera_alt_outlined,
+                                                  color: Colors.white,
+                                                  size: 10,
+                                                )
+                                              ],
+                                            ),
+                                            SizedBox(height: 15),
+                                            TextField(
+                                              onChanged: (content) {
+                                                reviewDialogInfo
+                                                    .setContent(content);
+                                              },
+                                              maxLength: 50,
+                                              // 글자 제한 설정
+                                              maxLines: 6,
+                                              // 멀티라인 설정
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 10,
+                                              ),
+                                              decoration: InputDecoration(
+                                                counterStyle: TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                                contentPadding: EdgeInsets.all(4),
+                                                hintText: '의견을 남겨주세요',
+                                                // 힌트 설정
+                                                filled: true,
+                                                // 배경색 적용
+                                                fillColor: Colors.white,
+                                                // 배경색 설정
+                                                border: OutlineInputBorder(
+                                                  // 외곽선 설정
+                                                  borderSide:
+                                                  BorderSide.none, // 외곽선 없음
+                                                  borderRadius:
+                                                  BorderRadius.circular(
+                                                      10), // 둥근 모서리 설정
+                                                ),
+                                              ),
+                                            ),
+                                            Divider(
+                                              color: Colors.white,
+                                            ),
+                                            TextButton(
+                                              onPressed: () {
+                                                if (reviewDialogInfo
+                                                    .state.content.isEmpty) {
+                                                  showToast(
+                                                    context: context,
+                                                    '내용을 입력해주세요',
+                                                    position: StyledToastPosition
+                                                        .center,
+                                                  );
+                                                  return;
+                                                } else {
+                                                  facilityInfo.postReview();
+                                                  reviewDialogInfo.clearData();
+                                                  Navigator.pop(context);
+                                                }
+                                              },
+                                              child: const Text(
+                                                '리뷰 등록',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          );
+                        },
+                        child: Container(
+                          width: 60,
+                          height: 60,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: SECOND_PRIMARY_COLOR,
+                            borderRadius: BorderRadius.circular(150),
+                          ),
+                          child: Image(
+                            image: AssetImage('res/add.png'),
+                            width: 30,
+                            height: 30,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ),
                     Positioned(
                       left: 10,
                       right: 10,
