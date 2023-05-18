@@ -27,7 +27,7 @@ class _SelectGuardiansState extends ConsumerState<SelectGuardiansScreen>{
   _SelectGuardiansState({required this.path});
   @override
   Widget build(BuildContext context) {
-    final selectGuardianState = ref.watch(selectedGuardianProvider);
+    final selectGuardianState = ref.watch(selectGuardianProvider);
     final guardianListState = ref.watch(getGuardianListProvider);
     final shareLocationState = ref.watch(shareLocationProvider);
 
@@ -59,7 +59,7 @@ class _SelectGuardiansState extends ConsumerState<SelectGuardiansScreen>{
                               path: path));
                       ref
                           .read(shareLocationProvider.notifier)
-                          .initChannel(false, -1);
+                          .initChannel(false, -1, ref.read(selectGuardianProvider.notifier).guardianList);
                     })
               ],
             ),
@@ -110,10 +110,10 @@ class _SelectGuardiansState extends ConsumerState<SelectGuardiansScreen>{
                   ),
                   Spacer(),
                   Checkbox(
-                      value: ref.read(selectedGuardianProvider.notifier).guardianList.contains(guardian.userId),
+                      value: ref.read(selectGuardianProvider.notifier).guardianList.contains(guardian.userId),
                       onChanged: (bool? checked) {
                         setState(() {
-                          ref.read(selectedGuardianProvider.notifier).editGuardian(guardian.userId);
+                          ref.read(selectGuardianProvider.notifier).editGuardian(guardian.userId);
                         });
                       })
                 ],

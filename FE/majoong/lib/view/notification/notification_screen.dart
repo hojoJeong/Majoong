@@ -10,27 +10,43 @@ import 'package:majoong/model/response/base_response.dart';
 import 'package:majoong/model/response/user/notification_response_dto.dart';
 import 'package:majoong/view/friend/friend_list_screen.dart';
 import 'package:majoong/view/guardian/guardian_screen.dart';
+import 'package:majoong/viewmodel/friend/friend_provider.dart';
 import 'package:majoong/viewmodel/notification/accept_share_provider.dart';
 import 'package:majoong/viewmodel/notification/notification_provider.dart';
 
 import '../../viewmodel/share_loaction/share_location_provider.dart';
 
-class NotificationScreen extends ConsumerWidget {
+class NotificationScreen extends ConsumerStatefulWidget {
   const NotificationScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ConsumerStatefulWidget> createState() => _NotificationState();
+}
+
+class _NotificationState extends ConsumerState<NotificationScreen> {
+  @override
+  void initState() {
+    super.initState();
+    ref.read(friendProvider.notifier).refreshFriendList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final notificationListState = ref.watch(notificationProvider);
     final acceptShareState = ref.watch(acceptShareProvider);
     final shareLocationState = ref.watch(shareLocationProvider);
-    if (acceptShareState is BaseResponse &&
-        shareLocationState is BaseResponse<bool>) {
+
+    if (acceptShareState is BaseResponse) {
+      logger.d('왜 안떠');
       Future.delayed(Duration.zero, () {
         if (acceptShareState.status == 404) {
           showToast(context: context, '유효하지 않는 마중 요청입니다.');
+          ref.read(acceptShareProvider.notifier).refreshState();
         } else {
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (_) => GuardianScreen()));
+          if (shareLocationState is BaseResponse<bool>) {
+            Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => GuardianScreen()));
+          }
         }
       });
     }
@@ -93,10 +109,10 @@ class NotificationScreen extends ConsumerWidget {
                                         MaterialPageRoute(
                                             builder: (_) =>
                                                 FriendListScreen()));
-                                  } else {
+                                  } else if (notification.type == 2) {
                                     ref
                                         .read(shareLocationProvider.notifier)
-                                        .initChannel(true, notification.userId);
+                                        .initChannel(true, notification.userId, []);
                                     ref
                                         .read(acceptShareProvider.notifier)
                                         .acceptShare(notification.userId);
@@ -127,8 +143,10 @@ class NotificationScreen extends ConsumerWidget {
                                                     fontWeight: FontWeight.bold,
                                                     fontSize:
                                                         BASE_TITLE_FONT_SIZE)),
-                                            TextSpan(
-                                                text: '님이 $notiType을 요청했습니다.')
+                                            notification.type != 3 ? TextSpan(
+                                                text: '님이 $notiType을 요청했습니다.') : TextSpan(
+                                              text: '님이 긴급 신고를 진행했습니다.\n아래 연락처로 연락해보세요!'
+                                            )
                                           ])),
                                         ),
                                         Visibility(

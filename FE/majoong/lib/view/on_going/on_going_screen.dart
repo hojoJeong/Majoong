@@ -17,6 +17,8 @@ import 'package:majoong/model/response/map/route_info_response_dto.dart';
 import 'package:majoong/view/main/main_screen.dart';
 import 'package:majoong/viewmodel/on_going/cancel_share_provider.dart';
 import 'package:majoong/viewmodel/search/route_point_provider.dart';
+import 'package:majoong/viewmodel/search/search_route_point_provider.dart';
+import 'package:majoong/viewmodel/search/selected_guardian_provider.dart';
 import 'package:majoong/viewmodel/share_loaction/share_location_provider.dart';
 import 'package:openvidu_client/openvidu_client.dart';
 import 'package:permission_handler/permission_handler.dart' hide PermissionStatus;
@@ -910,5 +912,8 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
     super.dispose();
     timer.cancel();
     locationSubscription.cancel();
+    ref.read(routePointProvider.notifier).dispose();
+    ref.read(searchRoutePointProvider.notifier).dispose();
+    ref.read(selectGuardianProvider.notifier).dispose();
   }
 }
