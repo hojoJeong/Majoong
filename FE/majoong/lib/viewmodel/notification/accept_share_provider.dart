@@ -21,7 +21,10 @@ class AcceptShareStateNotifier extends StateNotifier<BaseResponseState> {
     } else if(response.status == 404){
       state = response;
       logger.d('유효하지 않는 마중 요청입니다.');
-      state = BaseResponseLoading();
     }
+  }
+
+  refreshState() {
+    state = BaseResponseLoading();
   }
 }

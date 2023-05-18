@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:majoong/common/util/logger.dart';
 
-final selectedGuardianProvider = StateNotifierProvider<SelectGuardianStateNotifier, List<int>>((ref) {
+final selectGuardianProvider = StateNotifierProvider<SelectGuardianStateNotifier, List<int>>((ref) {
   final notifier = SelectGuardianStateNotifier();
   return notifier;
 });
