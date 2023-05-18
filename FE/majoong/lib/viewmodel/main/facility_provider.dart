@@ -123,7 +123,7 @@ class FacilityNotifier extends StateNotifier<BaseResponseState> {
       }
 
       final bellIcon = await BitmapDescriptor.fromAssetImage(
-          ImageConfiguration(), 'res/bell.png');
+          ImageConfiguration(), 'res/notification-bell.png');
       for (var bell in bellList) {
         markerNotifier.addBellMarker(Marker(
           markerId: MarkerId(bell.bellId.toString()),
