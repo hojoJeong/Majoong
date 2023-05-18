@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:majoong/common/util/logger.dart';
@@ -27,6 +29,7 @@ class PolygonNotifier extends StateNotifier<Set<Polygon>> {
   renderPolygon() {
     state.clear();
     if (chipNotifier.state.contains('위험 지역')) {
+      logger.d('폴리곤 : ${riskRoad.length}');
       state.addAll(riskRoad);
     }
   }

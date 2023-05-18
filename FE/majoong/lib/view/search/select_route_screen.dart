@@ -52,7 +52,8 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
   bool selectShortest = false;
   bool selectRecommended = true;
   List<Polyline> route = [];
-  List<Marker> marker = [];
+  Set<Marker> marker = {};
+  List<Marker> routePointMarker = [];
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
@@ -202,7 +203,7 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
         .d('경로 그리기 완료 : ${route[0].points.length}, ${route[1].points.length}');
   }
 
-  makeMarkers(Set<Marker> facilities, double startLat, double startLng,
+  makeMarkers(double startLat, double startLng,
       double endLat, double endLng) async {
     final startMarkerIcon = await BitmapDescriptor.fromAssetImage(
       ImageConfiguration(size: Size(50, 50)),
@@ -223,13 +224,14 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
         position: LatLng(endLat, endLng),
         icon: endMarkerIcon);
 
-    marker.clear();
-    marker.addAll(facilities);
-    marker.add(startPoint);
-    marker.add(endPoint);
+    routePointMarker.clear();
+    routePointMarker.add(startPoint);
+    routePointMarker.add(endPoint);
+    // marker.clear();
+    // marker.addAll(facilities);
+    // marker.add(startPoint);
+    // marker.add(endPoint);
 
-    logger.d(
-        '마커 생성 - 크기 : ${marker.length}, start : ${marker[marker.length - 2]}, end : ${marker[marker.length - 1]}');
   }
 
   @override
@@ -240,8 +242,8 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
     final cameraMovedInfo = ref.watch(searchCameraMovedProvider);
     final resultRoutePoint = ref.watch(routePointProvider);
     final searchRouteState = ref.watch(searchRouteProvider);
-    final polygonInfo = ref.watch(polygonProvider.notifier);
-    final polyLineInfo = ref.watch(polyLineProvider.notifier);
+    final polygonInfo = ref.watch(searchPolygonProvider.notifier);
+    final polyLineInfo = ref.watch(searchPolyLineProvider.notifier);
 
     if (resultRoutePoint.startLocationName != '' &&
         resultRoutePoint.endLocationName != '' &&
@@ -254,6 +256,10 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
           resultRoutePoint.endLat,
           resultRoutePoint.endLng);
     }
+
+    marker.clear();
+    marker.addAll(routePointMarker);
+    marker.addAll(markerInfo.state);
 
     logger.d(
         '출발지 : ${resultRoutePoint.startLocationName} , ${resultRoutePoint.startLat}, 목적지 : ${resultRoutePoint.endLocationName}, ${resultRoutePoint.endLat}');
@@ -282,8 +288,8 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
           searchRouteState.data!.shortestPath.point ?? [],
           selectShortest,
           selectRecommended);
+
       makeMarkers(
-          markerInfo.state,
           resultRoutePoint.startLat,
           resultRoutePoint.startLng,
           resultRoutePoint.endLat,
@@ -301,6 +307,7 @@ class _SelectRouteState extends ConsumerState<SelectRouteScreen> {
                   }),
               GoogleMap(
                 polylines: Set.from(route),
+                polygons: polygonInfo.state,
                 onMapCreated: _onMapCreated,
                 markers: Set.from(marker),
                 initialCameraPosition: CameraPosition(

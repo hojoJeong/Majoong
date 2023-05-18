@@ -577,8 +577,8 @@ class _OnGoingState extends ConsumerState<OnGoingScreen> {
     final chipInfo = ref.watch(searchChipProvider.notifier);
     final cameraMovedInfo = ref.watch(searchCameraMovedProvider);
     final cancelShareState = ref.watch(cancelShareProvider);
-    final polygonInfo = ref.watch(polygonProvider.notifier);
-    final polyLineInfo = ref.watch(polyLineProvider.notifier);
+    final polygonInfo = ref.watch(searchPolygonProvider.notifier);
+    final polyLineInfo = ref.watch(searchPolyLineProvider.notifier);
 
     String endTime = "";
     logger.d('amqp share locationstate : $shareLocationState');
