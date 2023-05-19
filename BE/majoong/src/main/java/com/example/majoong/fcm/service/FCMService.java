@@ -1,6 +1,9 @@
 package com.example.majoong.fcm.service;
 
+import com.example.majoong.exception.NoFcmTokenException;
 import com.example.majoong.fcm.dto.FCMMessageDto;
+import com.example.majoong.user.domain.User;
+import com.example.majoong.user.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -21,6 +24,8 @@ public class FCMService {
 
     private final ObjectMapper objectMapper;
 
+    private final UserRepository userRepository;
+
     @Value("${FCM_API_URL}")
     private String API_URL;
     public String getAccessToken() throws IOException {
@@ -35,7 +40,7 @@ public class FCMService {
 
 
     public String makeMessage(
-            String targetToken, String title, String body, String name, String description
+            String targetToken, String title, String body, String dataTitle, String dataBody, String sessionId
     ) throws JsonProcessingException {
         FCMMessageDto fcmMessage = FCMMessageDto.builder()
                 .message(
@@ -49,8 +54,9 @@ public class FCMService {
                                 )
                                 .data(
                                         FCMMessageDto.Data.builder()
-                                                .name(name)
-                                                .description(description)
+                                                .title(dataTitle)
+                                                .body(dataBody)
+                                                .sessionId(sessionId)
                                                 .build()
                                 )
                                 .build()
@@ -62,10 +68,12 @@ public class FCMService {
 
     }
     public void sendMessage(
-            String targetToken, String title, String body, String name, String description
+            int userId, String title, String body, String dataTitle, String dataBody, String sessionId
     ) throws IOException{
 
-        String message = makeMessage(targetToken, title, body, name, description);
+        User user = userRepository.findById(userId).get();
+        String targetToken = user.getFcmToken();
+        String message = makeMessage(targetToken, title, body, dataTitle, dataBody, sessionId);
 
         OkHttpClient client = new OkHttpClient();
         RequestBody requestBody = RequestBody.create(message, MediaType.get("application/json; charset=utf-8"));
@@ -79,6 +87,7 @@ public class FCMService {
 
         Response response = client.newCall(request).execute();
         log.info(response.body().string());
+
 
     }
 

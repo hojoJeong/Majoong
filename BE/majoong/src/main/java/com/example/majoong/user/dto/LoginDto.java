@@ -5,5 +5,7 @@ import lombok.Data;
 @Data
 public class LoginDto {
 
+
     private String socialPK;
+    private String fcmToken;
 }

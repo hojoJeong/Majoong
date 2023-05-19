@@ -32,10 +32,14 @@ public class Review {
     private double latitude;
     private String address;
     private int score;
+    @Column(name = "is_bright")
     private boolean isBright;
+    @Column(name = "is_crowded")
     private boolean isCrowded;
     private String content;
+    @Column(name = "review_image")
     private String reviewImage;
     @CreatedDate
+    @Column(name = "created_at")
     private Date createdAt;
 }

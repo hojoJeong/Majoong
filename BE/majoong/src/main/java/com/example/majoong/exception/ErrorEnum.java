@@ -19,8 +19,13 @@ public enum ErrorEnum {
     NOT_EXIST_FRIEND_REQUEST("해당 친구요청이 없습니다.", 604),
     NOT_FRIEND("친구가 아닙니다.", 605),
     WRONG_NUMBER("인증번호가 틀립니다.", 700),
-    EXPIRED_NUMBER("인증번호 유효기간 만료", 701);
-
+    EXPIRED_NUMBER("인증번호 유효기간 만료", 701),
+    NOT_EXIST_FCM_TOKEN("fcm 토큰이 존재하지 않습니다.",404),
+    NO_FILE("파일이 존재하지 않습니다.", 404),
+    NOT_EXIST_SHARE_LOCATION("위치공유 정보가 없습니다.",404),
+    NOT_GUARDIAN("보호자 권한이 없습니다.", 401),
+    SAME_NODE("시작점과 도착점이 같습니다.", 404),
+    EXCEED_DISTANCE("직선거리 30km를 초과했습니다.", 404);
 
     public String message;
     public int status;
