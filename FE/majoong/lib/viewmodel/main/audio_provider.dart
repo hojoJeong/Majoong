@@ -23,7 +23,7 @@ class AudioNotifier extends StateNotifier<AssetsAudioPlayer> {
 
   play() async {
     isPlaying = true;
-    volumeController.setVolume(0.3);
+    volumeController.setVolume(1.0);
     await state.open(
       Audio("assets/whistle.mp3"),
       loopMode: LoopMode.single, //반복 여부 (LoopMode.none : 없음)
@@ -35,7 +35,7 @@ class AudioNotifier extends StateNotifier<AssetsAudioPlayer> {
 
   playOneShot() async {
     isPlaying = true;
-    volumeController.setVolume(0.3);
+    volumeController.setVolume(1.0);
     await state.open(
       Audio("assets/whistle.mp3"),
       loopMode: LoopMode.none,
