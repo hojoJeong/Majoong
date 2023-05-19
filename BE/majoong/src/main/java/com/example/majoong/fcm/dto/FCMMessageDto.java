@@ -31,8 +31,10 @@ public class FCMMessageDto {
     @AllArgsConstructor
     @Getter
     public static class Data{
-        private String name;
-        private String description;
+        private String title;
+        private String body;
+
+        private String sessionId;
     }
 
 }

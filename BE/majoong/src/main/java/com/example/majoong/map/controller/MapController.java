@@ -1,12 +1,12 @@
 package com.example.majoong.map.controller;
 
-import com.example.majoong.map.dto.LocationRequestDto;
-import com.example.majoong.map.dto.MapFacilityRequestDto;
-import com.example.majoong.map.dto.MapFacilityResponseDto;
+import com.example.majoong.map.dto.*;
 import com.example.majoong.map.service.MapDataService;
 import com.example.majoong.map.service.MapFacilityService;
 import com.example.majoong.map.service.MapService;
 import com.example.majoong.response.ResponseData;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.opencsv.exceptions.CsvValidationException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -29,9 +30,11 @@ public class MapController {
 
     private final MapService mapService;
 
+
+
     @PostMapping("/facility")
     @Operation(summary = "시설물 조회 API", description = "cctv, 가로등, 비상벨, 경찰서, 편의점, 안심귀갓길, 위험지역, 리뷰")
-    public ResponseEntity getFacility(@RequestBody MapFacilityRequestDto position) {
+    public ResponseEntity getFacility(@RequestBody MapFacilityRequestDto position) throws JsonProcessingException {
         MapFacilityResponseDto facilities = mapFacilityService.getMapFacilities(position);
 
         ResponseData data = new ResponseData();
@@ -57,8 +60,20 @@ public class MapController {
         return "Reids에 저장 성공";
     }
 
+    @GetMapping("/save/road")
+    public String saveRedis2() throws CsvValidationException, IOException {
+        mapDataService.jsonToRedis2();
+        return "Reids에 저장 성공";
+    }
+
+    @GetMapping("/test/{distance}")
+    public List<LocationRoadDto> test(@PathVariable int distance){
+        return mapFacilityService.getPolygonsWithOuterPoints(distance);
+    }
+
+
     @PostMapping("/share")
-    public ResponseEntity startMoving(@RequestBody LocationRequestDto locationRequest){
+    public ResponseEntity startMoving(@RequestBody LocationShareDto locationRequest) throws IOException {
         mapService.startMoving(locationRequest);
         ResponseData data = new ResponseData();
         data.setMessage("위치 공유 시작");
@@ -66,8 +81,8 @@ public class MapController {
     }
 
     @GetMapping("/share/{userId}")
-    public ResponseEntity startMoving(@PathVariable("userId") int userId){
-        Map response = mapService.showSharedMoving(userId);
+    public ResponseEntity startMoving(@PathVariable("userId") int userId) throws JsonProcessingException {
+        LocationShareResponseDto response = mapService.showSharedMoving(userId);
         ResponseData data = new ResponseData();
         data.setData(response);
         return data.builder();

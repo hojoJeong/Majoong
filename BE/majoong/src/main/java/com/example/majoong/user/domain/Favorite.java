@@ -19,6 +19,7 @@ public class Favorite {
     @Column(name="favorite_id")
     private int id;
     private String address;
+    @Column(name = "location_name")
     private String locationName;
 
     @ManyToOne

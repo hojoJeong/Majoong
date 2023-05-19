@@ -64,7 +64,7 @@ public class JwtToolImpl implements JwtTool {
                     .parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            log.error("invalid jwt", e.getMessage());
+            log.error("invalid jwt : {}", e.getMessage());
         }
         return false;
     }

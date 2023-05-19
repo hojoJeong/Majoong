@@ -3,6 +3,8 @@ import com.example.majoong.user.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
+
 import javax.persistence.*;
 
 @NoArgsConstructor
@@ -21,8 +23,11 @@ public class Friend {
     @ManyToOne
     @JoinColumn(name = "friend_id")
     private User friend;
+    @Column(name = "friend_name")
     private String friendName;
     private int state;
+
+    @Column(columnDefinition = "BOOLEAN DEFAULT false", name = "is_guardian")
     private boolean isGuardian;
 
     public Friend(User user, User friend, int state) {
@@ -34,7 +39,8 @@ public class Friend {
 
     @PrePersist
     public void prePersist() {
-        this.friendName = friend.getNickname();}
+        this.friendName = friend.getNickname();
+    }
 
 
 }
