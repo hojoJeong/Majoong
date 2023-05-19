@@ -166,7 +166,7 @@ public class MessageService {
 
 
         MessageDto message = new MessageDto();
-        message.setTo("01092424723");
+        message.setTo("01087045039");
         message.setContent(content);
         List<MessageDto> messages = new ArrayList<>();
         messages.add(message);
