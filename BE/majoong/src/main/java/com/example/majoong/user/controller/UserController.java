@@ -1,7 +1,10 @@
 package com.example.majoong.user.controller;
 
+import com.example.majoong.fcm.service.FCMService;
 import com.example.majoong.response.ResponseData;
+import com.example.majoong.user.domain.User;
 import com.example.majoong.user.dto.*;
+import com.example.majoong.user.repository.UserRepository;
 import com.example.majoong.user.service.FavoriteService;
 import com.example.majoong.user.service.MessageService;
 import com.example.majoong.user.service.UserService;
@@ -10,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,6 +25,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 
 import static java.rmi.server.LogStream.log;
@@ -35,6 +40,8 @@ public class UserController {
     private final MessageService messageService;
 
     private final FavoriteService favoriteService;
+
+    private final FCMService fCMService;
 
 
     @GetMapping
@@ -66,7 +73,7 @@ public class UserController {
     @Operation(summary = "로그인", description = "소셜 계정 PK로 로그인")
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody LoginDto info) {
-        UserResponseDto user = userService.login(info.getSocialPK());
+        UserResponseDto user = userService.login(info.getSocialPK(),info.getFcmToken());
         log.info("/user/login @Post start");
         ResponseData data = new ResponseData();
         data.setData(user);
@@ -143,10 +150,10 @@ public class UserController {
 
     @Operation(summary = "휴대폰 인증번호 전송", description = "인증번호를 전송합니다.")
     @PostMapping("/phone112")
-    public ResponseEntity<?> sendAuthNumber(@RequestBody Map<String,String> message) throws NoSuchAlgorithmException, URISyntaxException, InvalidKeyException, JsonProcessingException, UnsupportedEncodingException {
+    public ResponseEntity<?> sendAuthNumber(HttpServletRequest request, @RequestBody Map<String,String> message) throws NoSuchAlgorithmException, URISyntaxException, InvalidKeyException, IOException {
         log.info("/user/phone112 @Post start");
         ResponseData data = new ResponseData();
-        data.setData(messageService.sendContentMessage(message.get("content")));
+        data.setData(messageService.send112Message(request, message.get("content")));
         log.info(data.toString());
         log.info("/user/phone112 end\n");
         log.info("");
@@ -167,11 +174,11 @@ public class UserController {
         return data.builder();
     }
 
-    @PutMapping("/profile")
+    @PutMapping(value = "/profile")
     public ResponseEntity<?> changeProfile(HttpServletRequest request,
                                            @RequestPart("nickname") String nickname,
                                            @RequestPart("phoneNumber") String phoneNumber,
-                                           @RequestPart("profileImage") MultipartFile profileImage) throws IOException {
+                                           @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) throws IOException {
         log.info("/user/profile @Put start");
         ResponseData data = new ResponseData();
         UserProfileRequestrDto userProfileRequestrDto = new UserProfileRequestrDto();
@@ -226,7 +233,7 @@ public class UserController {
 
     @Operation(summary = "즐겨찾기 설정")
     @PostMapping("/favorite")
-    public ResponseEntity addFavorite(HttpServletRequest request, @RequestBody FavoriteDto favoriteDto) {
+    public ResponseEntity setFavorite(HttpServletRequest request, @RequestBody FavoriteDto favoriteDto) {
         log.info("/user/favorite @Post start");
         favoriteService.addFavorite(request, favoriteDto);
         ResponseData data = new ResponseData();
@@ -238,7 +245,7 @@ public class UserController {
 
     @Operation(summary = "즐겨찾기 조회")
     @GetMapping("/favorite")
-    public ResponseEntity addFavorite(HttpServletRequest request) {
+    public ResponseEntity getFavorite(HttpServletRequest request) {
         log.info("/user/favorite @Get start");
         ResponseData data = new ResponseData();
         List<FavoriteResponseDto> result = favoriteService.getFavorites(request);
@@ -250,14 +257,22 @@ public class UserController {
     }
 
     @Operation(summary = "즐겨찾기 삭제")
-    @DeleteMapping("/favorite/{favoriteId}")
-    public ResponseEntity addFavorite(@PathVariable("favoriteId") int id) {
+    @DeleteMapping("/favorite")
+    public ResponseEntity deleteFavorite(HttpServletRequest request, @RequestBody FavoriteDto favoriteInfo) {
         log.info("/user/favorite @Delete start");
         ResponseData data = new ResponseData();
-        favoriteService.deleteFavorite(id);
+        favoriteService.deleteFavorite(request,favoriteInfo);
         log.info(data.toString());
         log.info("/user/favorite end\n");
         log.info("");
+        return data.builder();
+    }
+
+    @PostMapping("/test/{userId}")
+    public ResponseEntity fcm(@PathVariable("userId") int userId) throws IOException {
+        fCMService.sendMessage(userId,"타이틀","바디","네임","디스크립션","");
+        ResponseData data = new ResponseData();
+        data.setMessage("메세지 보냄");
         return data.builder();
     }
 }

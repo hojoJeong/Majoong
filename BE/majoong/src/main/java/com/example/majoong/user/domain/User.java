@@ -22,20 +22,25 @@ public class User {
     @Column(name="user_id")
     private int id;
 
-    @Column(unique = true)
+    @Column(unique = true, name = "phone_number")
     private String phoneNumber;
     private String nickname;
+    @Column(name = "profile_image")
     private String profileImage;
+    @Column(name = "fcm_token")
     private String fcmToken;
     @Column(unique = true)
     private String socialPK;
     private long date;
     private int state=1;
+    @Column(name = "pin_number")
     private String pinNumber;
+    @Column(name = "push_alarm")
     private boolean pushAlarm=true;
 
     @JsonBackReference
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @Column(name = "review_list")
     private List<Review> reviewList;
 
     @PrePersist

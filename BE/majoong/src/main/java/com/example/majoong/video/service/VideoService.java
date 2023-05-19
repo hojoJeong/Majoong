@@ -2,8 +2,15 @@ package com.example.majoong.video.service;
 
 
 import com.example.majoong.exception.*;
+import com.example.majoong.fcm.service.FCMService;
+import com.example.majoong.friend.domain.Friend;
+import com.example.majoong.friend.repository.FriendRepository;
+import com.example.majoong.map.dto.LocationShareDto;
+import com.example.majoong.map.dto.MovingInfoDto;
+import com.example.majoong.map.service.MapService;
 import com.example.majoong.tools.JwtTool;
 import com.example.majoong.tools.UnitConverter;
+import com.example.majoong.user.domain.User;
 import com.example.majoong.user.repository.UserRepository;
 import com.example.majoong.video.dto.GetRecordingsResponseDto;
 import com.example.majoong.video.dto.InitializeConnectionResponseDto;
@@ -24,6 +31,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -31,10 +39,8 @@ import java.util.*;
 public class VideoService {
     @Autowired
     private UserRepository userRepository;
-    private final RedisTemplate redisTemplate;
     private final JwtTool jwtTool;
     private final UnitConverter unitConverter;
-
 
     @Value("${OPENVIDU_BASE_PATH}")
     private String OPENVIDU_BASE_PATH;
@@ -42,13 +48,18 @@ public class VideoService {
     @Value("${OPENVIDU_SECRET}")
     private String OPENVIDU_SECRET;
 
-    public InitializeSessionResponseDto initializeSession(HttpServletRequest request){
+    private final FriendRepository friendRepository;
+
+
+    public InitializeSessionResponseDto initializeSession(HttpServletRequest request) throws IOException {
         String token = request.getHeader("Authorization").split(" ")[1];
         int userId = jwtTool.getUserIdFromToken(token);
 
         String url = OPENVIDU_BASE_PATH + "sessions";
         String customSessionId = userId + "-" + System.currentTimeMillis();
         String recordingMode = "ALWAYS";
+        String resolution = "720x1280";
+
 
         // OPENVIDU REST API 요청
         RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
@@ -61,6 +72,12 @@ public class VideoService {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("customSessionId",customSessionId);
         jsonObject.addProperty("recordingMode",recordingMode);
+
+        JsonObject defaultRecordingProperties = new JsonObject();
+        defaultRecordingProperties.addProperty("resolution", resolution);
+
+        jsonObject.add("defaultRecordingProperties", defaultRecordingProperties);
+
         // Header + Body
         HttpEntity<String> entity = new HttpEntity<String>(jsonObject.toString(), headers);
         // request
@@ -78,6 +95,19 @@ public class VideoService {
 
         InitializeSessionResponseDto responseDto = new InitializeSessionResponseDto();
         responseDto.setSessionId(sessionId);
+
+//        // fcm
+//        User user = userRepository.findById(userId).get();
+//        LocationShareDto movingInfo = mapService.getLocationInfo(userId);
+//        List<Integer> guardians = movingInfo.getGuardians();
+//        for (int guardianId : guardians){
+//            User guardian = userRepository.findById(guardianId).get();
+//            guardian.getFcmToken();
+//            String title = "[마중] 바디캠 수신 요청";
+//            String body = user.getNickname()+"님이 바디캠을 시작했습니다.";
+//            fCMService.sendMessage(guardianId,title, body,title,body,sessionId);
+//
+//        }
         return responseDto;
     }
 
@@ -239,6 +269,67 @@ public class VideoService {
             String recordingId = item.getAsJsonObject().get("id").getAsString();
             String[] splitId = recordingId.split("-");
             if (splitId[0].equals(String.valueOf(userId))) {
+                String createdAt = unitConverter.timestampToDate(item.getAsJsonObject().get("createdAt").getAsLong());
+                long duration = item.getAsJsonObject().get("duration").getAsLong();
+                String recordingUrl = null;
+                String thumbnailImageUrl = null;
+                if (!item.getAsJsonObject().get("url").isJsonNull()){ // 녹화가 진행중인 파일은 url이 존재하지 않아 예외처리함.
+                    recordingUrl = item.getAsJsonObject().get("url").getAsString();
+                    thumbnailImageUrl = recordingUrl.replace("mp4", "jpg");
+                }
+
+
+                GetRecordingsResponseDto responseDto = new GetRecordingsResponseDto();
+                responseDto.setRecordingId(recordingId);
+                responseDto.setThumbnailImageUrl(thumbnailImageUrl);
+                responseDto.setRecordingUrl(recordingUrl);
+                responseDto.setCreatedAt(createdAt);
+                responseDto.setDuration(duration);
+                responseDtos.add(responseDto);
+            }
+        }
+
+        return responseDtos;
+    }
+
+
+    public List<GetRecordingsResponseDto> getFriendRecordings(HttpServletRequest request, int friendId) {
+        String token = request.getHeader("Authorization").split(" ")[1];
+        int userId = jwtTool.getUserIdFromToken(token);
+        User user = userRepository.findById(userId).get();
+        User friend = userRepository.findById(friendId).get();
+
+        if (friendRepository.existsByUserAndFriendAndStateAndIsGuardian(friend, user,1, true)==false){
+            throw new NotGuardianException();
+        }
+
+        String url = OPENVIDU_BASE_PATH + "recordings";
+        // OPENVIDU REST API 요청
+        RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+        // Header 생성
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.add("Authorization", "Basic " + OPENVIDU_SECRET);
+        // Header + Body
+        HttpEntity<String> entity = new HttpEntity<String>("", headers);
+        // request
+        ResponseEntity<String> response = restTemplate.exchange(
+                url, //{요청할 서버 주소}
+                HttpMethod.GET, //{요청할 방식}
+                entity, // {요청할 때 보낼 데이터}
+                String.class
+        );
+        // response
+        JsonParser parser = new JsonParser();
+        JsonArray items = parser.parse(response.getBody()).getAsJsonObject().get("items").getAsJsonArray();
+        // items를 순회하면서 userId와 일치하는 녹화파일 정보를 추출해서 List에 담습니다.
+        List<GetRecordingsResponseDto> responseDtos = new ArrayList<>();
+        for (JsonElement item : items) {
+            String recordingId = item.getAsJsonObject().get("id").getAsString();
+            System.out.println("getRecordings: " + recordingId);
+            String[] splitId = recordingId.split("-");
+            if (splitId[0].equals(String.valueOf(friendId))) {
                 String createdAt = unitConverter.timestampToDate(item.getAsJsonObject().get("createdAt").getAsLong());
                 long duration = item.getAsJsonObject().get("duration").getAsLong();
                 String recordingUrl = null;

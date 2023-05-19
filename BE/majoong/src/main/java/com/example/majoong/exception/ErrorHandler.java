@@ -121,4 +121,41 @@ public class ErrorHandler {
         ResponseData data = new ResponseData(ErrorEnum.RECORDING_NOT_STARTED);
         return data.builder();
     }
+
+    @ExceptionHandler(NoFileException.class)
+    public ResponseEntity<?> NoFileException() {
+        ResponseData data = new ResponseData(ErrorEnum.NO_USER);
+        return data.builder();
+    }
+
+    @ExceptionHandler(NoFcmTokenException.class)
+    public ResponseEntity<?> NoFcmTokenException() {
+        ResponseData data = new ResponseData(ErrorEnum.NOT_EXIST_FCM_TOKEN);
+        return data.builder();
+    }
+
+    @ExceptionHandler(NotExistShareLocationException.class)
+    public ResponseEntity<?> NotExistShareLocationException(){
+        ResponseData data = new ResponseData(ErrorEnum.NOT_EXIST_SHARE_LOCATION);
+        return data.builder();
+    }
+
+
+    @ExceptionHandler(NotGuardianException.class)
+    public ResponseEntity<?> NotGuardianException(){
+        ResponseData data = new ResponseData(ErrorEnum.NOT_GUARDIAN);
+        return data.builder();
+    }
+
+    @ExceptionHandler(SameNodeException.class)
+    public ResponseEntity<?> SameNodeException(){
+        ResponseData data = new ResponseData(ErrorEnum.SAME_NODE);
+        return data.builder();
+    }
+
+    @ExceptionHandler(ExceedDistance.class)
+    public ResponseEntity<?> ExceedDistance(){
+        ResponseData data = new ResponseData(ErrorEnum.EXCEED_DISTANCE);
+        return data.builder();
+    }
 }
