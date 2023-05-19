@@ -7,13 +7,14 @@ class GetFacilityResponseDto {
   final List<CCTV>? cctv;
   final List<Police>? police;
   final List<Lamp>? lamp;
+  final List<Store>? store;
   final List<Bell>? bell;
   final List<SafeRoad>? safeRoad;
-  final List<DangerZone>? dangerZone;
+  final List<SafeRoad>? riskRoad;
   final List<Review>? review;
 
   GetFacilityResponseDto(this.cctv, this.police, this.lamp, this.bell,
-      this.safeRoad, this.dangerZone, this.review);
+      this.safeRoad, this.riskRoad, this.review, this.store);
 
   factory GetFacilityResponseDto.fromJson(Map<String, dynamic> json) =>
       _$GetFacilityResponseDtoFromJson(json);
@@ -93,14 +94,26 @@ class Store {
 
 @JsonSerializable()
 class SafeRoad {
-  final int safeRoadId;
-
-  SafeRoad(this.safeRoadId);
+  final List<Point> point;
 
   factory SafeRoad.fromJson(Map<String, dynamic> json) =>
       _$SafeRoadFromJson(json);
 
+  SafeRoad(this.point);
+
   Map<String, dynamic> toJson() => _$SafeRoadToJson(this);
+}
+
+@JsonSerializable()
+class Point {
+  final double lng;
+  final double lat;
+
+  Point(this.lng, this.lat);
+
+  factory Point.fromJson(Map<String, dynamic> json) => _$PointFromJson(json);
+
+  Map<String, dynamic> toJson() => _$PointToJson(this);
 }
 
 @JsonSerializable()
@@ -117,13 +130,13 @@ class DangerZone {
 
 @JsonSerializable()
 class Review {
-  final int id;
+  final int reviewId;
   final double lng;
   final double lat;
   final String address;
   final int score;
 
-  Review(this.id, this.lng, this.lat, this.address, this.score);
+  Review(this.reviewId, this.lng, this.lat, this.address, this.score);
 
   factory Review.fromJson(Map<String, dynamic> json) => _$ReviewFromJson(json);
 

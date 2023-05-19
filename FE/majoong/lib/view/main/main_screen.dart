@@ -1,16 +1,60 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_styled_toast/flutter_styled_toast.dart';
+import 'package:flutter_verification_code/flutter_verification_code.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:location/location.dart';
+import 'package:majoong/common/const/app_key.dart';
 import 'package:majoong/common/const/colors.dart';
+import 'package:majoong/common/util/extensions.dart';
+import 'package:majoong/common/util/logger.dart';
+import 'package:majoong/main.dart';
 import 'package:majoong/model/request/map/get_facility_request_dto.dart';
+import 'package:majoong/model/request/user/ReportRequestDto.dart';
 import 'package:majoong/model/response/base_response.dart';
+import 'package:majoong/model/response/user/friend_list_model.dart';
+import 'package:majoong/model/response/user/friend_response_dto.dart';
 import 'package:majoong/model/response/user/user_info_response_dto.dart';
+import 'package:majoong/service/local/secure_storage.dart';
+import 'package:majoong/service/remote/api/user/user_api_service.dart';
+import 'package:majoong/service/remote/dio/dio_provider.dart';
+import 'package:majoong/view/edit/edit_pin_number_screen.dart';
+import 'package:majoong/view/edit/edit_user_info_screen.dart';
+import 'package:majoong/view/favorite/favorite_screen.dart';
+import 'package:majoong/view/friend/friend_list_screen.dart';
+import 'package:majoong/view/login/login_screen.dart';
+import 'package:majoong/view/notification/notification_screen.dart';
+import 'package:majoong/view/search/search_screen.dart';
+import 'package:majoong/view/video/video_screen.dart';
+import 'package:majoong/viewmodel/friend/friend_provider.dart';
 import 'package:majoong/viewmodel/main/facility_provider.dart';
 import 'package:majoong/viewmodel/main/marker_provider.dart';
+import 'package:majoong/viewmodel/main/review_dialog_provider.dart';
+import 'package:majoong/viewmodel/video/videoProvider.dart';
+import 'package:openvidu_client/openvidu_client.dart';
+import 'package:permission_handler/permission_handler.dart'
+    hide PermissionStatus;
+import 'package:majoong/viewmodel/search/route_point_provider.dart';
+import 'package:majoong/viewmodel/search/search_route_provider.dart';
+import 'package:sensors_plus/sensors_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../common/const/key_value.dart';
+import '../../common/const/path.dart';
+import '../../viewmodel/main/audio_provider.dart';
 import '../../viewmodel/main/user_info_provider.dart';
+import '../../viewmodel/search/search_route_point_provider.dart';
+import '../openvidu/media_stream_view.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   MainScreen({Key? key}) : super(key: key);
@@ -19,7 +63,8 @@ class MainScreen extends ConsumerStatefulWidget {
   ConsumerState<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends ConsumerState<MainScreen> {
+class _MainScreenState extends ConsumerState<MainScreen>
+    with WidgetsBindingObserver {
   late GoogleMapController mapController;
 
   Location location = Location();
@@ -31,20 +76,238 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     mapController = controller;
   }
 
+  /**
+   * Firebase Background Messaging 핸들러
+   */
+  Future<void> fcmHandlerInBackground(RemoteMessage message) async {
+    logger.d(
+        "[FCM - Background] MESSAGE notification title: ${message.notification!.title}, ${message.notification!.body}");
+    logger.d(
+        "[FCM - Background] MESSAGE title: ${message.data['title']}, ${message.data['body']}, ${message.data['sessionId']}");
+  }
+
+  /**
+   * Firebase Foreground Messaging 핸들러
+   */
+  Future<void> notificationHandlerInForeground(
+      RemoteMessage message,
+      FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin,
+      AndroidNotificationChannel? channel) async {
+    if (message.notification != null) {
+      flutterLocalNotificationsPlugin.show(
+          message.hashCode,
+          message.notification?.title,
+          message.notification?.body,
+          NotificationDetails(
+              android: AndroidNotificationDetails(
+                channel!.id,
+                channel.name,
+                channelDescription: channel.description,
+                icon: '@mipmap/ic_launcher',
+              ),
+              iOS: const DarwinNotificationDetails(
+                badgeNumber: 1,
+                subtitle: 'the subtitle',
+                sound: 'slow_spring_board.aiff',
+              )));
+    }
+  }
+
+  Future<void> _onConnect() async {
+    final dio = ref.read(dioProvider);
+    final secureStorage = ref.read(secureStorageProvider);
+    final nickname = await secureStorage.read(key: USER_ID);
+    dio.options.baseUrl = 'https://majoong4u.com/openvidu/api';
+    dio.options.headers['content-Type'] = 'application/json';
+    dio.options.headers["authorization"] =
+        'Basic ${base64Encode(utf8.encode('OPENVIDUAPP:MY_SECRET'))}';
+    localParticipant = await _openvidu.publishLocalStream(
+        token: ref.read(videoProvider.notifier).sessionInfo!.connectionToken,
+        userName: nickname ?? 'user');
+    setState(() {
+      isInside = true;
+    });
+  }
+
+  Future<void> setupInteractedMessage(FirebaseMessaging fbMsg) async {
+    RemoteMessage? initialMessage = await fbMsg.getInitialMessage();
+    // 종료상태에서 클릭한 푸시 알림 메세지 핸들링
+    if (initialMessage != null) clickMessageEvent(initialMessage);
+    // 앱이 백그라운드 상태에서 푸시 알림 클릭 하여 열릴 경우 메세지 스트림을 통해 처리
+    FirebaseMessaging.onMessageOpenedApp.listen(clickMessageEvent);
+  }
+
+  /**
+   * 백그라운드 FCM 메시지 클릭 이벤트 정의
+   */
+  void clickMessageEvent(RemoteMessage message) {
+    final sessionId = message.data['sessionId'].toString();
+    logger.d(
+        'background message click : ${message.data['title']}, ${message.data['body']}, ${message.data['sessionId']}');
+    if (sessionId != '') {
+      //TODO 화면 공유
+    } else {
+      Navigator.push(
+          context, MaterialPageRoute(builder: (_) => NotificationScreen()));
+    }
+  }
+
+  void initFcm(FirebaseMessaging fcmMessaging) async {
+    late RemoteMessage clickMessage;
+
+    // 플랫폼 확인후 권한요청 및 Flutter Local Notification Plugin 설정
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+        FlutterLocalNotificationsPlugin();
+
+    await flutterLocalNotificationsPlugin.initialize(
+        const InitializationSettings(
+            android: AndroidInitializationSettings('@drawable/app_logo'),
+            iOS: DarwinInitializationSettings()),
+        onDidReceiveNotificationResponse: (NotificationResponse details) async {
+      final sessionId = clickMessage.data['sessionId'].toString();
+      logger.d(
+          'message click : ${clickMessage.data['title']}, ${clickMessage.data['body']}, ${clickMessage.data['sessionId']}');
+      if (sessionId != '') {
+        //TODO 화면 공유
+      } else {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => NotificationScreen()));
+      }
+    });
+
+    AndroidNotificationChannel? androidNotificationChannel;
+    if (Platform.isIOS) {
+      await reqIOSPermission(fcmMessaging);
+    } else if (Platform.isAndroid) {
+      //Android 8 (API 26) 이상부터는 채널설정이 필수.
+      androidNotificationChannel = const AndroidNotificationChannel(
+        'majoong', // id
+        '알림', // name
+        description: '마중 알림 채널',
+        // description
+        importance: Importance.high,
+      );
+
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(androidNotificationChannel);
+    }
+
+    //Foreground Handling foreground 메세지 핸들링
+    FirebaseMessaging.onMessage.listen((message) {
+      clickMessage = message;
+      logger.d(
+          'notification message : ${message.notification!.title} , ${message.notification!.body}');
+      logger.d(
+          'data message : ${message.data['title']}, ${message.data['body']}, ${message.data['sessionId']}');
+      notificationHandlerInForeground(
+          message, flutterLocalNotificationsPlugin, androidNotificationChannel);
+    });
+
+    //Background Handling background 메세지 핸들링
+    FirebaseMessaging.onBackgroundMessage(fcmHandlerInBackground);
+
+    //Message Click Event Implement
+    await setupInteractedMessage(fcmMessaging);
+  }
+
+  late StreamSubscription<LocationData> locationSubscription;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    await _openvidu.disconnect();
+  }
+
+  final List<AppLifecycleState> _stateHistoryList = <AppLifecycleState>[];
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    if (WidgetsBinding.instance.lifecycleState != null) {
+      _stateHistoryList.add(WidgetsBinding.instance.lifecycleState!);
+    }
+    final fcmMessaging = FirebaseMessaging.instance;
+    initFcm(fcmMessaging);
     _getLocation();
-    location.onLocationChanged.listen((event) {
+    locationSubscription = location.onLocationChanged.listen((event) {
       setState(() {
         _locationData = event;
-        ref.read(centerPositionProvider.notifier).update((state) =>
-            GetFacilityRequestDto(
-                centerLng: _locationData!.longitude!,
-                centerLat: _locationData!.latitude!,
-                radius: 1000));
+        final currentLocation = ref.read(currentLocationProvider);
+        currentLocation[0] = event.latitude!;
+        currentLocation[1] = event.longitude!;
       });
     });
+  }
+
+  Future<void> initOpenVidu() async {
+    _openvidu = OpenViduClient('${BASE_URL}openvidu');
+    localParticipant =
+        await _openvidu.startLocalPreview(context, StreamMode.backCamera);
+    await localParticipant?.setVideoInput("1");
+    final videoId = localParticipant?.stream?.getVideoTracks().toString();
+    setState(() {});
+  }
+
+  void _listenSessionEvents() {
+    _openvidu.on(OpenViduEvent.userJoined, (params) async {
+      await _openvidu.subscribeRemoteStream(params["id"]);
+    });
+    _openvidu.on(OpenViduEvent.userPublished, (params) {
+      _openvidu.subscribeRemoteStream(params["id"],
+          video: params["videoActive"], audio: params["audioActive"]);
+    });
+
+    _openvidu.on(OpenViduEvent.addStream, (params) {
+      remoteParticipants = {..._openvidu.participants};
+      setState(() {});
+    });
+
+    _openvidu.on(OpenViduEvent.removeStream, (params) {
+      remoteParticipants = {..._openvidu.participants};
+      setState(() {});
+    });
+
+    _openvidu.on(OpenViduEvent.publishVideo, (params) {
+      remoteParticipants = {..._openvidu.participants};
+      setState(() {});
+    });
+    _openvidu.on(OpenViduEvent.publishAudio, (params) {
+      remoteParticipants = {..._openvidu.participants};
+      setState(() {});
+    });
+    _openvidu.on(OpenViduEvent.updatedLocal, (params) {
+      localParticipant = params['localParticipant'];
+      setState(() {});
+    });
+    _openvidu.on(OpenViduEvent.reciveMessage, (params) {
+      context.showMessageRecivedDialog(params["data"] ?? '');
+    });
+    _openvidu.on(OpenViduEvent.userUnpublished, (params) {
+      remoteParticipants = {..._openvidu.participants};
+      setState(() {});
+    });
+
+    _openvidu.on(OpenViduEvent.error, (params) {
+      context.showErrorDialog(params["error"]);
+    });
+  }
+
+  Future<String?> getAddress() async {
+    final url =
+        'https://maps.googleapis.com/maps/api/geocode/json?latlng=${ref.read(currentLocationProvider)[0]},${ref.read(currentLocationProvider)[1]}&key=$GOOGLE_MAP_KEY&language=ko';
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final decodedJson = jsonDecode(response.body);
+      final results = decodedJson['results'] as List<dynamic>;
+      final formattedAddresses = results
+          .map((result) => result['formatted_address'] as String)
+          .toList();
+      return formattedAddresses[0].replaceAll('대한민국', '');
+    } else {
+      return null;
+    }
   }
 
   Future<void> _getLocation() async {
@@ -65,12 +328,16 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     }
 
     _locationData = await location.getLocation();
+    final currentLocation = ref.read(currentLocationProvider);
+    currentLocation[0] = _locationData!.latitude!;
+    currentLocation[1] = _locationData!.longitude!;
+    logger.d(currentLocation.toString());
     ref.read(centerPositionProvider.notifier).update((state) =>
         GetFacilityRequestDto(
             centerLng: _locationData!.longitude!,
             centerLat: _locationData!.latitude!,
             radius: 1000));
-    ref.read(facilityProvider.notifier).getFacility();
+    ref.read(facilityProvider.notifier).getFacility(context);
     setState(() {});
   }
 
@@ -93,22 +360,27 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   Widget bottomComponent(
       {image: AssetImage, text: String, onPressed: Function}) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        Image(
-          width: MediaQuery.of(context).size.width / 10,
-          height: MediaQuery.of(context).size.width / 10,
-          image: image,
-        ),
-        Text(
-          text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: () {
+        onPressed();
+      },
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Image(
+            width: MediaQuery.of(context).size.width / 10,
+            height: MediaQuery.of(context).size.width / 10,
+            image: image,
           ),
-        ),
-      ],
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -122,28 +394,67 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     '도로 리뷰',
     '위험 지역',
   ];
+  bool isReporting = false;
+  bool isInside = false;
+  late OpenViduClient _openvidu;
+  LocalParticipant? localParticipant;
+
+  Map<String, RemoteParticipant> remoteParticipants = {};
 
   @override
   Widget build(BuildContext context) {
     final userInfo = ref.watch(userInfoProvider.notifier).state;
     final facilityInfo = ref.watch(facilityProvider.notifier);
     final markerInfo = ref.watch(markerProvider.notifier);
+    final polyLineInfo = ref.watch(polyLineProvider.notifier);
+    final polygonInfo = ref.watch(polygonProvider.notifier);
     final chipInfo = ref.watch(chipProvider.notifier);
+    final reviewDialogInfo = ref.watch(reviewDialogProvider.notifier);
     final cameraMovedInfo = ref.watch(cameraMovedProvider);
+    accelerometerEvents.listen((event) {
+      if ((event.x.abs() > 75 || event.y.abs() > 75 || event.z.abs() > 75) &&
+          !isReporting) {
+        isReporting = true;
+        ref.read(audioProvider.notifier).playOneShot();
+        reportDialog(setState);
+      }
+    });
+
     return Scaffold(
-      drawer: Drawer(
-        width: MediaQuery.of(context).size.width / 1.5,
-        child: SafeArea(
+      drawer: SafeArea(
+        child: Drawer(
+          backgroundColor: Colors.white.withOpacity(0.9),
+          width: MediaQuery.of(context).size.width / 1.5,
           child: Column(
             children: [
-              Container(
-                width: MediaQuery.of(context).size.width,
-                child: IconButton(
-                  alignment: Alignment.topRight,
-                  icon: Icon(Icons.notifications_none_rounded),
-                  onPressed: () {},
-                ),
-              ),
+              userInfo is BaseResponseLoading
+                  ? LoadingAnimationWidget.staggeredDotsWave(
+                      color: Colors.grey, size: 60)
+                  : Container(
+                      width: MediaQuery.of(context).size.width,
+                      child: IconButton(
+                        iconSize: 30,
+                        alignment: Alignment.topRight,
+                        icon: (userInfo as BaseResponse<UserInfoResponseDto>)
+                                    .data!
+                                    .alarmCount >
+                                0
+                            ? Image(
+                                width: MediaQuery.of(context).size.width / 15,
+                                height: MediaQuery.of(context).size.width / 15,
+                                image: AssetImage(
+                                    'res/notification.png'),)
+                            : Image(
+                                width: MediaQuery.of(context).size.width / 15,
+                                height: MediaQuery.of(context).size.width / 15,
+                                image: AssetImage(
+                                    'res/no_notification.png'),),
+                        onPressed: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => NotificationScreen()));
+                        },
+                      ),
+                    ),
               userInfo is BaseResponseLoading
                   ? Container()
                   : Container(
@@ -151,10 +462,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       height: MediaQuery.of(context).size.width / 2.5,
                       child: CircleAvatar(
                         backgroundColor: Colors.transparent,
-                        backgroundImage: NetworkImage(
-                            (userInfo as BaseResponse<UserInfoResponseDto>)
-                                .data!
-                                .profileImage!),
+                        backgroundImage: Image.network(
+                                (userInfo as BaseResponse<UserInfoResponseDto>)
+                                    .data!
+                                    .profileImage!)
+                            .image,
                         radius: 100, // 동그란 영역의 반지름
                       ),
                     ),
@@ -194,11 +506,37 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               Divider(
                 thickness: 1,
               ),
-              drawerMenu(title: '즐겨찾기'),
-              drawerMenu(title: '친구 관리'),
-              drawerMenu(title: '녹화기록'),
-              drawerMenu(title: '회원정보 수정'),
-              drawerMenu(title: 'PIN 변경'),
+              GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => FavoriteScreen()));
+                  },
+                  child: drawerMenu(title: '즐겨찾기')),
+              GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => FriendListScreen()));
+                  },
+                  child: drawerMenu(title: '친구 관리')),
+              GestureDetector(
+                  onTap: () {
+                    ref.read(videoProvider.notifier).getRecordings();
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (_) => VideoScreen()));
+                  },
+                  child: drawerMenu(title: '녹화기록')),
+              GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => EditUserInfoScreen()));
+                  },
+                  child: drawerMenu(title: '회원정보 수정')),
+              GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => EditPinNumberScreen()));
+                  },
+                  child: drawerMenu(title: 'PIN 변경')),
               drawerMenu(title: '알림 설정'),
               Expanded(
                 child: Container(
@@ -209,15 +547,23 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                       onTap: () {
                         print('tab!!!!!!!');
                       },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text('로그아웃'),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          Icon(Icons.logout),
-                        ],
+                      child: GestureDetector(
+                        onTap: () {
+                          showToast(context: context, '로그아웃 되었습니다.');
+                          ref.read(secureStorageProvider).deleteAll();
+                          Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(builder: (_) => LoginScreen()));
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text('로그아웃'),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Icon(Icons.logout),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -232,6 +578,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               return SafeArea(
                 child: Stack(alignment: Alignment.topCenter, children: [
                   GoogleMap(
+                    polygons: polygonInfo.state,
+                    polylines: Set<Polyline>.of(polyLineInfo.state.values),
                     onMapCreated: _onMapCreated,
                     markers: markerInfo.state,
                     initialCameraPosition: CameraPosition(
@@ -281,6 +629,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                                   onSelected: (bool selected) {
                                     chipInfo.toggleChip(choice);
                                     markerInfo.renderMarker();
+                                    polyLineInfo.renderLine();
+                                    polygonInfo.renderPolygon();
                                     setState(() {});
                                   },
                                 ),
@@ -294,7 +644,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     top: MediaQuery.of(context).size.height / 7,
                     child: GestureDetector(
                       onTap: () async {
-                        facilityInfo.getFacility();
+                        facilityInfo.getFacility(context);
                         ref
                             .read(cameraMovedProvider.notifier)
                             .update((state) => false);
@@ -357,13 +707,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                         Expanded(
                           child: GestureDetector(
                             onTap: () {
-                              // Navigator.pushNamed(context, '/search');
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => SearchScreen()));
                             },
                             child: const Text(
                               '도착지를 입력해주세요',
-                              style: TextStyle(
-                                color: Colors.grey,
-                              ),
+                              style:
+                                  TextStyle(color: Colors.grey, fontSize: 14),
                             ),
                           ),
                         ),
@@ -371,25 +723,204 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     ),
                   ),
                   Positioned(
-                    left: MediaQuery.of(context).size.width / 4,
+                    right: 10,
                     bottom: MediaQuery.of(context).size.height / 7,
-                    child: Container(
-                      width: MediaQuery.of(context).size.width / 2,
-                      height: MediaQuery.of(context).size.height / 20,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Color(0xFF77469C),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: Text(
-                        '+ 현재위치 리뷰 작성',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                    child: GestureDetector(
+                      onTap: () async {
+                        final address = await getAddress();
+                        if (address != null)
+                          reviewDialogInfo.setAddress(address);
+                        reviewDialogInfo.setCurrentLocation();
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return StatefulBuilder(
+                              builder: (context, setState) {
+                                return Dialog(
+                                  backgroundColor: PRIMARY_COLOR,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 30,
+                                      vertical: 5,
+                                    ),
+                                    child: SingleChildScrollView(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: <Widget>[
+                                          SizedBox(height: 10),
+                                          const Text(
+                                            '현재 위치에 대해서 평가해주세요',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          SizedBox(height: 5),
+                                          Text(
+                                            reviewDialogInfo.state.address,
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 15),
+                                          RatingBar.builder(
+                                            initialRating: 5,
+                                            minRating: 1,
+                                            direction: Axis.horizontal,
+                                            itemCount: 5,
+                                            itemBuilder: (context, _) => Icon(
+                                              Icons.star,
+                                              color: Colors.amber,
+                                            ),
+                                            onRatingUpdate: (rating) {
+                                              reviewDialogInfo
+                                                  .setScore(rating.toInt());
+                                            },
+                                          ),
+                                          SizedBox(height: 10),
+                                          createToggleButton(true, setState),
+                                          SizedBox(height: 4),
+                                          createToggleButton(false, setState),
+                                          SizedBox(height: 2),
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              Text(
+                                                '사진과 함께 등록할까요?',
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12),
+                                              ),
+                                              GestureDetector(
+                                                onTap: () async {
+                                                  final pickedFile =
+                                                      await ImagePicker()
+                                                          .pickImage(
+                                                    source: ImageSource.camera,
+                                                  );
+                                                  if (pickedFile != null) {
+                                                    reviewDialogInfo.setPicture(
+                                                        File(XFile(
+                                                                pickedFile.path)
+                                                            .path));
+                                                  }
+                                                },
+                                                child: Text(
+                                                  '촬영하기',
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 10,
+                                                      decoration: TextDecoration
+                                                          .underline),
+                                                ),
+                                              ),
+                                              Icon(
+                                                Icons.camera_alt_outlined,
+                                                color: Colors.white,
+                                                size: 10,
+                                              )
+                                            ],
+                                          ),
+                                          SizedBox(height: 15),
+                                          TextField(
+                                            onChanged: (content) {
+                                              reviewDialogInfo
+                                                  .setContent(content);
+                                            },
+                                            maxLength: 50,
+                                            // 글자 제한 설정
+                                            maxLines: 6,
+                                            // 멀티라인 설정
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 10,
+                                            ),
+                                            decoration: InputDecoration(
+                                              counterStyle: TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                              contentPadding: EdgeInsets.all(4),
+                                              hintText: '의견을 남겨주세요',
+                                              // 힌트 설정
+                                              filled: true,
+                                              // 배경색 적용
+                                              fillColor: Colors.white,
+                                              // 배경색 설정
+                                              border: OutlineInputBorder(
+                                                // 외곽선 설정
+                                                borderSide:
+                                                    BorderSide.none, // 외곽선 없음
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        10), // 둥근 모서리 설정
+                                              ),
+                                            ),
+                                          ),
+                                          Divider(
+                                            color: Colors.white,
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              if (reviewDialogInfo
+                                                  .state.content.isEmpty) {
+                                                showToast(
+                                                  context: context,
+                                                  '내용을 입력해주세요',
+                                                  position: StyledToastPosition
+                                                      .center,
+                                                );
+                                                return;
+                                              } else {
+                                                facilityInfo.postReview();
+                                                reviewDialogInfo.clearData();
+                                                Navigator.pop(context);
+                                              }
+                                            },
+                                            child: const Text(
+                                              '리뷰 등록',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        );
+                      },
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: SECOND_PRIMARY_COLOR,
+                          borderRadius: BorderRadius.circular(150),
+                        ),
+                        child: Image(
+                          image: AssetImage('res/add.png'),
+                          width: 30,
+                          height: 30,
+                          fit: BoxFit.cover,
                         ),
                       ),
                     ),
                   ),
+                  ref.read(videoProvider.notifier).state is BaseResponseLoading
+                      ? loadingWidget()
+                      : Container(),
                   Positioned(
                     left: 10,
                     right: 10,
@@ -408,27 +939,92 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                           bottomComponent(
                             image: AssetImage('res/call.png'),
                             text: '보호자 통화',
-                            onPressed: () {},
+                            onPressed: () async {
+                              await ref
+                                  .read(guardianListProvider.notifier)
+                                  .getFriendList(1);
+                              guardianDialog(setState);
+                            },
                           ),
                           bottomComponent(
                             image: AssetImage('res/body_cam.png'),
                             text: '바디캠',
-                            onPressed: () {},
+                            onPressed: () async {
+                              var cameraStatus =
+                                  await Permission.camera.request();
+                              if (!cameraStatus.isGranted) {
+                                showToast(context: context, '권한 사용을 허용 해주세요');
+                                openAppSettings();
+                                return;
+                              }
+                              var micStatus =
+                                  await Permission.microphone.request();
+                              if (!micStatus.isGranted) {
+                                showToast(context: context, '권한 사용을 허용 해주세요');
+                                openAppSettings();
+                                return;
+                              }
+                              if (!isInside) {
+                                initOpenVidu();
+                                _listenSessionEvents();
+                                await ref
+                                    .read(videoProvider.notifier)
+                                    .startVideo();
+                                await _onConnect();
+
+                                isInside = true;
+                              } else {
+                                isInside = false;
+                                localParticipant = null;
+                                await ref
+                                    .read(videoProvider.notifier)
+                                    .stopVideo();
+                                await _openvidu.disconnect();
+                              }
+                            },
                           ),
                           bottomComponent(
                             image: AssetImage('res/whistle.png'),
                             text: '호루라기',
-                            onPressed: () {},
+                            onPressed: () async {
+                              final audioInfo =
+                                  ref.read(audioProvider.notifier);
+                              if (audioInfo.isPlaying) {
+                                audioInfo.stop();
+                              } else {
+                                audioInfo.play();
+                              }
+                            },
                           ),
                           bottomComponent(
                             image: AssetImage('res/report.png'),
                             text: '비상신고',
-                            onPressed: () {},
+                            onPressed: () {
+                              reportDialog(setState);
+                            },
                           ),
                         ],
                       ),
                     ),
-                  )
+                  ),
+                  isInside
+                      ? Positioned(
+                          bottom: MediaQuery.of(context).size.height / 6,
+                          left: MediaQuery.of(context).size.width / 20,
+                          child: Container(
+                            width: MediaQuery.of(context).size.width / 4,
+                            height: MediaQuery.of(context).size.height / 4,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15),
+                              color: Colors.black,
+                            ),
+                            child: MediaStreamView(
+                              borderRadius: BorderRadius.circular(15),
+                              participant: localParticipant!,
+                            ),
+                          ),
+                        )
+                      : Container(),
                 ]),
               );
             })
@@ -455,6 +1051,64 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     );
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    locationSubscription.cancel();
+    super.dispose();
+  }
+
+  Widget createToggleButton(isBright, setState) {
+    final reviewDialogInfo = ref.read(reviewDialogProvider.notifier);
+    List<Widget> _lighting = [
+      Text(
+        '어두워요',
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      ),
+      Text(
+        '밝아요',
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      ),
+    ];
+    List<Widget> _crowded = [
+      Text(
+        '인적이 드물어요',
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      ),
+      Text(
+        '사람이 많아요',
+        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      ),
+    ];
+    return ToggleButtons(
+      borderWidth: 2,
+      children: isBright ? _lighting : _crowded,
+      isSelected: isBright
+          ? [!reviewDialogInfo.state.isBright, reviewDialogInfo.state.isBright]
+          : [
+              !reviewDialogInfo.state.isCrowded,
+              reviewDialogInfo.state.isCrowded
+            ],
+      selectedBorderColor: SECOND_PRIMARY_COLOR,
+      borderRadius: BorderRadius.circular(10),
+      selectedColor: Colors.white,
+      borderColor: SECOND_PRIMARY_COLOR,
+      fillColor: SECOND_PRIMARY_COLOR,
+      constraints: const BoxConstraints(
+        minHeight: 40.0,
+        minWidth: 120,
+      ),
+      onPressed: (int index) {
+        setState(() {
+          if (isBright)
+            reviewDialogInfo.toggleBright();
+          else
+            reviewDialogInfo.toggleCrowded();
+        });
+      },
+    );
+  }
+
   Widget loadingWidget() {
     return Positioned(
       width: MediaQuery.of(context).size.width,
@@ -477,6 +1131,247 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  guardianDialog(setState) {
+    logger.d(ref.read(guardianListProvider.notifier).state);
+    final guardians = ref.read(guardianListProvider.notifier).state
+        as BaseResponse<List<FriendResponseDto>>;
+    List<Widget> guardianWidget = List.generate(
+      guardians.data?.length ?? 0,
+      (index) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            CircleAvatar(
+              radius: 25,
+              backgroundImage:
+                  Image.network(guardians.data?[index].profileImage ?? "")
+                      .image,
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(guardians.data?[index].nickname ?? ''),
+                SizedBox(
+                  height: 5,
+                ),
+                Text(
+                  guardians.data?[index].phoneNumber ?? '',
+                  style: TextStyle(color: Colors.grey),
+                )
+              ],
+            ),
+            IconButton(
+              onPressed: () {
+                canLaunchUrl(Uri(
+                        scheme: 'tel',
+                        path: guardians.data?[index].phoneNumber ?? ''))
+                    .then((value) => launchUrl(Uri(
+                        scheme: 'tel',
+                        path: guardians.data?[index].phoneNumber ?? '')));
+              },
+              icon: Icon(
+                Icons.phone_in_talk_rounded,
+                color: PRIMARY_COLOR,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              insetPadding: EdgeInsets.all(60),
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
+                  child: Column(
+                    children: [
+                      Text(
+                        '보호자 목록',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Column(
+                        children: guardianWidget,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  reportDialog(setState) {
+    int _count = 20;
+    Timer timer;
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        return WillPopScope(
+          onWillPop: () async {
+            return false;
+          },
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              timer = Timer(Duration(seconds: 1), () {
+                if (_count == 0) {
+                  final user = ref.read(userInfoProvider.notifier).state
+                      as BaseResponse<UserInfoResponseDto>;
+                  final currentLocation =
+                      ref.read(currentLocationProvider.notifier).state;
+                  final request = ReportRequestDto(
+                      '[Majoong]\n도움이 필요합니다.\n신고자 연락처: ${user.data?.phoneNumber ?? '알수없음'}\n위도: ${currentLocation[0]} 경도: ${currentLocation[1]}');
+                  ref.read(userApiServiceProvider).sendPhone112(request);
+                  isReporting = false;
+                  Navigator.pop(context);
+                } else {
+                  setState(() {
+                    _count--;
+                  });
+                }
+              });
+              return Dialog(
+                insetPadding: EdgeInsets.all(20),
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        Text(
+                          '🚨 비상 신고 알림 🚨',
+                          style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20),
+                        ),
+                        Divider(
+                          color: Colors.grey,
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            style: TextStyle(
+                              decoration: TextDecoration.none,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                            children: <TextSpan>[
+                              TextSpan(
+                                  text: _count.toString(),
+                                  style: TextStyle(
+                                    fontSize: 40.0,
+                                  )),
+                              TextSpan(
+                                text: '초후\n 현재 위치와 함께\n 경찰에 문자 신고가 접수됩니다.',
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        Text(
+                          '현재위치: 경북 구미시 인의동',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                        Text(
+                          '취소하시려면 PIN번호를 입력하세요',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        VerificationCode(
+                          isSecure: true,
+                          autofocus: true,
+                          clearAll: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              '초기화',
+                              style: TextStyle(
+                                  fontSize: 14.0,
+                                  decoration: TextDecoration.underline,
+                                  color: PRIMARY_COLOR),
+                            ),
+                          ),
+                          underlineColor: Colors.black,
+                          length: 4,
+                          onCompleted: (String value) {
+                            Future.delayed(Duration.zero, () async {
+                              final pinNum = await ref
+                                  .read(secureStorageProvider)
+                                  .read(key: PIN_NUM);
+                              if (value == pinNum) {
+                                showToast(
+                                    context: this.context, '신고 접수가 취소되었습니다');
+                                timer.cancel();
+                                isReporting = false;
+                                Navigator.pop(context);
+                              } else {
+                                setState(() {
+                                  value = "";
+                                  showToast(
+                                      isHideKeyboard: true,
+                                      context: this.context,
+                                      'PIN번호가 틀렸습니다');
+                                });
+                              }
+                            });
+                          },
+                          onEditing: (bool value) {
+                            Future.delayed(Duration.zero, () {});
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

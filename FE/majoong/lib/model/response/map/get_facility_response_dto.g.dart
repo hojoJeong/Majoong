@@ -24,11 +24,14 @@ GetFacilityResponseDto _$GetFacilityResponseDtoFromJson(
       (json['safeRoad'] as List<dynamic>?)
           ?.map((e) => SafeRoad.fromJson(e as Map<String, dynamic>))
           .toList(),
-      (json['dangerZone'] as List<dynamic>?)
-          ?.map((e) => DangerZone.fromJson(e as Map<String, dynamic>))
+      (json['riskRoad'] as List<dynamic>?)
+          ?.map((e) => SafeRoad.fromJson(e as Map<String, dynamic>))
           .toList(),
       (json['review'] as List<dynamic>?)
           ?.map((e) => Review.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      (json['store'] as List<dynamic>?)
+          ?.map((e) => Store.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 
@@ -38,9 +41,10 @@ Map<String, dynamic> _$GetFacilityResponseDtoToJson(
       'cctv': instance.cctv,
       'police': instance.police,
       'lamp': instance.lamp,
+      'store': instance.store,
       'bell': instance.bell,
       'safeRoad': instance.safeRoad,
-      'dangerZone': instance.dangerZone,
+      'riskRoad': instance.riskRoad,
       'review': instance.review,
     };
 
@@ -115,11 +119,23 @@ Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
     };
 
 SafeRoad _$SafeRoadFromJson(Map<String, dynamic> json) => SafeRoad(
-      json['safeRoadId'] as int,
+      (json['point'] as List<dynamic>)
+          .map((e) => Point.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$SafeRoadToJson(SafeRoad instance) => <String, dynamic>{
-      'safeRoadId': instance.safeRoadId,
+      'point': instance.point,
+    };
+
+Point _$PointFromJson(Map<String, dynamic> json) => Point(
+      (json['lng'] as num).toDouble(),
+      (json['lat'] as num).toDouble(),
+    );
+
+Map<String, dynamic> _$PointToJson(Point instance) => <String, dynamic>{
+      'lng': instance.lng,
+      'lat': instance.lat,
     };
 
 DangerZone _$DangerZoneFromJson(Map<String, dynamic> json) => DangerZone(
@@ -132,7 +148,7 @@ Map<String, dynamic> _$DangerZoneToJson(DangerZone instance) =>
     };
 
 Review _$ReviewFromJson(Map<String, dynamic> json) => Review(
-      json['id'] as int,
+      json['reviewId'] as int,
       (json['lng'] as num).toDouble(),
       (json['lat'] as num).toDouble(),
       json['address'] as String,
@@ -140,7 +156,7 @@ Review _$ReviewFromJson(Map<String, dynamic> json) => Review(
     );
 
 Map<String, dynamic> _$ReviewToJson(Review instance) => <String, dynamic>{
-      'id': instance.id,
+      'reviewId': instance.reviewId,
       'lng': instance.lng,
       'lat': instance.lat,
       'address': instance.address,

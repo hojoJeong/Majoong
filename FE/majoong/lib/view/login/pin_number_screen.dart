@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 import 'package:flutter_verification_code/flutter_verification_code.dart';
+import 'package:majoong/common/component/signle_button_widget.dart';
 import 'package:majoong/common/const/colors.dart';
 import 'package:majoong/common/const/size_value.dart';
 import 'package:majoong/common/layout/default_layout.dart';
@@ -84,29 +85,15 @@ class _PinNumberScreenState extends ConsumerState<PinNumberScreen> {
                 },
               ),
               const Spacer(),
-              SizedBox(
-                height: 50,
-                width: double.infinity,
-                child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: POLICE_MARKER_COLOR,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8))),
-                    onPressed: _code != ""
-                        ? () {
-                            final request = ref.read(signUpRequestDtoProvider);
-                            logger.d('회원 가입 정보 : $request');
-
-                            ref.read(signUpProvider.notifier).signUp(request);
-                          }
-                        : null,
-                    child: const Text(
-                      '가입하기',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: BASE_TITLE_FONT_SIZE),
-                    )),
+              SingleButtonWidget(
+                content: '가입하기',
+                onPressed: _code != ""
+                    ? () {
+                        final request = ref.read(signUpRequestDtoProvider);
+                        logger.d('회원 가입 정보 : $request');
+                        ref.read(signUpProvider.notifier).signUp(request);
+                      }
+                    : null,
               )
             ],
           ),
