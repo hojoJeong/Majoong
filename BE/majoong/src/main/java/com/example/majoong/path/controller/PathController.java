@@ -4,6 +4,7 @@ import com.example.majoong.exception.ExceedDistance;
 import com.example.majoong.exception.SameNodeException;
 import com.example.majoong.path.dto.*;
 import com.example.majoong.path.service.RecommendedPathService;
+import com.example.majoong.path.service.ShortestPathAlgorithmService;
 import com.example.majoong.path.service.ShortestPathService;
 import com.example.majoong.response.ResponseData;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,6 +27,8 @@ public class PathController {
     @Autowired
     private final RecommendedPathService recommendedPathService;
     private final ShortestPathService shortestPathService;
+
+    private final ShortestPathAlgorithmService shortestPathAlgorithmService;
 
     @PostMapping("/path")
     @Operation(summary = "경로 추천 API", description = "최단 거리, 안전 거리 반환")
@@ -74,6 +77,53 @@ public class PathController {
         return data.builder();
     }
 
+    @PostMapping("/path/ver2")
+    @Operation(summary = "경로 추천 API", description = "최단거리 알고리즘 버전")
+    public ResponseEntity getPath2(@RequestBody PathRequestDto pathRequestDto) throws IOException {
+        double startLng = pathRequestDto.getStartLng();
+        double startLat = pathRequestDto.getStartLat();
+        double endLng = pathRequestDto.getEndLng();
+        double endLat = pathRequestDto.getEndLat();
+
+        ResponseData data = new ResponseData();
+        data.setStatus(200);
+        data.setMessage("경로 추천 성공");
+
+        // 시작점, 도착점과 가장 가까운 노드 탐색
+        NodeDto startNode = recommendedPathService.findNearestNode(startLng, startLat);
+        NodeDto endNode = recommendedPathService.findNearestNode(endLng, endLat);
+
+        // 시작점과 도착점이 같을 경우 예외 처리
+        if (startNode.getNodeId().equals(endNode.getNodeId())) {
+            throw new SameNodeException();
+        }
+
+        // 30km 초과 예외처리
+        double checkDistance = recommendedPathService.calcDistance(startLng, startLat, endLng, endLat);
+        if (checkDistance >= 30000) {
+            throw new ExceedDistance();
+        }
+
+        PathInfoDto shortPath = shortestPathAlgorithmService.getShortestPath(startNode, endNode);
+        if (shortPath == null) {
+            data.setStatus(404);
+            data.setMessage("최단거리 추천 오류");
+        }
+
+
+        PathInfoDto recommendedPath = recommendedPathService.getRecommendedPath(startNode, endNode);
+        if (recommendedPath == null) {
+            data.setStatus(404);
+            data.setMessage("안전경로 추천 오류");
+        }
+
+        PathResponseDto path = new PathResponseDto();
+        path.setRecommendedPath(recommendedPath);
+        path.setShortestPath(shortPath);
+        data.setData(path);
+
+        return data.builder();
+    }
     @GetMapping("/path/safety")
     public void getPath() {
 
