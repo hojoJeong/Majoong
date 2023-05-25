@@ -43,8 +43,7 @@ public class NotificationService {
 
         List<NotificationUserDto> notifications = new ArrayList<>();
 
-        Set<String> keys = redisTemplate.keys("notification:" + toId + "_" + "*");
-
+        Set<String> keys = redisTemplate.keys("notification:" + toId+"_"+"*");
         for (String key : keys) {
             HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
             Map<String, String> map = hashOperations.entries(key);
