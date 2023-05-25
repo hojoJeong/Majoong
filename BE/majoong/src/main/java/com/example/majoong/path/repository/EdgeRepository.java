@@ -1,10 +1,9 @@
 package com.example.majoong.path.repository;
 
 import com.example.majoong.path.domain.Edge;
-import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
