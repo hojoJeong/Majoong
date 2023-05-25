@@ -1,9 +1,9 @@
 package com.example.majoong.path.repository;
 
 import com.example.majoong.path.domain.Node;
-import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -26,4 +26,5 @@ public interface NodeRepository extends JpaRepository<Node, Long> {
 
     @Query(value = "SELECT * FROM node WHERE nodeId = 3327180", nativeQuery = true)
     Node findNodePosition();
+
 }

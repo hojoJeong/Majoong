@@ -24,7 +24,7 @@ public class NotificationController {
         String token = request.getHeader("Authorization").split(" ")[1];
         int userId = jwtTool.getUserIdFromToken(token);
         ResponseData data = new ResponseData();
-        data.setData(notificationService.getNotificationsByToId(userId));
+        data.setData(notificationService. getNotificationsByToId(userId));
         log.info(data.toString());
         log.info("/user/notification end\n");
         log.info("");
